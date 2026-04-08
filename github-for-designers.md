@@ -288,6 +288,56 @@ Project B repo      ──  同時支援的另一個專案
 
 越上層的 repo 影響越大，流程越嚴格。Personal repo 最自由，可以隨意嘗試。
 
+### 用 Global CLAUDE.md 管理多 Repo
+
+前面提到每個 repo 可以有自己的 `CLAUDE.md`。但如果你同時參與多個 repo，還可以設定一份**全域的 CLAUDE.md**（放在 `~/.claude/CLAUDE.md`），寫上跨 repo 通用的規則。Claude Code 每次啟動都會讀這份檔案，不管你在哪個 repo 裡。
+
+建議在全域 CLAUDE.md 加上這四類規則：
+
+#### 1. 多帳號切換
+
+如果你有多個 GitHub 帳號（例如公司帳號 + 個人帳號），寫清楚對應關係，讓 AI 幫你把關：
+
+```markdown
+## Multi-Account Safety
+- 個人帳號：JiaWen-Shen（用於個人 repo）
+- 工作帳號：karen-shen_tmemu（用於公司 repo）
+- Push 前必須確認 gh auth status，確認帳號與目標 repo 匹配
+- Push 完成後切回工作帳號
+```
+
+#### 2. Repo 切換安全檢查
+
+同時支援多專案時，最怕切過去之後忘記前一個 repo 還有沒存的改動：
+
+```markdown
+## Multi-Repo Workflow
+- 切換到不同 repo 工作前，先確認前一個 repo 的改動已 commit + push
+- 每次開始工作前，確認自己在正確的 repo 和正確的 branch
+```
+
+#### 3. 收工時檢查所有 Repo
+
+如果你一天碰了三個 repo，收工時不該只檢查最後一個：
+
+```markdown
+## Session Handoff
+- 收工前檢查所有今天碰過的 repo，確認都已 commit + push
+- 記錄每個 repo 目前的進度和下一步
+```
+
+#### 4. 新 Repo 建立慣例
+
+確保每個新 repo 從第一天就有基本規範：
+
+```markdown
+## New Repo Checklist
+- 建立 CLAUDE.md，記錄：repo 層級、對應 GitHub 帳號、專案規範
+- 加入 .gitignore（node_modules、.env、.DS_Store）
+- 設定 remote 並確認指向正確的 organization / 個人帳號
+```
+
+這樣的設定等於幫你建了一套「AI 協作的 SOP」——不管你在哪個 repo 工作，Claude Code 都會遵守同一套安全規則。
 
 ---
 
