@@ -32,7 +32,8 @@
 
 ### 核心觀念轉換
 
-Figma 的設計哲學是**「即時、自動、所見即所得」**。Git 則是**「刻意、手動、你來決定」**：
+Figma 的設計哲學是**「即時、自動、所見即所得」
+**。Git 則是**「刻意、手動、你來決定」**：
 
 - **你決定什麼時候存**（commit）
 - **你決定存什麼**（staging）
@@ -41,18 +42,90 @@ Figma 的設計哲學是**「即時、自動、所見即所得」**。Git 則是
 
 **為何 Git 不能像 Figma 一樣即時同步？**
 
-Figma 管理的是視覺畫面——改了馬上看到結果。但 Git 管理的是程式碼，程式碼需要經過**編譯（compile）**才能執行。每一次改動都可能牽動其他部分，所以需要一個「確認點」（commit）來標記：這個狀態是可以運作的。即時同步反而危險——你改到一半的程式碼，同事 pull 下去可能直接壞掉。
+Figma 是一個Application, 管理的是視覺畫面——改了馬上看到結果。但 Git 管理的是程式碼，程式碼需要經過**編譯（compile）**才能執行。
+每一次改動都可能牽動其他部分，所以需要一個「確認點」（commit）來標記：這個狀態是可以運作的。即時同步反而危險，你改到一半的程式碼，同事 pull 下去可能直接壞掉。
 
 ---
 
 ## 2. Git 的基本架構
-Git v.s Github?
-- **三個空間**：Working Directory → Staging Area → Repository
-- **本機 vs 遠端**：Local repo ↔ GitHub（對應 Figma 的「瀏覽器 ↔ 雲端」）
-- **關鍵名詞**：commit、branch、merge、pull/push、PR
- - Commit v.s push?
- - Branch v.s fork?
-- **用 Figma 類比解釋**：commit ≈ 存檔點、branch ≈ Figma Branch、PR ≈ 設計審查
+
+### Git vs GitHub？
+
+這是最常搞混的第一個問題：
+
+| | Git | GitHub |
+|---|---|---|
+| **是什麼** | 版本控制工具（軟體） | 雲端託管平台（網站） |
+| **安裝在哪** | 你的電腦上 | 瀏覽器打開 github.com |
+| **角色** | 在本機追蹤每一次改動 | 讓團隊看到彼此的改動、進行 review |
+| **類比** | 你電腦裡的 Figma 桌面 App | Figma 的雲端（figma.com） |
+
+簡單說：**Git 是引擎，GitHub 是車庫**。你用 Git 在本機工作，用 GitHub 跟團隊同步。
+
+### 三個空間：程式碼的旅程
+
+Git 把你的改動分成三個階段，每個階段都是你主動推進的：
+
+```
+Working Directory  →  Staging Area  →  Repository
+  （你正在改的檔案）    （準備要存的改動）    （正式的版本紀錄）
+```
+
+用 Figma 來想像：
+
+1. **Working Directory** = 你正在畫布上拖拉的狀態（還沒存）
+2. **Staging Area** = 你圈選了幾個元件，準備打包（`git add`）
+3. **Repository** = 按下存檔，寫上備註（`git commit`）
+
+為什麼要多一個 Staging Area？因為你可能改了 10 個檔案，但只想先存其中 3 個。Staging 讓你**挑選**要存什麼，而不是一股腦全存。
+
+### 本機 vs 遠端
+
+```
+你的電腦（Local）          GitHub（Remote）
+┌──────────────┐         ┌──────────────┐
+│  Working Dir │         │              │
+│      ↓       │  push → │   Remote     │
+│  Staging     │         │   Repository │
+│      ↓       │  ← pull │              │
+│  Local Repo  │         │              │
+└──────────────┘         └──────────────┘
+```
+
+- **push**：把本機的 commit 上傳到 GitHub（「讓別人看到」）
+- **pull**：把 GitHub 上別人的改動下載到本機（「同步最新狀態」）
+
+### 容易搞混的名詞
+
+**Commit vs Push？**
+
+| | Commit | Push |
+|---|---|---|
+| **做了什麼** | 在本機建立一個存檔點 | 把存檔點上傳到 GitHub |
+| **誰看得到** | 只有你 | 團隊所有人 |
+| **可以反悔嗎** | 可以，還沒 push 之前都在你電腦裡 | push 之後別人可能已經看到了 |
+| **Figma 類比** | 存檔 | 分享連結給同事 |
+
+**Branch vs Fork？**
+
+| | Branch | Fork |
+|---|---|---|
+| **在哪裡** | 同一個 repo 裡面 | 複製一整個 repo 到你的帳號下 |
+| **誰用** | 團隊成員（有權限的人） | 外部貢獻者（沒有直接寫入權限） |
+| **Figma 類比** | Figma Branch（同一個檔案裡分支） | Duplicate 整個 Figma 檔案到自己的 Draft |
+| **什麼時候用** | 日常開發，每個任務開一條 | 想貢獻別人的開源專案時 |
+
+### 用 Figma 類比總整理
+
+| Git 概念 | Figma 對應 | 一句話說明 |
+|---|---|---|
+| `commit` | 存檔 + 版本註記 | 建立一個可回溯的存檔點 |
+| `branch` | Figma Branch | 在不影響 main 的情況下平行開發 |
+| `merge` | Merge Branch 回 main | 把分支的成果合併回主線 |
+| `pull request` | 設計審查 / Design Review | 請團隊看過你的改動，確認後才合併 |
+| `clone` | Duplicate 到本機 | 第一次把遠端 repo 下載到你的電腦 |
+| `pull` | 重新整理畫布（取得最新） | 把遠端的更新同步到本機 |
+| `push` | 發布 / 分享連結 | 把本機的改動上傳到遠端 |
 
 ---
 
