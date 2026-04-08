@@ -234,14 +234,6 @@ Claude Code 在執行 Git 操作時有內建的安全設計：
 | **Project** | 專案層級的產出 | PRD、project workflow、專案程式碼 | 專案成員 |
 | **Personal** | 個人的設定與學習 | 個人 settings、workflow 筆記、side project | 你自己 |
 
-用 Figma 來對照：
-
-| Git 層級 | Figma 類比 |
-|---|---|
-| Company repo | Figma Organization 裡的 Team Library（全公司可用） |
-| Department repo | 設計團隊的 Component Library（部門維護，專案引用） |
-| Project repo | 專案的 Figma 檔案（專案成員協作） |
-| Personal repo | 你自己 Draft 裡的檔案（個人實驗、筆記） |
 
 **Design System 該放哪？**
 
@@ -296,17 +288,6 @@ Project B repo      ──  同時支援的另一個專案
 
 越上層的 repo 影響越大，流程越嚴格。Personal repo 最自由，可以隨意嘗試。
 
-#### 用 Claude Code 管理多 Repo
-
-每個 repo 放各自的 `CLAUDE.md`，記錄不同的規範：
-
-| Repo 層級 | CLAUDE.md 重點內容 |
-|---|---|
-| Department（design-system） | 元件命名規範、版本號規則、改動必須開 PR |
-| Project（project-a） | 專案特定的設計 token、deploy 流程、branch 命名規則 |
-| Personal（my-settings） | commit 格式、個人偏好設定 |
-
-這樣你在不同 repo 裡開 Claude Code，它會自動切換到對應的規範——不用每次都重新說明。
 
 ---
 
