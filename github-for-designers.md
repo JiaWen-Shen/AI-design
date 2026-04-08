@@ -142,19 +142,73 @@ Staging 讓你**主動挑選**要存什麼，而不是一股腦全存。
 
 ## 3. 用 Claude Code 操作 Git
 
-- **為什麼設計師不需要背指令**：用自然語言描述意圖，AI 執行 git 操作
-- **常用操作示範**：
-  - 「幫我建一個新 branch」
-  - 「把目前的改動 commit 起來」
-  - 「推上去開 PR」
-  - 「這個檔案改壞了，幫我回到上一版」
-- **Claude Code 的安全機制**：破壞性操作會先確認、不會自動 push
-- **避免 push 錯路徑**：
-  - `git remote -v` 確認目前指向哪個 repo
-  - Team repo vs Personal repo 的 remote 別搞混
-  - 多帳號切換時確認身份（`gh auth status`）
-  - 用 Claude Code 時可以先問「目前的 remote 是哪裡？」再 push
-- **CLAUDE.md 的角色**：讓 AI 記住你的 commit 慣例和專案規範
+### 為什麼設計師不需要背指令
+
+傳統的 Git 操作需要在終端機輸入指令，例如：
+
+```bash
+git checkout -b feature/new-header
+git add src/components/Header.tsx
+git commit -m "feat: add new header component"
+git push origin feature/new-header
+```
+
+對設計師來說，這些指令不直覺。但有了 Claude Code，你只需要用自然語言說出意圖，AI 會幫你執行正確的 Git 指令。
+
+### 常用操作示範
+
+| 你對 Claude Code 說 | Claude Code 實際執行 | 對應的 Git 概念 |
+|---|---|---|
+| 「幫我建一個新的 branch，叫 header-redesign」 | `git checkout -b header-redesign` | 建立分支 |
+| 「把目前的改動存起來」 | `git add` + `git commit` | 暫存 + 提交 |
+| 「推上去，然後開一個 PR」 | `git push` + `gh pr create` | 推送 + 建立 Pull Request |
+| 「這個檔案改壞了，回到上一版」 | `git checkout -- <file>` | 還原檔案 |
+| 「最近三次 commit 改了什麼？」 | `git log --oneline -3` | 查看歷史 |
+| 「目前在哪個 branch？」 | `git branch --show-current` | 確認目前分支 |
+
+你不需要記住右邊那欄的指令——知道左邊怎麼講就夠了。
+
+### Claude Code 的安全機制
+
+Claude Code 在執行 Git 操作時有內建的安全設計：
+
+- **破壞性操作會先確認**：`push --force`、`reset --hard`、刪除 branch 等操作，Claude Code 會先問你確認
+- **不會自動 push**：commit 完不會自己推上去，你可以先檢查再決定
+- **敏感檔案保護**：不會把 `.env`（含密碼 / API key）加入 commit
+
+這意味著你可以放心讓 AI 幫你操作，不太會不小心搞壞東西。
+
+### 避免 push 錯路徑
+
+這是實際工作中最容易踩的坑——尤其當你同時有 team repo 和 personal repo 時。
+
+**問題場景**：你在公司的 team repo 裡工作，但 push 的時候不小心推到自己的 personal repo（或反過來）。
+
+**預防方式**：
+
+1. **Push 前先確認 remote**：問 Claude Code「目前的 remote 是指向哪裡？」
+   - Claude Code 會執行 `git remote -v`，告訴你目前指向哪個 repo
+2. **多帳號切換要確認身份**：如果你有多個 GitHub 帳號（例如公司帳號 + 個人帳號），push 前問「我目前是用哪個 GitHub 帳號？」
+   - Claude Code 會執行 `gh auth status` 確認
+3. **養成習慣**：每次開新的工作 session 時，先確認你在對的 repo 和對的帳號
+
+### CLAUDE.md 的角色
+
+`CLAUDE.md` 是一個放在專案根目錄的設定檔，讓 Claude Code 記住你的專案規範：
+
+```markdown
+# CLAUDE.md 範例
+
+## Commit 規範
+- 使用 Conventional Commits：feat: / fix: / chore:
+- Commit message 要說明 what + why
+
+## 專案特殊設定
+- Push 前須切換到正確的 GitHub 帳號
+- 中英混排使用中文標點
+```
+
+有了這個檔案，你不用每次對話都重複說明規範——Claude Code 會自動讀取並遵守。就像在 Figma 裡設定好 Design System 一樣，定義一次，到處適用。
 
 ---
 
