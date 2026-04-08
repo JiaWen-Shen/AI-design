@@ -1,4 +1,4 @@
-# GitHub for UI Designers：教學簡報大綱
+# GitHub for UI Designers
 
 > 目標受眾：UI 設計師，想了解 Git/GitHub 基礎操作，搭配 AI 工具（Claude Code）進行版本管理。
 
