@@ -73,7 +73,7 @@ Working Directory  →  Staging Area  →  Repository
 ```
 
 為什麼要多一個 Staging Area？因為你可能改了 10 個檔案，但只想先存其中 3 個。
-Staging 讓你**主動挑選**要存什麼，而不是一股腦全存。
+Staging 讓你**主動挑選**要存什麼，而不是一股腦全存。(使用 Claude code 不太會需要碰到這個工作流程)
 
 ### 本機 vs 遠端
 
@@ -102,7 +102,7 @@ Staging 讓你**主動挑選**要存什麼，而不是一股腦全存。
 | **可以反悔嗎** | 可以，還沒 push 之前都在你電腦裡 | push 之後別人可能已經看到了 |
 | **Figma 類比** | 存檔 | 分享連結給同事 |
 
-**Branch vs Fork？**
+**Branch vs Fork？** (optional)
 
 | | Branch | Fork |
 |---|---|---|
