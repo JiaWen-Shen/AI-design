@@ -223,16 +223,90 @@ Claude Code 在執行 Git 操作時有內建的安全設計：
 
 有了這個檔案，你不用每次對話都重複說明規範——Claude Code 會自動讀取並遵守。就像在 Figma 裡設定好 Design System 一樣，定義一次，到處適用。
 
-### Team Repo
-- 資料夾結構（Member folder 模式）
-- Branch 策略：main 保護、feature branch per task
-- PR + Review 流程：為什麼設計師也該做 code review
-- `.gitignore`：哪些檔案不該進 repo（.env、node_modules、.DS_Store）
+## Repo 的四層架構
 
-### Personal Repo
-- 學習筆記、side project、作品集的版本管理
-- 直接在 main 工作 vs 用 branch 的時機
-- GitHub Pages 展示作品的可能性
+一個設計師在公司裡會碰到的 repo，可以分成四個層級：
+
+| 層級 | 內容 | 範例 | 誰維護 |
+|---|---|---|---|
+| **Company** | 全公司共用的價值觀、政策、規範 | shared values、company policy、onboarding docs | Admin / Tech Lead |
+| **Department** | 部門層級的共用資源 | design system、UI component library | 設計部門 |
+| **Project** | 專案層級的產出 | PRD、project workflow、專案程式碼 | 專案成員 |
+| **Personal** | 個人的設定與學習 | 個人 settings、workflow 筆記、side project | 你自己 |
+
+用 Figma 來對照：
+
+| Git 層級 | Figma 類比 |
+|---|---|
+| Company repo | Figma Organization 裡的 Team Library（全公司可用） |
+| Department repo | 設計團隊的 Component Library（部門維護，專案引用） |
+| Project repo | 專案的 Figma 檔案（專案成員協作） |
+| Personal repo | 你自己 Draft 裡的檔案（個人實驗、筆記） |
+
+**Design System 該放哪？**
+
+大部分情況放 **Department 層級**——由設計部門擁有和維護，工程師和其他專案是「取用」的關係。建議獨立成一個 repo（如 `company/design-system`），而不是塞在某個專案 repo 裡。這樣當多個專案同時引用時，更新才不會互相干擾。
+
+### 一人多 Repo 的工作架構
+
+設計師通常同時支援多個專案，意味著你每天可能在好幾個 repo 之間切換：
+
+```
+一個設計師的日常：
+
+Personal repo       ──  自己的設定、學習筆記
+Department repo     ──  design system（跨專案共用）
+Project A repo      ──  正在支援的專案
+Project B repo      ──  同時支援的另一個專案
+```
+
+#### 建議的本機資料夾結構
+
+```
+~/work/
+├── personal/            ← Personal repos
+│   └── my-settings/
+├── department/          ← Department repos
+│   └── design-system/
+└── projects/            ← Project repos
+    ├── project-a/
+    └── project-b/
+```
+
+分層放的好處：**看資料夾路徑就知道你在哪一層**，降低 push 錯 repo 的風險。
+
+#### 每天的工作流程
+
+| 步驟 | 動作 | 說明 |
+|---|---|---|
+| 1. 早上開工 | pull 所有正在參與的 repo | 同步到最新狀態 |
+| 2. 確認任務 | 判斷今天的任務屬於哪個 repo | 改元件規格 → design-system、做頁面 → project-a |
+| 3. 專注工作 | 一次只在一個 repo 裡工作 | commit 完 → push → 再切到下一個 repo |
+| 4. 收工前 | 確認每個改過的 repo 都 push 了 | 避免改動只留在本機 |
+
+#### 不同層級的 Git 操作規則
+
+| | Company | Department | Project | Personal |
+|---|---|---|---|---|
+| **直接 push main？** | 不行 | 不行 | 不行 | 可以 |
+| **需要開 PR？** | 是 | 是 | 是 | 不需要 |
+| **需要 review？** | 是（Admin） | 是（設計主管） | 是（專案成員） | 不需要 |
+| **影響範圍** | 全公司 | 全部門 | 單一專案 | 只有你 |
+| **改動頻率** | 低（季度） | 中（迭代週期） | 高（每天） | 看你自己 |
+
+越上層的 repo 影響越大，流程越嚴格。Personal repo 最自由，可以隨意嘗試。
+
+#### 用 Claude Code 管理多 Repo
+
+每個 repo 放各自的 `CLAUDE.md`，記錄不同的規範：
+
+| Repo 層級 | CLAUDE.md 重點內容 |
+|---|---|
+| Department（design-system） | 元件命名規範、版本號規則、改動必須開 PR |
+| Project（project-a） | 專案特定的設計 token、deploy 流程、branch 命名規則 |
+| Personal（my-settings） | commit 格式、個人偏好設定 |
+
+這樣你在不同 repo 裡開 Claude Code，它會自動切換到對應的規範——不用每次都重新說明。
 
 ---
 
