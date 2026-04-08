@@ -162,11 +162,20 @@ git push origin feature/new-header
 | 「幫我建一個新的 branch，叫 header-redesign」 | `git checkout -b header-redesign` | 建立分支 |
 | 「把目前的改動存起來」 | `git add` + `git commit` | 暫存 + 提交 |
 | 「推上去，然後開一個 PR」 | `git push` + `gh pr create` | 推送 + 建立 Pull Request |
-| 「這個檔案改壞了，回到上一版」 | `git checkout -- <file>` | 還原檔案 |
+| 「這個檔案改壞了，回到上一版」 | `git restore <file>` | 還原檔案 |
 | 「最近三次 commit 改了什麼？」 | `git log --oneline -3` | 查看歷史 |
 | 「目前在哪個 branch？」 | `git branch --show-current` | 確認目前分支 |
 
-你不需要記住右邊那欄的指令——知道左邊怎麼講就夠了。
+不需要記住右邊那欄的指令，知道何時該做什麼事情就夠了：
+
+| 時機 | 你該做的事 |
+|---|---|
+| 開始一個新任務 | 開 branch（避免直接改 main）。需要先移動到專案資料夾下 |
+| 改到一個段落，想存檔 | commit（建立存檔點） |
+| 想讓團隊看到你的改動 | push（上傳到 GitHub） |
+| 早上開工，先同步最新 | pull（下載別人的更新） |
+| 改壞了，想放棄這次修改 | restore（還原到上次 commit 的狀態） |
+| 任務做完，想合併回主線 | 開 PR → 請人 review → merge |
 
 ### Claude Code 的安全機制
 
@@ -192,7 +201,11 @@ Claude Code 在執行 Git 操作時有內建的安全設計：
    - Claude Code 會執行 `gh auth status` 確認
 3. **養成習慣**：每次開新的工作 session 時，先確認你在對的 repo 和對的帳號
 
-### CLAUDE.md 的角色
+---
+
+## 4. 具體實踐建議
+
+### CLAUDE.md — 讓 AI 記住你的專案規範
 
 `CLAUDE.md` 是一個放在專案根目錄的設定檔，讓 Claude Code 記住你的專案規範：
 
@@ -209,10 +222,6 @@ Claude Code 在執行 Git 操作時有內建的安全設計：
 ```
 
 有了這個檔案，你不用每次對話都重複說明規範——Claude Code 會自動讀取並遵守。就像在 Figma 裡設定好 Design System 一樣，定義一次，到處適用。
-
----
-
-## 4. 具體實踐建議
 
 ### Team Repo
 - 資料夾結構（Member folder 模式）
