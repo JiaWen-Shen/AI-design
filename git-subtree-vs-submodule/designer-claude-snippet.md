@@ -45,7 +45,7 @@ clone_path: <FILL_IN>                # Where the team repo is saved on your comp
 **IMPORTANT — For ALL git operations, read the full guide first:**
 
 ```
-Read file: <clone_path>/git-operation-guide.md
+Read file: <clone_path>/<my_submodule_folder>/git-operation-guide.md
 ```
 
 Before executing any git operation (clone, commit, push, pull, sync, error recovery, onboarding), you MUST read the guide at the path above and follow its instructions. The guide contains:
