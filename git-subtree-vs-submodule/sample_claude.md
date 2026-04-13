@@ -104,15 +104,18 @@ git ls-remote --symref <url> HEAD
 
 ### Step 3: Clone the Repo
 
-Ask where to save it:
+Ask for the designer's working folder:
 
-> "I'll download the team repo to your computer. Where would you like to put it?
-> Some common choices:
-> - Desktop: `~/Desktop/`
-> - Documents: `~/Documents/`
-> - Or tell me a specific folder path.
+> "Where is your usual working folder — the place you keep your project files?
+> For example: `~/Documents/projects/` or `~/Desktop/work/`
 >
-> (Tip: Pick somewhere easy to find. You'll open this folder whenever you work on design files.)"
+> (If you're not sure, I can check what folder you're in right now.)"
+
+If the designer isn't sure, check the current working directory:
+```bash
+pwd
+```
+Then suggest cloning there or in a subfolder.
 
 Once they answer, normalize the path (expand `~`, handle "desktop" → `~/Desktop/`, etc.).
 
@@ -140,39 +143,35 @@ git lfs install
 
 **Update Config**: Write `clone_path`.
 
-### Step 4: Identify the Designer's Submodule
+### Step 4: Identify the Designer's Folder
 
-List all submodules and present them clearly:
+Ask the designer which folder has been assigned to them:
 
+> "Which folder in this project has been assigned to you?
+> You can share:
+> - A GitHub URL (e.g., `https://github.com/org/repo/tree/master/skills/uxr`)
+> - Or just the folder path (e.g., `skills/uxr`)
+>
+> If you're not sure, check with your team lead."
+
+Once the designer provides their folder, extract the path (strip GitHub URL prefix if needed) and verify it exists:
 ```bash
 cd <clone_path>
-git submodule status
+ls -d <folder_path>
 ```
 
-Also read `.gitmodules` for human-friendly info:
+Then check whether this folder is already a submodule:
 ```bash
-cat .gitmodules
+git submodule status <folder_path> 2>&1
 ```
 
-Present the list:
-
-> "This team repo has the following workspaces (each designer has their own):
->
-> 1. **Karen-test-submodule** — linked to `karen-shen_tmemu/cross_team_test_submodule`
-> 2. **Peter-workspace** — linked to `peter-p-wu_tmemu/peter-workspace`
->
-> Which one is yours? Just tell me the number or name."
-
-If only one submodule exists:
-> "There's one workspace here: **Karen-test-submodule**. Is this yours?"
-
-Once confirmed:
+**Case A — Folder IS a submodule** (normal flow):
 1. Enter the submodule and verify it's properly initialized:
    ```bash
-   cd <submodule_folder>
+   cd <folder_path>
    ls -la
    ```
-   If empty → run `git submodule update --init <submodule_folder>` from parent root
+   If empty → run `git submodule update --init <folder_path>` from parent root
 2. Check the designer can push:
    ```bash
    git remote -v
@@ -180,6 +179,30 @@ Once confirmed:
    git status
    ```
 3. Verify SSH/HTTPS push access by checking remote URL ownership
+4. **Update Config**: Write `my_submodule_folder`.
+
+**Case B — Folder is NOT a submodule** (needs maintainer action):
+The folder exists but is a regular directory, not yet set up as a submodule.
+Tell the designer:
+> "I found your folder `<folder_path>`, but it's not set up for independent syncing yet.
+> This is a one-time setup that your team maintainer needs to do.
+> I'll note down the info — could you ask your maintainer to set it up as a submodule?
+>
+> Here's what they'll need:
+> - **Folder to convert**: `<folder_path>`
+> - **Your GitHub account**: `<github_account>`
+> - They can follow the Maintainer Guide in this document (Section 7)"
+>
+> Once it's done, just come back and we'll finish the setup.
+
+Do NOT attempt to create the submodule yourself — this requires maintainer-level access and planning.
+
+**Case C — Folder does not exist**:
+> "I couldn't find a folder called `<folder_path>` in this repo. Let me show you what's available..."
+Then list the top-level folders so the designer can pick:
+```bash
+ls -d */
+```
 
 **Update Config**: Write `my_submodule_folder`.
 
@@ -229,7 +252,20 @@ Decision tree:
 
 **Trigger**: Designer says "commit", "push", "save", "upload", "share", "done", "send it", "update the team", or anything expressing intent to save/share their work.
 
-**Phase A — Commit inside submodule**
+**Before executing, always clarify the scope:**
+
+> "Got it! Do you want to:
+> 1. **Save to your personal repo only** — your work is backed up, but the team won't see it yet
+> 2. **Save and share with the team** — your work is backed up AND the team repo is updated
+>
+> Which one?"
+
+Shortcut rules — skip asking if the designer's intent is already clear:
+- "push to my repo" / "save my work" / "back it up" → Personal only (Phase A)
+- "push to team" / "update the team" / "share with everyone" / "push上去到團隊repo" → Both (Phase A + B)
+- If ambiguous ("push it" / "save" / "done") → always ask
+
+**Phase A — Commit inside submodule (personal repo)**
 
 ```bash
 # 1. Navigate and verify branch
@@ -256,7 +292,7 @@ git commit -m "feat: <what the designer did, e.g., update homepage wireframe>"
 git push origin <my_submodule_branch>
 ```
 
-**Phase B — Update parent repo pointer**
+**Phase B — Update parent repo pointer (only if designer chose "share with the team")**
 
 ```bash
 # 7. Return to parent repo root
@@ -273,7 +309,14 @@ git push origin <parent_branch>
 ```
 
 **Report to designer**:
-> "Done! Your changes are now shared with the team:
+
+If personal only (Phase A):
+> "Done! Your changes are saved to your personal repo:
+> - Saved: wireframe-v2.fig, notes.md
+> - When you're ready to share with the team, just tell me."
+
+If both (Phase A + B):
+> "Done! Your changes are saved and shared with the team:
 > - Saved: wireframe-v2.fig, notes.md
 > - The team can see your latest version now."
 
@@ -464,7 +507,9 @@ ls <clone_path>/<my_submodule_folder>/.git/index.lock 2>/dev/null
 | Designer says | Action |
 |---------------|--------|
 | "first time" / "set up" / "how do I start" | → Onboarding flow (Section 1) |
-| "commit" / "push" / "save" / "upload" / "share" / "done" | → Dual commit + push (2.2) |
+| "commit" / "push" / "save" / "done" | → Ask: personal repo only or also team repo? (2.2) |
+| "push to team" / "share with team" / "update the team" | → Phase A + B directly (2.2) |
+| "save to my repo" / "back it up" | → Phase A only (2.2) |
 | "pull" / "sync" / "update" / "get latest" | → Pull latest (2.3) |
 | "history" / "what changed" / "who edited this" | → View history (2.4) |
 | "undo" / "revert" / "go back" / "restore" | → Undo flow (2.5) |
