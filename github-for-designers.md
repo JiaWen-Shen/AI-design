@@ -19,6 +19,8 @@
 
 ## 1. Git vs Figma — 協作模式的差異 Collaboration Model Comparison
 
+[Week1 slides](https://www.figma.com/slides/eqXah6XQOmEoE7PUDuBbSM)
+
 設計師已經熟悉 Figma 的協作方式。Git 的邏輯不同，但核心目的一樣：讓多人同時工作而不互相覆蓋。
 
 ### 協作模式對照表
