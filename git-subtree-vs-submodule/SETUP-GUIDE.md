@@ -1,125 +1,125 @@
-# Designer Setup Guide: Add Submodule Workflow to Your Claude Code
+# Designer Setup Guide | 設計師設定指南
 
-# 設計師設定指南：將 Submodule 工作流加入你的 Claude Code
-
----
-
-## What is this? | 這是什麼？
-
-`sample_claude.md` contains workflow rules that teach Claude Code how to handle git submodule operations for you automatically. Once added, you just say "save my work" or "push to team" — Claude Code handles all the git complexity.
-
-`sample_claude.md` 包含了一組工作流規則，讓 Claude Code 自動處理所有 git submodule 操作。加入之後，你只要說「幫我存檔」或「推到團隊 repo」，Claude Code 就會自動搞定。
+> Add the submodule workflow to your Claude Code so it can handle git for you automatically.
+>
+> 把 submodule 工作流加入你的 Claude Code，讓它自動幫你處理 git 操作。
 
 ---
 
-## Setup Steps | 設定步驟
+## What you'll set up | 你會設定什麼
 
-### Option A: Let Claude Code do it for you (Recommended) | 讓 Claude Code 幫你做（推薦）
+1. A small snippet (~50 lines) appended to your Claude Code settings
+2. The full operation guide is already in the team repo — Claude Code reads it automatically
 
-Open Claude Code and paste this message:
+1. 一小段設定（約 50 行）加到你的 Claude Code 設定檔
+2. 完整操作指南已經在團隊 repo 裡 — Claude Code 會自動讀取
+
+---
+
+## Option A: Let Claude Code do it (Recommended) | 讓 Claude Code 幫你做（推薦）
+
+Open Claude Code and paste this:
 
 打開 Claude Code，貼上這段：
 
 ```
-Please help me set up the designer submodule workflow.
+Please help me set up the designer submodule workflow:
 
-1. Download the file from:
-   https://raw.githubusercontent.com/karen-shen_tmemu/cross_team_test_submodule/main/git-subtree-vs-submodule/sample_claude.md
+1. Download:
+   https://raw.githubusercontent.com/karen-shen_tmemu/cross_team_test_submodule/main/git-subtree-vs-submodule/designer-claude-snippet.md
 
-2. APPEND (do not overwrite) the content to my global CLAUDE.md at:
-   ~/.claude/CLAUDE.md
+2. Read the file and extract the content AFTER the first "---" separator line.
 
-3. If ~/.claude/CLAUDE.md already exists, add a separator line then append.
-   If it doesn't exist, create it with the content.
+3. APPEND that content to my ~/.claude/CLAUDE.md
+   - If the file exists: add a blank line + "---" + blank line, then append
+   - If it doesn't exist: create it with just that content
 
-4. After adding, walk me through the onboarding flow in the file.
+4. After adding, start the onboarding flow — the snippet has instructions.
 ```
 
-That's it! Claude Code will handle the rest and guide you through the first-time setup.
+That's it! Claude Code will handle the rest.
 
-這樣就好了！Claude Code 會處理剩下的步驟，並帶你完成首次設定。
+這樣就好了！Claude Code 會處理剩下的。
 
 ---
 
-### Option B: Do it yourself in Terminal | 自己在 Terminal 操作
+## Option B: Manual setup | 手動設定
 
-**Step 1**: Download the file | 下載檔案
+**Step 1**: Download the snippet | 下載設定片段
 
 ```bash
-curl -o /tmp/sample_claude.md \
-  "https://raw.githubusercontent.com/karen-shen_tmemu/cross_team_test_submodule/main/git-subtree-vs-submodule/sample_claude.md"
+curl -o /tmp/designer-snippet.md \
+  "https://raw.githubusercontent.com/karen-shen_tmemu/cross_team_test_submodule/main/git-subtree-vs-submodule/designer-claude-snippet.md"
 ```
 
-**Step 2**: Check if you already have a global CLAUDE.md | 確認是否已有 CLAUDE.md
+**Step 2**: Extract the content after the `---` separator (skip the instructions header)
 
 ```bash
-ls ~/.claude/CLAUDE.md
+sed -n '/^---$/,$ p' /tmp/designer-snippet.md | tail -n +2 > /tmp/snippet-content.md
 ```
 
-**Step 3a**: If the file does NOT exist — create it | 如果不存在 — 直接建立
+**Step 3**: Append to your CLAUDE.md
 
 ```bash
+# Create ~/.claude/ if it doesn't exist
 mkdir -p ~/.claude
-cp /tmp/sample_claude.md ~/.claude/CLAUDE.md
+
+# If CLAUDE.md already exists — append with separator
+if [ -f ~/.claude/CLAUDE.md ]; then
+  echo "" >> ~/.claude/CLAUDE.md
+  echo "---" >> ~/.claude/CLAUDE.md
+  echo "" >> ~/.claude/CLAUDE.md
+  cat /tmp/snippet-content.md >> ~/.claude/CLAUDE.md
+else
+  # If it doesn't exist — create it
+  cp /tmp/snippet-content.md ~/.claude/CLAUDE.md
+fi
 ```
 
-**Step 3b**: If the file ALREADY exists — append to it | 如果已存在 — 附加到後面
+> ⚠️ Use `>>` (append), NOT `>` (overwrite)! | 用 `>>`（附加），不是 `>`（覆蓋）！
 
-```bash
-echo "" >> ~/.claude/CLAUDE.md
-echo "---" >> ~/.claude/CLAUDE.md
-echo "" >> ~/.claude/CLAUDE.md
-cat /tmp/sample_claude.md >> ~/.claude/CLAUDE.md
-```
-
-> ⚠️ **Important**: Use `>>` (append), NOT `>` (overwrite). Using `>` will erase your existing settings!
->
-> ⚠️ **注意**：用 `>>`（附加），不是 `>`（覆蓋）。用錯會把你原本的設定清掉！
-
-**Step 4**: Open Claude Code and say | 打開 Claude Code 說
+**Step 4**: Open Claude Code and say:
 
 ```
-I just added the designer submodule workflow to my CLAUDE.md. 
+I just added the designer submodule workflow to my CLAUDE.md.
 Help me set it up — I'm a first-time user.
 ```
 
-Claude Code will read the new rules and start the onboarding flow.
-
-Claude Code 會讀取新規則並開始引導你完成設定。
-
 ---
 
-## What happens next? | 接下來會發生什麼？
+## How it works | 運作方式
 
-Claude Code will ask you a few questions:
+```
+~/.claude/CLAUDE.md (your settings)
+  └── Contains: Config block + reference to guide
+        │
+        ▼  Claude Code reads the reference
+<clone_path>/git-operation-guide.md (in team repo)
+  └── Contains: Full onboarding, daily ops, error handling, safety rules
+```
 
-Claude Code 會問你幾個問題：
+- The **snippet** in your CLAUDE.md is small (~50 lines) and tells Claude Code your config + where to find the full guide
+- The **guide** lives in the team repo — when maintainers update it, you get the latest version next time you pull
+- Your existing CLAUDE.md settings are **not affected** — the snippet is appended at the end
 
-1. **Your name and GitHub account** | 你的名字和 GitHub 帳號
-2. **Which team repo to join** | 要加入哪個團隊 repo
-3. **Where to save it on your computer** | 要存在電腦的哪個位置
-4. **Which folder is yours** | 哪個資料夾是你負責的
-
-After that, your daily workflow is simply:
-
-設定完成後，你每天的工作就是：
-
-- Edit files in your workspace as usual | 照常在你的工作區編輯檔案
-- Tell Claude Code "save my work" or "push to team" | 跟 Claude Code 說「幫我存檔」或「推到團隊」
-- Done! | 搞定！
+- CLAUDE.md 裡的**設定片段**很小（約 50 行），告訴 Claude Code 你的設定 + 去哪找完整指南
+- **指南**在團隊 repo 裡 — maintainer 更新後，你下次 pull 就會拿到最新版
+- 你原本的 CLAUDE.md 設定**不受影響** — 片段加在最後面
 
 ---
 
 ## Troubleshooting | 疑難排解
 
-| Problem / 問題 | Solution / 解法 |
-|---|---|
-| "I accidentally overwrote my CLAUDE.md" | Check if you have a backup: `ls ~/.claude/CLAUDE.md.bak`. If not, you'll need to recreate your settings and re-append the workflow file. |
-| 「我不小心覆蓋了 CLAUDE.md」 | 檢查有沒有備份：`ls ~/.claude/CLAUDE.md.bak`。如果沒有，需要重建設定並重新附加工作流檔案。 |
-| "Claude Code doesn't seem to follow the rules" | Make sure the content is in `~/.claude/CLAUDE.md` (global), not in a project-level CLAUDE.md. Run `cat ~/.claude/CLAUDE.md` to verify. |
-| 「Claude Code 好像沒有照規則做」 | 確認內容在 `~/.claude/CLAUDE.md`（全域），不是在專案層級的 CLAUDE.md。執行 `cat ~/.claude/CLAUDE.md` 確認。 |
-| "The onboarding asks for a repo URL I don't know" | Ask your team lead or maintainer (Karen) for the correct URL. |
-| 「設定問我 repo 網址但我不知道」 | 問你的 team lead 或 maintainer（Karen）要正確的網址。 |
+| Problem | Solution |
+|---------|----------|
+| "I accidentally overwrote my CLAUDE.md" | Re-create your original settings, then re-append the snippet |
+| 「不小心覆蓋了 CLAUDE.md」 | 重建原本的設定，再重新附加片段 |
+| "Claude Code doesn't follow the rules" | Verify content is in `~/.claude/CLAUDE.md`: `cat ~/.claude/CLAUDE.md` |
+| 「Claude Code 沒照規則做」 | 確認內容在 `~/.claude/CLAUDE.md`：`cat ~/.claude/CLAUDE.md` |
+| "The guide file is missing" | Make sure you've cloned the team repo with `--recurse-submodules`, then check `<clone_path>/git-operation-guide.md` |
+| 「找不到指南檔案」 | 確認已用 `--recurse-submodules` clone 團隊 repo，檢查 `<clone_path>/git-operation-guide.md` |
+| "Don't know the repo URL" | Ask your team lead or Karen (karen-shen_tmemu) |
+| 「不知道 repo 網址」 | 問你的 team lead 或 Karen (karen-shen_tmemu) |
 
 ---
 

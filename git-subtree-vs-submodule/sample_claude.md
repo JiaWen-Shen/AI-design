@@ -1,5 +1,14 @@
 # CLAUDE.md — Designer Submodule Workflow
 
+> ⚠️ **DEPRECATED**: This file is kept as an archive / reference.
+> The content has been split into two files:
+> - **[`designer-claude-snippet.md`](./designer-claude-snippet.md)** — slim snippet to append to designer's `~/.claude/CLAUDE.md` (~50 lines)
+> - **`git-operation-guide.md`** (in team repo root) — full operation guide that Claude Code reads automatically
+>
+> See **[SETUP-GUIDE.md](./SETUP-GUIDE.md)** for setup instructions.
+
+---
+
 > **Purpose**: Place this file at the root of the designer's local clone of the parent repo. It instructs Claude Code to handle all git submodule operations automatically.
 >
 > **Setup**: The maintainer fills in the Config section below before handing this file to the designer. Alternatively, if any field is left as `<FILL_IN>`, Claude Code will guide the designer through an interactive onboarding conversation on first use.
