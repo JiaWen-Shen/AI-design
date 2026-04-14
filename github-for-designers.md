@@ -208,6 +208,114 @@ Claude Code 在執行 Git 操作時有內建的安全設計：
 
 這意味著你可以放心讓 AI 幫你操作，不太會不小心搞壞東西。
 
+### 我該怎麼確認 AI 對 Git 的操作是正確的？ How to Verify AI Git Operations
+
+讓 AI 幫你操作 Git 很方便，但「方便」不等於「不用看」。就像設計師交付前會 Review 自己的畫面一樣，每次 AI 操作完 Git，你也應該花 10 秒確認結果。
+
+#### 三個確認時機
+
+| 時機 | 你該問的問題 | 對 Claude Code 說 |
+|---|---|---|
+| **Commit 之後** | 存了什麼？有沒有多存或少存？ | 「剛剛那個 commit 包含哪些檔案？」 |
+| **Push 之前** | 要推到哪裡？用哪個帳號？ | 「確認一下 remote 和目前帳號」 |
+| **操作結果不確定時** | 目前 repo 是什麼狀態？ | 「目前 git status 是什麼？」 |
+
+#### 看懂 Git Status — 用 VS Code 和 CLI 對照
+
+`git status` 是最重要的確認工具。你不需要自己打指令，但要看懂 Claude Code 回報的結果。同時，VS Code 左邊的 **Source Control 欄位**（第三個 icon，分支圖示）會即時顯示一樣的資訊：
+
+```
+Changes to be committed:        ← 已經準備好要存的（綠色）
+  modified:   src/Header.tsx
+  new file:   src/Logo.svg
+
+Changes not staged for commit:  ← 改了但還沒準備存的（紅色）
+  modified:   src/Footer.tsx
+
+Untracked files:                ← 全新的檔案，Git 還不認識
+  src/Banner.tsx
+```
+
+| CLI 顯示（Claude Code 回報） | VS Code Source Control 欄位 | 檔名旁的標記 |
+|---|---|---|
+| **Changes to be committed** | 「Staged Changes」區塊 | **A**（新增）/ **M**（修改） |
+| **Changes not staged** | 「Changes」區塊 | **M**（橘色） |
+| **Untracked files** | 「Changes」區塊 | **U**（灰色，Untracked） |
+| 檔案被刪除 | 「Changes」區塊 | **D**（紅色，Deleted） |
+
+> **快速確認法**：Claude Code 說「已 commit」之後，看一眼 VS Code Source Control——如果 Staged Changes 區塊清空了，代表存檔成功。如果還有檔案留在 Changes 區塊，代表有東西沒存到。
+
+<!-- TODO: 加入 VS Code Source Control 面板截圖，標註 Staged Changes / Changes / U / M / D 標記 -->
+
+#### 四個常見的「不對勁」訊號
+
+這些情況出現時，先暫停，問 Claude Code 發生什麼事：
+
+| 看到什麼 | 可能的問題 | 怎麼問 |
+|---|---|---|
+| Commit 裡出現 `.env` 或 `credentials` | 敏感資訊差點被存進去 | 「這個 commit 有沒有包含敏感檔案？」 |
+| Push 的目標是 `main` 而不是你的 branch | 直接推到主線，可能影響團隊 | 「我現在是在哪個 branch？」 |
+| `git status` 顯示一堆你沒碰過的檔案 | 可能切錯 repo，或 AI 動到不該動的地方 | 「這些檔案是誰改的？跟我的任務有關嗎？」 |
+| Commit message 跟你做的事對不上 | AI 誤判了你的意圖 | 「等一下，我改的是 X，為什麼 message 寫 Y？幫我改」 |
+
+> **VS Code 對照**：在 Source Control 欄位點任何一個檔案，右邊會打開 **diff 檢視**，左右對照修改前後的差異。綠色是新增的行，紅色是刪除的行。這跟 Claude Code 回報的 `git diff` 是同一個東西，只是用圖形介面呈現。
+
+<!-- TODO: 加入 VS Code diff 檢視截圖，標註綠色（新增）與紅色（刪除） -->
+
+#### Push 前的最後確認清單
+
+每次 AI 說「已經準備好 push 了」，花 10 秒跑這個清單：
+
+- [ ] **帳號對嗎？** — 公司 repo 用公司帳號，個人 repo 用個人帳號
+- [ ] **Remote 對嗎？** — 推到正確的 repo（不是推到 fork 或其他 repo）
+- [ ] **Branch 對嗎？** — 推到你的 branch，不是直接推 main
+- [ ] **內容對嗎？** — commit 包含的檔案都是你預期的
+
+> **VS Code 對照**：左下角狀態列會顯示目前的 **branch 名稱**（例如 `main` 或 `feature/header-redesign`）。如果看到你在 `main` 上，但你不該直接改 main，先喊停。
+
+<!-- TODO: 加入 VS Code 左下角 branch 名稱截圖 -->
+
+如果你不確定任何一項，直接問 Claude Code：「push 之前幫我確認一下：帳號、remote、branch、commit 內容。」一句話就能跑完整個清單。
+
+#### 在 GitHub 上再確認一次
+
+Push 完之後，打開 GitHub 網頁確認：
+
+1. 進到你的 repo 頁面
+2. 切到你的 branch
+3. 點最新的 commit，看看 **Files changed** 是不是你預期的改動
+4. 如果要開 PR，在 PR 頁面的 **Files changed** tab 可以看到所有差異
+
+<!-- TODO: 加入 GitHub PR Files changed 頁面截圖 -->
+
+這就像設計發布之後去確認更新是否正確。**發布之後驗證一次，是專業工作流程的一部分。**
+
+### 實戰案例：IDE 按 Discard 沒反應？可能是 Submodule
+
+**情境**：你在 VS Code 裡看到一個檔案有改動標記（`M`），但按了 Discard Changes 一直沒反應，改動怎麼都消不掉。
+
+**原因**：這個「檔案」其實不是檔案，而是一個 **Submodule**——它是「一個 repo 裡面嵌著另一個 repo」。IDE 的 Discard 功能只能處理普通檔案，對 submodule 無效。
+
+**怎麼辨識？** 用 `git diff` 看到的是這樣的內容：
+
+```diff
+-Subproject commit abc1234
++Subproject commit abc1234-dirty
+```
+
+看到 `Subproject commit` 和 `-dirty`，就代表這是 submodule，而且 submodule 裡面有未 commit 的改動。
+
+**怎麼處理？**
+
+對 Claude Code 說：「這個 submodule 裡面是什麼狀態？」Claude Code 會進去 submodule 檢查，告訴你裡面有哪些檔案被修改或刪除。然後你可以決定：
+
+| 你想做的事 | 對 Claude Code 說 |
+|---|---|
+| 還原，回到乾淨狀態 | 「把 submodule 裡的改動還原」 |
+| 這些改動是對的，幫我存起來 | 「在 submodule 裡 commit 這些改動」 |
+
+**重點**：遇到 IDE 操作「沒反應」的情況，不要反覆點——用 Claude Code 問一下實際狀態，通常幾秒就能解決。
+
 ### 避免 push 錯路徑
 
 這是實際工作中最容易踩的坑——尤其當你同時有 team repo 和 personal repo 時。
@@ -366,4 +474,4 @@ Project B repo      ──  同時支援的另一個專案
 
 ---
 
-*最後更新：2026-04-08*
+*最後更新：2026-04-14*
