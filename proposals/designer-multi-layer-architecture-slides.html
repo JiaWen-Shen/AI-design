@@ -740,6 +740,75 @@ Session 3（Day 2 早上 10:00）
     <span class="slide-number">11</span>
   </section>
 
+  <!-- Slide 12: Next Phase -->
+  <section class="slide" id="slide-12">
+    <h2>Next Phase: Hooks & Sources 配置</h2>
+
+    <h3>目前的 Gap</h3>
+    <p>工具包已完成，下一步：<strong>統一寫好一份引用架構，做成 code snippets</strong></p>
+
+    <pre style="background: #1e1e2e; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 1rem;">
+Designer 安裝工具包
+    ↓
+打開 sources.json
+    ↓
+<span style="color:#ef4444">❓ 要填什麼 URL？</span>
+<span style="color:#ef4444">❓ Company 規範在哪？</span>
+</pre>
+
+    <h3>理想流程</h3>
+    <pre style="background: #1e1e2e; padding: 20px; border-radius: 8px; font-size: 1rem;">
+Admin 維護統一的「hooks + CLAUDE.md snippets」
+                    ↓
+Designer 直接複製貼上（或執行 setup script）
+                    ↓
+<span style="color:#10b981">✅ 自動引用正確的 Company/Dept 規範</span>
+</pre>
+
+    <span class="slide-number">12</span>
+  </section>
+
+  <!-- Slide 13: Discussion -->
+  <section class="slide" id="slide-13">
+    <h2>Discussion: Sources Registry 放在哪裡？</h2>
+
+    <table>
+      <tr>
+        <th>方案</th>
+        <th>說明</th>
+        <th>優點</th>
+        <th>缺點</th>
+      </tr>
+      <tr>
+        <td><strong>A. 集中式</strong></td>
+        <td>公司層級維護一份 all-sources.json</td>
+        <td>統一管理、版本控制</td>
+        <td>需 Admin 維護</td>
+      </tr>
+      <tr>
+        <td><strong>B. 分散式</strong></td>
+        <td>各部門 repo 自帶 sources.json</td>
+        <td>各部門自主、彈性高</td>
+        <td>格式可能不一致</td>
+      </tr>
+      <tr>
+        <td><strong>C. 混合式</strong></td>
+        <td>Company 集中 + Dept 各自管理</td>
+        <td>分層負責</td>
+        <td>複雜度較高</td>
+      </tr>
+    </table>
+
+    <h3 style="margin-top: 40px;">待決定事項</h3>
+    <ul style="font-size: 1.1rem; color: #ccc;">
+      <li>Sources registry 採用哪種方案？</li>
+      <li>誰負責維護 Company / Department 層級的 sources？</li>
+      <li>新人 onboarding 流程如何整合？</li>
+    </ul>
+
+    <span class="slide-number">13</span>
+  </section>
+
   <!-- Navigation -->
   <nav class="nav">
     <a href="#slide-1">Title</a>
@@ -747,6 +816,7 @@ Session 3（Day 2 早上 10:00）
     <a href="#slide-5">Architecture</a>
     <a href="#slide-6">TTL</a>
     <a href="#slide-11">Summary</a>
+    <a href="#slide-12">Next Phase</a>
   </nav>
 
 </body>
