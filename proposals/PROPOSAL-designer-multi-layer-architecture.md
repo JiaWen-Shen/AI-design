@@ -386,12 +386,9 @@ Designer 直接複製貼上（或執行 setup script）
 
 ---
 
-### 待決定事項清單
+### 待決定事項
 
-- [ ] Sources registry 採用哪種方案？（集中/分散/混合）
-- [ ] 誰負責維護 Company 層級的 sources？
-- [ ] 誰負責維護 Department 層級的 sources？
-- [ ] 新人 onboarding 流程如何整合？
+- [ ] Department repo 需要做哪些調整或配置？
 
 ---
 
