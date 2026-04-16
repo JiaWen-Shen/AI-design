@@ -2,7 +2,7 @@
 
 > **Author**: Karen Shen  
 > **Date**: 2026-04-16  
-> **Status**: Draft  
+> **Status**: Open for Discussion  
 
 ---
 
