@@ -330,6 +330,131 @@ Session Context
 
 ---
 
+## Next Phase: Hooks & Sources Configuration
+
+### 目前的 Gap
+
+Local Cache + TTL 工具包已實作完成，但存在一個關鍵問題：
+
+```
+sources.json 需要填 URL → 但 Designer 怎麼知道該填什麼？
+```
+
+目前流程：
+```
+Designer 安裝工具包
+    ↓
+打開 sources.json
+    ↓
+❓ 要填什麼 URL？
+❓ Company 規範在哪？
+❓ 我的 Department 規範是哪個？
+```
+
+### 缺少的環節
+
+| 層級 | 負責人 | 應該做什麼 | 目前狀態 |
+|------|--------|-----------|---------|
+| Company | Admin | 公告 Company CLAUDE.md 的 raw URL | ❓ 未定義 |
+| Department | Team Lead | 公告 Dept CLAUDE.md 的 raw URL | ❓ 未定義 |
+| **Designer** | 自己 | 填入正確的 sources.json | ❓ 不知道該填什麼 |
+
+### 理想流程
+
+```
+Company/Dept Admin 維護「official sources registry」
+                    ↓
+           ┌────────┴────────┐
+           ▼                 ▼
+     方案 A               方案 B
+  集中式 registry      分散式配置
+           │                 │
+           ▼                 ▼
+  Designer 選部門      各部門 repo 自帶
+  → 自動套用設定        sources.json
+```
+
+### 預期產出
+
+1. **標準化的 sources 配置格式** — 讓各部門 Admin 有依循的規範
+2. **Setup script 改進** — 讓 Designer 能輕鬆選擇自己的部門
+3. **文件化的 URL registry** — 公司/部門規範的 canonical URL 清單
+
+---
+
+## Discussion: Department Repo 配置方案
+
+> ⚠️ 此章節需要團隊討論後決定
+
+### 議題 1：Sources Registry 放在哪裡？
+
+| 方案 | 說明 | 優點 | 缺點 |
+|------|------|------|------|
+| **A. 集中式** | 公司層級維護一份 `all-sources.json`，包含所有部門 | 統一管理、版本控制 | 需要 Admin 維護、部門異動時要更新 |
+| **B. 分散式** | 各部門 repo 自帶 `sources.json`，Designer clone 後即可用 | 各部門自主、彈性高 | 格式可能不一致、需要教育 |
+| **C. 混合式** | Company 層級放公司規範；部門規範各自管理 | 分層負責 | 複雜度較高 |
+
+**討論問題**：
+- 誰有權限修改 sources registry？
+- 部門重組時如何處理？
+- 新部門加入的流程？
+
+---
+
+### 議題 2：Designer 如何知道自己該用哪個配置？
+
+| 方案 | 說明 | Designer 操作 |
+|------|------|--------------|
+| **A. 手動選擇** | Setup script 提供部門選單 | `bash setup.sh` → 選擇部門 |
+| **B. 自動偵測** | 根據 email domain 或 git config 判斷 | 零操作（需要 convention） |
+| **C. 部門 Repo 自帶** | 部門 Repo 裡已有 `.claude/cache/sources.json` | Clone 後自動套用 |
+
+**討論問題**：
+- Designer 可能跨部門協作，如何處理？
+- 新人 onboarding 時誰負責設定？
+
+---
+
+### 議題 3：規範 URL 的權限管理
+
+| 方案 | 說明 | 優點 | 缺點 |
+|------|------|------|------|
+| **A. Public raw URL** | 用 public repo 或 gist | 零權限設定 | 規範對外公開 |
+| **B. Private repo + token** | 用 GitHub token 存取 private repo | 規範保密 | Token 管理複雜 |
+| **C. Internal server** | 公司內部 server 提供 | 完全內網 | 需要架設、維護 |
+
+**討論問題**：
+- 公司規範是否可以對外公開？
+- 如果需要 private，token 如何安全發放？
+
+---
+
+### 議題 4：TTL 設定由誰決定？
+
+| 選項 | 說明 |
+|------|------|
+| **統一 24 小時** | 簡單、一致 |
+| **各 source 自訂** | Company = 168h（週更）、Dept = 24h（日更） |
+| **Designer 可覆寫** | 環境變數 `CLAUDE_TTL_HOURS` 覆寫 |
+
+**討論問題**：
+- 緊急更新時如何通知 Designer 清 cache？
+- 是否需要「強制更新」機制？
+
+---
+
+### 待決定事項清單
+
+- [ ] Sources registry 採用哪種方案？（集中/分散/混合）
+- [ ] Designer 選擇部門的方式？（手動/自動/repo 自帶）
+- [ ] 規範 URL 的權限層級？（public/private/internal）
+- [ ] TTL 設定策略？
+- [ ] 誰負責維護 Company 層級的 sources？
+- [ ] 誰負責維護 Department 層級的 sources？
+- [ ] 新人 onboarding 流程如何整合？
+
+---
+
 ## Appendix: Technical Details
 
 ### fetch-guidelines.sh 腳本（草稿）
