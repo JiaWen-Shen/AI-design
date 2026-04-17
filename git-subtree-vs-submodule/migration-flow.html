@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtree → Submodule Migration Flow</title>
+  <style>
+    :root {
+      --c0: #6b7280; --c0-light: #f3f4f6; --c0-border: #d1d5db;
+      --c1: #2563eb; --c1-light: #eff6ff; --c1-border: #bfdbfe;
+      --c2: #d97706; --c2-light: #fffbeb; --c2-border: #fde68a;
+      --c3: #dc2626; --c3-light: #fef2f2; --c3-border: #fecaca;
+      --c4: #059669; --c4-light: #ecfdf5; --c4-border: #a7f3d0;
+      --warn-bg: #fef9c3; --warn-border: #ca8a04;
+      --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #64748b;
+      --border: #e2e8f0; --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      padding: 32px 24px; max-width: 820px; margin: 0 auto;
+      font-size: 14px; line-height: 1.6;
+    }
+
+    /* Header */
+    .header { margin-bottom: 32px; }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .header .subtitle { color: var(--muted); font-size: 13px; }
+    .header .meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--muted);
+    }
+    .badge strong { color: var(--text); }
+
+    /* Before / After */
+    .structure-row {
+      display: grid; grid-template-columns: 1fr 40px 1fr;
+      gap: 0; margin-bottom: 32px; align-items: center;
+    }
+    .structure-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+    }
+    .structure-box h3 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+    .structure-box .label { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; display: inline-block; margin-bottom: 4px; }
+    .tree { font-family: "SF Mono", "Menlo", monospace; font-size: 12px; line-height: 1.8; }
+    .tree .folder { color: var(--muted); }
+    .tree .highlight-bad { color: var(--c3); font-weight: 600; }
+    .tree .highlight-good { color: var(--c4); font-weight: 600; }
+    .arrow-center { display: flex; justify-content: center; align-items: center; font-size: 22px; color: var(--muted); }
+    .note-inline { font-size: 11px; color: var(--c3); margin-top: 4px; }
+    .note-inline.good { color: var(--c4); }
+
+    /* Flow */
+    .flow { display: flex; flex-direction: column; gap: 0; }
+    .phase-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 20px 24px;
+      position: relative;
+    }
+    .phase-card.phase-0 { border-color: var(--c0-border); background: var(--c0-light); }
+    .phase-card.phase-1 { border-color: var(--c1-border); background: var(--c1-light); }
+    .phase-card.phase-2 { border-color: var(--c2-border); background: var(--c2-light); }
+    .phase-card.phase-3 { border-color: var(--c3-border); background: var(--c3-light); }
+    .phase-card.phase-4 { border-color: var(--c4-border); background: var(--c4-light); }
+
+    .phase-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .phase-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .phase-0 .phase-dot { background: var(--c0); }
+    .phase-1 .phase-dot { background: var(--c1); }
+    .phase-2 .phase-dot { background: var(--c2); }
+    .phase-3 .phase-dot { background: var(--c3); }
+    .phase-4 .phase-dot { background: var(--c4); }
+
+    .phase-title { font-size: 15px; font-weight: 700; }
+    .phase-0 .phase-title { color: var(--c0); }
+    .phase-1 .phase-title { color: var(--c1); }
+    .phase-2 .phase-title { color: var(--c2); }
+    .phase-3 .phase-title { color: var(--c3); }
+    .phase-4 .phase-title { color: var(--c4); }
+
+    .steps { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .step {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(255,255,255,0.65); border-radius: 6px;
+      padding: 8px 12px; border: 1px solid rgba(0,0,0,0.06);
+    }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      font-size: 11px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .phase-0 .step-num { background: var(--c0); }
+    .phase-1 .step-num { background: var(--c1); }
+    .phase-2 .step-num { background: var(--c2); }
+    .phase-3 .step-num { background: var(--c3); }
+    .phase-4 .step-num { background: var(--c4); }
+
+    .step-body { flex: 1; }
+    .step-body strong { font-weight: 600; }
+    .step-body .cmd {
+      font-family: "SF Mono", "Menlo", monospace; font-size: 11px;
+      background: rgba(0,0,0,0.06); border-radius: 3px;
+      padding: 1px 5px; display: inline-block; margin-top: 2px;
+    }
+    .step-body .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Commit badges */
+    .commit-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+      margin-left: 6px; vertical-align: middle;
+    }
+    .badge-a { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .badge-b { background: #f3e8ff; color: #7c3aed; border: 1px solid #c4b5fd; }
+    .badge-warn { background: var(--warn-bg); color: #92400e; border: 1px solid var(--warn-border); }
+
+    /* Warning callout */
+    .callout {
+      margin-top: 12px; padding: 10px 14px;
+      background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+      border-radius: 0 6px 6px 0; font-size: 12px; color: #78350f;
+    }
+    .callout strong { color: #92400e; }
+
+    /* Connector arrow */
+    .connector {
+      display: flex; justify-content: center; align-items: center;
+      height: 36px; color: var(--muted);
+    }
+    .connector svg { width: 20px; height: 20px; }
+
+    /* Footer */
+    .footer { margin-top: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 16px; }
+
+    @media print {
+      body { padding: 16px; }
+      .phase-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Subtree → Submodule Migration Flow</h1>
+    <p class="subtitle">One-time migration for Peter's existing subtree workspace</p>
+    <div class="meta">
+      <span class="badge">Parent repo: <strong>REI-Project</strong></span>
+      <span class="badge">Path: <strong>teams/HIE/</strong></span>
+      <span class="badge">Old folder: <strong>rei-hie</strong> (subtree)</span>
+      <span class="badge">New folder: <strong>rei-hie</strong> (submodule)</span>
+    </div>
+  </div>
+
+  <!-- Before / After -->
+  <div class="structure-row">
+    <div class="structure-box">
+      <h3>Before — Subtree</h3>
+      <div class="tree">
+        <span class="folder">REI-Project/</span><br>
+        <span class="folder">&nbsp;&nbsp;teams/HIE/</span><br>
+        <span class="highlight-bad">&nbsp;&nbsp;&nbsp;&nbsp;rei-hie/</span>&nbsp;←&nbsp;subtree
+      </div>
+      <p class="note-inline">❌ Content embedded in parent repo<br>No trace / separate history<br>Team needs manual pull</p>
+    </div>
+    <div class="arrow-center">→</div>
+    <div class="structure-box">
+      <h3>After — Submodule</h3>
+      <div class="tree">
+        <span class="folder">REI-Project/</span><br>
+        <span class="folder">&nbsp;&nbsp;teams/HIE/</span><br>
+        <span class="highlight-good">&nbsp;&nbsp;&nbsp;&nbsp;rei-hie/</span>&nbsp;←&nbsp;submodule<br>
+        <span class="folder">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↕</span><br>
+        <span class="highlight-good">&nbsp;&nbsp;&nbsp;&nbsp;Peter's personal repo</span>
+      </div>
+      <p class="note-inline good">✅ Independent repo, Claude Code managed<br>Hooks + CLAUDE.md active</p>
+    </div>
+  </div>
+
+  <!-- Flow -->
+  <div class="flow">
+
+    <!-- Phase 0 -->
+    <div class="phase-card phase-0">
+      <div class="phase-header">
+        <div class="phase-dot">0</div>
+        <div class="phase-title">Pre-flight Checks</div>
+      </div>
+      <ul class="steps">
+        <li class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Confirm all changes committed + pushed</strong> in Peter's personal repo<br>
+            <span class="sub">Peter's personal repo is the source of truth — not the team repo's old snapshot</span>
+            <div class="cmd">git -C &lt;peter-local-repo&gt; status</div>
+            <div class="cmd">git -C &lt;peter-local-repo&gt; log origin/main..HEAD --oneline</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Get Peter's personal repo URL</strong> and confirm it's accessible<br>
+            <div class="cmd">git ls-remote &lt;peter-repo-url&gt; HEAD</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Confirm GitHub write access</strong> to REI-Project (needed for Phase B)<br>
+            <div class="cmd">gh auth status</div>
+          </div>
+        </li>
+      </ul>
+      <div class="callout">
+        <strong>⚠️ Do not proceed if Peter has uncommitted or unpushed work in his personal repo.</strong> His repo is the source — all latest changes must be pushed before migration starts.
+      </div>
+    </div>
+
+    <div class="connector">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-card phase-1">
+      <div class="phase-header">
+        <div class="phase-dot">1</div>
+        <div class="phase-title">Set Up New Submodule</div>
+      </div>
+      <ul class="steps">
+        <li class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Add Peter's existing repo as submodule</strong> at a new temp path
+            <span class="badge-warn">⚠️ New name — old rei-hie still exists</span><br>
+            <span class="sub">Use a different name to allow side-by-side comparison before deleting old folder</span>
+            <div class="cmd">git submodule add &lt;peter-repo-url&gt; teams/HIE/rei-hie-new</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Add workflow template files</strong> into Peter's submodule:<br>
+            <span class="sub">
+              <code class="cmd">CLAUDE.md</code>&nbsp;
+              <code class="cmd">git-operation-guide.md</code>&nbsp;
+              <code class="cmd">.claude/settings.json</code>&nbsp;
+              <code class="cmd">.claude/hooks/phase-b-reminder.sh</code>
+            </span>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Commit template files to Peter's personal repo</strong>
+            <span class="commit-badge badge-a">Phase A</span>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Update parent repo pointer</strong>
+            <span class="commit-badge badge-b">Phase B</span><br>
+            <div class="cmd">git add teams/HIE/rei-hie-new .gitmodules</div>
+            <div class="cmd">git commit -m "chore: add rei-hie-new submodule for Peter"</div>
+            <div class="cmd">git push origin &lt;parent-branch&gt;</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="connector">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card phase-2">
+      <div class="phase-header">
+        <div class="phase-dot">2</div>
+        <div class="phase-title">Content Migration</div>
+      </div>
+      <ul class="steps">
+        <li class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Compare content</strong>: <code class="cmd">rei-hie-new/</code> (Peter's latest) vs <code class="cmd">rei-hie/</code> (old Day-1 snapshot)<br>
+            <span class="sub">rei-hie-new is expected to have more/newer files — verify nothing is accidentally missing</span>
+            <div class="cmd">diff -rq --exclude=".git" teams/HIE/rei-hie teams/HIE/rei-hie-new</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Confirm with Peter</strong> that <code class="cmd">rei-hie-new/</code> has everything correct and complete<br>
+            <span class="sub">Peter's repo is authoritative — differences from old snapshot are expected and normal</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="connector">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card phase-3">
+      <div class="phase-header">
+        <div class="phase-dot">3</div>
+        <div class="phase-title">Cleanup — Delete Old Subtree + Rename</div>
+      </div>
+      <ul class="steps">
+        <li class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Remove old subtree folder</strong> <code class="cmd">rei-hie</code> from parent repo
+            <div class="cmd">git rm -r teams/HIE/rei-hie</div>
+            <div class="cmd">git commit -m "chore: remove old rei-hie subtree folder after migration"</div>
+            <div class="cmd">git push origin &lt;parent-branch&gt;</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Rename submodule</strong> <code class="cmd">rei-hie-new</code> → <code class="cmd">rei-hie</code><br>
+            <div class="cmd">git mv teams/HIE/rei-hie-new teams/HIE/rei-hie</div>
+            <div class="cmd">git config -f .gitmodules submodule.teams/HIE/rei-hie-new.path teams/HIE/rei-hie</div>
+            <div class="cmd">git submodule sync</div>
+            <div class="cmd">git commit -m "chore: rename submodule rei-hie-new to rei-hie"</div>
+            <div class="cmd">git push origin &lt;parent-branch&gt;</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Verify .gitmodules</strong> shows correct final path and Peter's repo URL
+          </div>
+        </li>
+      </ul>
+      <div class="callout">
+        <strong>⚠️ Only delete rei-hie after Peter confirms rei-hie-new is complete.</strong>
+      </div>
+    </div>
+
+    <div class="connector">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-card phase-4">
+      <div class="phase-header">
+        <div class="phase-dot">4</div>
+        <div class="phase-title">Verification</div>
+      </div>
+      <ul class="steps">
+        <li class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Fresh clone test</strong> to confirm submodule initializes correctly
+            <div class="cmd">git clone --recurse-submodules &lt;parent-repo-url&gt; /tmp/test-clone</div>
+            <span class="sub">Verify teams/HIE/rei-hie/ has Peter's files (not empty)</span>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Verify Phase B reminder hook fires</strong> after a test push from inside rei-hie<br>
+            <span class="sub">Hook file: <code class="cmd">.claude/hooks/phase-b-reminder.sh</code></span>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Run onboarding for Peter</strong> — confirm CLAUDE.md config fields are populated<br>
+            <span class="sub">Fields: <code class="cmd">designer_name</code>, <code class="cmd">github_account</code>, <code class="cmd">clone_path</code>, <code class="cmd">my_submodule_folder</code></span>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Notify other team members</strong> to re-pull with submodule update
+            <div class="cmd">git pull origin &lt;parent-branch&gt;</div>
+            <div class="cmd">git submodule update --init teams/HIE/rei-hie</div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <strong>Delete test clone</strong>
+            <div class="cmd">rm -rf /tmp/test-clone</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+  </div><!-- /flow -->
+
+  <div class="footer">
+    <strong>Note:</strong> Phase A = commit to Peter's personal submodule repo &nbsp;|&nbsp;
+    Phase B = update REI-Project parent repo pointer &nbsp;|&nbsp;
+    Template source: <code>cross-team-submod/template/</code>
+  </div>
+
+</body>
+</html>
