@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Designer Multi-Layer Architecture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      padding: 40px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+    .diagram {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 30px 40px;
+      position: relative;
+      min-height: 700px;
+    }
+
+    /* Header */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 0 10px;
+    }
+    .header-label {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .header-label.remote { color: #1a73e8; }
+    .header-label.local { color: #0d9488; }
+    .header-sub {
+      font-size: 15px;
+      color: #7c3aed;
+      margin-left: 80px;
+    }
+
+    /* Common */
+    .box {
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-size: 13px;
+      display: inline-block;
+    }
+    .box.repo {
+      background: #e0e7ff;
+      border: 2px solid #6366f1;
+      color: #3730a3;
+      font-weight: 600;
+    }
+    .box.content {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 12px;
+    }
+    .box.cache {
+      background: #ccfbf1;
+      border: 2px solid #14b8a6;
+      color: #0f766e;
+      font-weight: 600;
+      text-align: center;
+      padding: 15px 20px;
+    }
+    .box.project {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      color: #92400e;
+      font-weight: 600;
+    }
+    .box.role {
+      background: #f1f5f9;
+      border: 1px solid #94a3b8;
+      color: #334155;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    .box.personal {
+      background: #fdf4ff;
+      border: 2px solid #a855f7;
+      color: #7e22ce;
+      font-weight: 600;
+    }
+    .box.dotfiles {
+      background: #faf5ff;
+      border: 1px solid #c084fc;
+      color: #7e22ce;
+      font-size: 12px;
+    }
+    .git-label {
+      font-size: 11px;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: #059669;
+      background: #d1fae5;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .blocked {
+      font-size: 12px;
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .note {
+      font-size: 11px;
+      color: #6b7280;
+      font-style: italic;
+    }
+    .small {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    .label {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Row-based layout */
+    .row {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+      min-height: 40px;
+    }
+
+    /* Colored bars (layer indicators) */
+    .bar {
+      width: 80px;
+      height: 10px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .bar.dark-blue { background: #3b82f6; }
+    .bar.yellow { background: #eab308; }
+    .bar.light-blue { background: #60a5fa; }
+    .bar.green { background: #22c55e; }
+
+    /* Connector elements */
+    .arrow {
+      color: #9ca3af;
+      margin: 0 8px;
+    }
+    .line {
+      flex: 0 0 40px;
+      height: 2px;
+      background: #d1d5db;
+      margin: 0 5px;
+    }
+    .curve-container {
+      position: relative;
+      flex: 1;
+      height: 60px;
+    }
+
+    /* Grid sections */
+    .section {
+      margin: 25px 0;
+      padding: 15px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+    .section:last-child {
+      border-bottom: none;
+    }
+    .section-label {
+      font-size: 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    /* Flex helpers */
+    .flex { display: flex; align-items: center; }
+    .flex-col { display: flex; flex-direction: column; }
+    .gap-sm { gap: 8px; }
+    .gap-md { gap: 15px; }
+    .ml-auto { margin-left: auto; }
+    .ml-1 { margin-left: 10px; }
+    .ml-2 { margin-left: 20px; }
+    .ml-3 { margin-left: 30px; }
+    .mt-1 { margin-top: 10px; }
+    .w-full { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Designer Multi-Layer Architecture</h1>
+
+    <div class="diagram">
+
+      <!-- ========== HEADER ========== -->
+      <div class="header-row">
+        <div>
+          <span class="header-label remote">Remote</span>
+          <span class="header-sub">[Personal-repo]</span>
+        </div>
+        <span class="header-label local">Local</span>
+      </div>
+
+      <!-- ========== ROW 1: Team-repo ========== -->
+      <div class="section">
+        <div class="row">
+          <div class="bar dark-blue"></div>
+          <div class="ml-2 flex-col">
+            <div class="box repo">[Team-repo]</div>
+            <div class="box content mt-1">Company policy, resource...</div>
+          </div>
+          <div class="flex gap-sm ml-3" style="flex: 1;">
+            <span class="blocked">(X)</span>
+            <span class="arrow">―――→</span>
+            <span class="small">Agent hooks: fetch & cron-job</span>
+          </div>
+          <div class="flex-col ml-auto" style="text-align: right;">
+            <div class="box cache">Local cache<br>+<br>TTL</div>
+            <div class="note mt-1">members' agree read</div>
+          </div>
+        </div>
+
+        <!-- ========== ROW 2: Personal-repo ========== -->
+        <div class="row">
+          <div class="bar dark-blue"></div>
+          <div class="ml-2 flex-col">
+            <div class="box repo">[Personal-repo]</div>
+            <div class="box content mt-1">Department design system, templates...</div>
+          </div>
+          <div class="flex gap-sm ml-3">
+            <span class="blocked">(X)</span>
+            <span class="arrow">―――→</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ROW 3: Projects ========== -->
+      <div class="section">
+        <div class="row">
+          <div class="bar dark-blue"></div>
+          <div class="ml-2">
+            <div class="box project">Projects: REI, omni...</div>
+            <div class="small ml-1">update</div>
+          </div>
+          <div class="flex gap-sm ml-2">
+            <span class="git-label">Git: submod</span>
+            <span class="arrow">→</span>
+          </div>
+
+          <!-- REI-hie (yellow bar) -->
+          <div class="flex gap-sm ml-2">
+            <div class="bar yellow"></div>
+            <span class="label" style="color: #854d0e;">REI-hie</span>
+          </div>
+
+          <!-- Branch (light blue bar) -->
+          <div class="flex gap-sm ml-2">
+            <div class="bar light-blue"></div>
+            <span class="git-label">Git: Branch</span>
+          </div>
+
+          <!-- Role distribution -->
+          <div class="flex-col ml-3 gap-sm">
+            <div class="flex gap-sm">
+              <span style="font-size: 12px;">UXDs</span>
+              <span class="small">····→</span>
+              <span class="box role">REI-hie</span>
+            </div>
+            <div class="flex gap-sm">
+              <span style="font-size: 12px;">VDs</span>
+              <span class="git-label">pull</span>
+              <span class="small">→</span>
+              <span class="box role">REI-hie</span>
+            </div>
+            <div class="flex gap-sm">
+              <span style="font-size: 12px;">Writers</span>
+              <span class="small">····→</span>
+              <span class="box role">REI-hie</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PR flow -->
+        <div class="row ml-3" style="margin-top: 20px;">
+          <div style="width: 100px;"></div>
+          <div class="flex gap-sm">
+            <span class="arrow">←</span>
+            <span class="git-label">Git: PR</span>
+          </div>
+          <div class="flex-col ml-3">
+            <div style="font-size: 12px; color: #92400e; font-weight: 600;">"Review & Accept"</div>
+            <div class="small"><span class="git-label">Git: merge</span></div>
+            <div class="small">• publish to project</div>
+            <div class="small"><span class="git-label">Git: submod push</span></div>
+          </div>
+
+          <!-- Team members' work -->
+          <div class="ml-auto" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; max-width: 220px;">
+            <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 8px;">team members' work</div>
+            <div style="font-size: 12px; margin: 5px 0;">
+              • Edit files <span style="color: #64748b; font-size: 11px;">CC, Figma...</span>
+            </div>
+            <div style="font-size: 12px; margin: 5px 0;">
+              • Save <span class="git-label">Git: commit</span>
+            </div>
+            <div style="font-size: 12px; margin: 5px 0;">
+              • Publish change <span class="git-label">Git: push</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ROW 4: Personal ========== -->
+      <div class="section">
+        <div class="row">
+          <div class="bar green"></div>
+          <div class="ml-2">
+            <div class="box personal">Personal: skills, settings...</div>
+          </div>
+          <span class="arrow ml-3">―――→</span>
+          <div class="box dotfiles">Personal dotfiles</div>
+          <span class="arrow ml-2">―――→</span>
+          <div class="flex-col">
+            <div class="box dotfiles">Personal dotfiles</div>
+            <div class="small mt-1">• claude.md • skills • hooks</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
