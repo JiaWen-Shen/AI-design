@@ -1,0 +1,9 @@
+# Regenerable artifacts from PPTX/PDF conversion
+proposals/slide-*.jpg
+proposals/*.pdf
+
+# macOS
+.DS_Store
+
+# Jottacloud sync conflicts
+*(*conflicted copy*)*
