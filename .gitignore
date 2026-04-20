@@ -7,3 +7,8 @@ proposals/*.pdf
 
 # Jottacloud sync conflicts
 *(*conflicted copy*)*
+
+# Secrets
+.env
+.env.*
+!.env.example
