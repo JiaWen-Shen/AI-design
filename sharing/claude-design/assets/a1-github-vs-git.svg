@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <style>
+    .title { font: 600 38px 'Inter','Helvetica Neue',Arial,sans-serif; fill: #153241; }
+    .label { font: 700 26px 'Inter',Arial,sans-serif; fill: #153241; letter-spacing: 2px; }
+    .sublabel { font: 500 22px 'Inter',Arial,sans-serif; fill: #788086; }
+    .termtxt { font: 500 22px 'JetBrains Mono','Menlo',monospace; fill: #8FE8A8; }
+    .guitxt { font: 500 20px 'Inter',Arial,sans-serif; fill: #153241; }
+  </style>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- Row 1 headers -->
+  <text class="label" x="300" y="90">CLI</text>
+  <text class="label" x="1100" y="90">GUI</text>
+
+  <!-- LEFT: Terminal panel (dark) -->
+  <rect x="120" y="120" width="620" height="320" rx="14" fill="#0F1724"/>
+  <!-- Window dots -->
+  <circle cx="150" cy="150" r="7" fill="#FF5F57"/>
+  <circle cx="172" cy="150" r="7" fill="#FEBC2E"/>
+  <circle cx="194" cy="150" r="7" fill="#28C840"/>
+  <text class="termtxt" x="150" y="210">$ git add .</text>
+  <text class="termtxt" x="150" y="248">$ git commit -m "fix"</text>
+  <text class="termtxt" x="150" y="286">$ git push origin main</text>
+  <text class="termtxt" x="150" y="330" fill="#5B6B85">[main 3a4f1c] fix</text>
+  <text class="termtxt" x="150" y="368" fill="#5B6B85">1 file changed</text>
+  <!-- git label corner -->
+  <rect x="630" y="400" width="90" height="30" rx="6" fill="#D71920"/>
+  <text x="675" y="420" text-anchor="middle" font-family="Inter,Arial" font-size="16" font-weight="700" fill="#FFFFFF">git</text>
+
+  <!-- RIGHT: GUI panel (light) -->
+  <rect x="860" y="120" width="620" height="320" rx="14" fill="#FFFFFF" stroke="#153241" stroke-width="3"/>
+  <rect x="860" y="120" width="620" height="40" rx="14" fill="#F4F6F7"/>
+  <rect x="860" y="150" width="620" height="10" fill="#F4F6F7"/>
+  <circle cx="890" cy="140" r="7" fill="#FF5F57"/>
+  <circle cx="912" cy="140" r="7" fill="#FEBC2E"/>
+  <circle cx="934" cy="140" r="7" fill="#28C840"/>
+  <!-- Commit list -->
+  <circle cx="905" cy="200" r="14" fill="#D71920"/>
+  <text class="guitxt" x="940" y="206">fix layout bug</text>
+  <text class="guitxt" x="940" y="230" font-size="15" fill="#788086">Karen · 2 min ago</text>
+  <line x1="905" y1="214" x2="905" y2="260" stroke="#788086" stroke-width="2"/>
+  <circle cx="905" cy="270" r="14" fill="#153241"/>
+  <text class="guitxt" x="940" y="276">add header</text>
+  <text class="guitxt" x="940" y="300" font-size="15" fill="#788086">Karen · 1 hr ago</text>
+  <!-- Push button -->
+  <rect x="1180" y="380" width="260" height="50" rx="8" fill="#D71920"/>
+  <text x="1310" y="412" text-anchor="middle" font-family="Inter,Arial" font-size="20" font-weight="700" fill="#FFFFFF">Push to origin</text>
+  <!-- octocat circle -->
+  <circle cx="1440" cy="150" r="14" fill="#153241"/>
+  <circle cx="1435" cy="147" r="2.5" fill="#FFFFFF"/>
+  <circle cx="1445" cy="147" r="2.5" fill="#FFFFFF"/>
+
+  <!-- BIG arrow / approx -->
+  <text x="800" y="300" text-anchor="middle" font-family="Inter,Arial" font-size="60" font-weight="300" fill="#788086">≈</text>
+
+  <!-- Row 2 headers -->
+  <text class="label" x="170" y="530">CLAUDE CODE</text>
+  <text class="label" x="950" y="530">CLAUDE DESIGN</text>
+
+  <!-- Row 2 LEFT: Claude Code panel -->
+  <rect x="120" y="560" width="620" height="280" rx="14" fill="#0F1724"/>
+  <circle cx="150" cy="590" r="7" fill="#FF5F57"/>
+  <circle cx="172" cy="590" r="7" fill="#FEBC2E"/>
+  <circle cx="194" cy="590" r="7" fill="#28C840"/>
+  <text class="termtxt" x="150" y="650">$ claude "design a pricing page"</text>
+  <text class="termtxt" x="150" y="688" fill="#5B6B85">● Reading /App.jsx</text>
+  <text class="termtxt" x="150" y="726" fill="#5B6B85">● Writing /Pricing.jsx</text>
+  <text class="termtxt" x="150" y="770" fill="#8FE8A8">✓ preview at localhost:3000</text>
+
+  <!-- Row 2 RIGHT: Claude Design canvas -->
+  <rect x="860" y="560" width="620" height="280" rx="14" fill="#FFFFFF" stroke="#153241" stroke-width="3"/>
+  <!-- chat sidebar -->
+  <rect x="860" y="560" width="200" height="280" fill="#F4F6F7"/>
+  <rect x="880" y="595" width="160" height="30" rx="15" fill="#FFFFFF" stroke="#788086" stroke-width="1"/>
+  <rect x="880" y="635" width="160" height="44" rx="10" fill="#D71920"/>
+  <text x="960" y="661" text-anchor="middle" font-family="Inter,Arial" font-size="14" fill="#FFFFFF">design pricing page</text>
+  <rect x="880" y="689" width="160" height="30" rx="15" fill="#FFFFFF" stroke="#788086" stroke-width="1"/>
+  <!-- canvas preview (stacked cards) -->
+  <rect x="1090" y="595" width="370" height="30" rx="6" fill="#F4F6F7"/>
+  <rect x="1090" y="640" width="110" height="170" rx="8" fill="#FBE5E6"/>
+  <rect x="1220" y="640" width="110" height="170" rx="8" fill="#F4F6F7" stroke="#153241" stroke-width="2"/>
+  <rect x="1350" y="640" width="110" height="170" rx="8" fill="#F4F6F7"/>
+
+  <!-- arrow between row2 -->
+  <text x="800" y="730" text-anchor="middle" font-family="Inter,Arial" font-size="60" font-weight="300" fill="#788086">≈</text>
+</svg>

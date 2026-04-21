@@ -1,6 +1,11 @@
 # Regenerable artifacts from PPTX/PDF conversion
 proposals/slide-*.jpg
 proposals/*.pdf
+sharing/claude-design/qa/
+
+# Intermediate build backups (kept locally, not in repo)
+sharing/claude-design/claude-design-sharing.prepatch*.pptx
+sharing/claude-design/claude-design-sharing.v1.pptx
 
 # macOS
 .DS_Store

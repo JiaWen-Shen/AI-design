@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <style>
+    .label { font: 700 28px 'Inter',Arial,sans-serif; fill: #153241; }
+    .path-label { font: 500 20px 'Inter',Arial,sans-serif; fill: #788086; }
+    .persona { font: 600 24px 'Inter',Arial,sans-serif; fill: #FFFFFF; }
+  </style>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- Designer persona at left -->
+  <circle cx="230" cy="450" r="90" fill="#153241"/>
+  <circle cx="230" cy="420" r="28" fill="#FFFFFF"/>
+  <path d="M 170 500 Q 230 470 290 500 L 290 540 L 170 540 Z" fill="#FFFFFF"/>
+  <text x="230" y="605" text-anchor="middle" class="label">Designer</text>
+
+  <!-- Dimmed path (top) -->
+  <line x1="340" y1="420" x2="780" y2="270" stroke="#788086" stroke-width="3" stroke-dasharray="10,6"/>
+  <rect x="780" y="220" width="440" height="160" rx="16" fill="#F4F6F7" stroke="#788086" stroke-width="2"/>
+  <!-- terminal mini -->
+  <rect x="810" y="250" width="190" height="100" rx="8" fill="#0F1724"/>
+  <circle cx="825" cy="268" r="4" fill="#FF5F57"/>
+  <circle cx="837" cy="268" r="4" fill="#FEBC2E"/>
+  <circle cx="849" cy="268" r="4" fill="#28C840"/>
+  <text x="820" y="305" font-family="Menlo,monospace" font-size="14" fill="#8FE8A8">$ claude ...</text>
+  <text x="820" y="328" font-family="Menlo,monospace" font-size="12" fill="#5B6B85">...</text>
+  <text x="1030" y="280" class="label" fill="#788086">Claude Code</text>
+  <text x="1030" y="312" class="path-label">Steep learning curve</text>
+  <text x="1030" y="340" class="path-label">CLI · Git · config files</text>
+
+  <!-- Highlighted path (bottom) -->
+  <line x1="340" y1="480" x2="780" y2="620" stroke="#D71920" stroke-width="6"/>
+  <polygon points="775,610 800,625 775,635" fill="#D71920"/>
+  <rect x="780" y="560" width="440" height="160" rx="16" fill="#FBE5E6" stroke="#D71920" stroke-width="3"/>
+  <!-- GUI canvas mini -->
+  <rect x="810" y="590" width="190" height="100" rx="8" fill="#FFFFFF" stroke="#153241" stroke-width="2"/>
+  <rect x="810" y="590" width="60" height="100" rx="8" fill="#F4F6F7"/>
+  <rect x="818" y="605" width="44" height="8" rx="4" fill="#D71920"/>
+  <rect x="818" y="620" width="44" height="6" rx="3" fill="#788086"/>
+  <rect x="880" y="605" width="50" height="30" rx="4" fill="#F4F6F7"/>
+  <rect x="940" y="605" width="50" height="30" rx="4" fill="#F4F6F7"/>
+  <rect x="880" y="645" width="50" height="30" rx="4" fill="#F4F6F7"/>
+  <rect x="940" y="645" width="50" height="30" rx="4" fill="#F4F6F7"/>
+  <text x="1030" y="620" class="label" fill="#D71920">Claude Design</text>
+  <text x="1030" y="652" class="path-label">Start here</text>
+  <text x="1030" y="680" class="path-label">Canvas · chat · one-click export</text>
+
+  <!-- Converge destination (far right) -->
+  <rect x="1300" y="360" width="240" height="180" rx="16" fill="#153241"/>
+  <text x="1420" y="420" text-anchor="middle" font-family="Inter,Arial" font-size="22" font-weight="700" fill="#FFFFFF">Same output</text>
+  <text x="1420" y="460" text-anchor="middle" font-family="Inter,Arial" font-size="16" fill="#FFFFFF">Prototype</text>
+  <text x="1420" y="485" text-anchor="middle" font-family="Inter,Arial" font-size="16" fill="#FFFFFF">Slide</text>
+  <text x="1420" y="510" text-anchor="middle" font-family="Inter,Arial" font-size="16" fill="#FFFFFF">One-pager</text>
+  <!-- converge arrows -->
+  <path d="M 1220 300 Q 1280 330 1300 420" fill="none" stroke="#788086" stroke-width="2" stroke-dasharray="6,4"/>
+  <path d="M 1220 640 Q 1280 570 1300 480" fill="none" stroke="#D71920" stroke-width="3"/>
+</svg>

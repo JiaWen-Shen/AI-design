@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <style>
+    .node-title { font: 700 26px 'Inter',Arial,sans-serif; fill: #153241; }
+    .node-sub { font: 500 18px 'Inter',Arial,sans-serif; fill: #788086; }
+    .arrow-label { font: 500 18px 'Inter',Arial,sans-serif; fill: #153241; }
+    .arrow-label-em { font: 700 18px 'Inter',Arial,sans-serif; fill: #D71920; }
+    .bridge { font: 700 22px 'Inter',Arial,sans-serif; fill: #FFFFFF; letter-spacing: 2px; }
+  </style>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- LEFT NODE: Claude Code -->
+  <rect x="100" y="340" width="340" height="220" rx="16" fill="#F4F6F7" stroke="#153241" stroke-width="3"/>
+  <!-- terminal icon -->
+  <rect x="150" y="380" width="240" height="140" rx="10" fill="#0F1724"/>
+  <circle cx="170" cy="400" r="6" fill="#FF5F57"/>
+  <circle cx="188" cy="400" r="6" fill="#FEBC2E"/>
+  <circle cx="206" cy="400" r="6" fill="#28C840"/>
+  <text x="168" y="440" font-family="Menlo,monospace" font-size="16" fill="#8FE8A8">$ claude</text>
+  <text x="168" y="465" font-family="Menlo,monospace" font-size="12" fill="#5B6B85">designing...</text>
+  <text x="168" y="490" font-family="Menlo,monospace" font-size="12" fill="#5B6B85">● step 2/5</text>
+  <text x="270" y="590" text-anchor="middle" class="node-title">Claude Code</text>
+  <text x="270" y="616" text-anchor="middle" class="node-sub">+ Claude Design</text>
+
+  <!-- CENTER NODE: MCP Bridge -->
+  <rect x="660" y="380" width="280" height="140" rx="70" fill="#D71920"/>
+  <!-- plug icon -->
+  <circle cx="720" cy="450" r="28" fill="#FFFFFF"/>
+  <rect x="700" y="440" width="16" height="6" fill="#D71920"/>
+  <rect x="724" y="440" width="16" height="6" fill="#D71920"/>
+  <rect x="700" y="454" width="40" height="6" fill="#D71920"/>
+  <text x="830" y="440" text-anchor="middle" class="bridge">MCP</text>
+  <text x="830" y="470" text-anchor="middle" font-family="Inter,Arial" font-size="16" font-weight="500" fill="#FFFFFF">bridge</text>
+  <text x="800" y="555" text-anchor="middle" class="node-title">Figma MCP</text>
+  <text x="800" y="582" text-anchor="middle" class="node-sub">official integration</text>
+
+  <!-- RIGHT NODE: Figma file -->
+  <rect x="1160" y="340" width="340" height="220" rx="16" fill="#FFFFFF" stroke="#153241" stroke-width="3"/>
+  <!-- Figma logo simplified -->
+  <g transform="translate(1280,390)">
+    <rect x="0" y="0" width="40" height="40" rx="20" fill="#F24E1E"/>
+    <rect x="40" y="0" width="40" height="40" fill="#A259FF"/>
+    <rect x="0" y="40" width="40" height="40" fill="#1ABCFE"/>
+    <rect x="40" y="40" width="40" height="40" rx="20" fill="#0ACF83"/>
+    <rect x="0" y="80" width="40" height="40" rx="20" fill="#FF7262"/>
+  </g>
+  <text x="1330" y="590" text-anchor="middle" class="node-title">Figma file</text>
+  <text x="1330" y="616" text-anchor="middle" class="node-sub">ideation · polish</text>
+
+  <!-- TOP ARROW (left→right, EXPORT) -->
+  <path d="M 440 400 Q 600 340 660 400" fill="none" stroke="#D71920" stroke-width="4"/>
+  <polygon points="650,395 668,400 652,410" fill="#D71920"/>
+  <path d="M 940 400 Q 1100 340 1160 400" fill="none" stroke="#D71920" stroke-width="4"/>
+  <polygon points="1150,395 1168,400 1152,410" fill="#D71920"/>
+  <text x="800" y="300" text-anchor="middle" class="arrow-label-em">EXPORT</text>
+  <text x="800" y="325" text-anchor="middle" class="arrow-label">Claude Design output → polish in Figma</text>
+
+  <!-- BOTTOM ARROW (right→left, IMPORT) -->
+  <path d="M 1160 500 Q 1000 560 940 500" fill="none" stroke="#153241" stroke-width="4"/>
+  <polygon points="950,505 932,500 948,490" fill="#153241"/>
+  <path d="M 660 500 Q 500 560 440 500" fill="none" stroke="#153241" stroke-width="4"/>
+  <polygon points="450,505 432,500 448,490" fill="#153241"/>
+  <text x="800" y="660" text-anchor="middle" class="arrow-label" font-weight="700">IMPORT</text>
+  <text x="800" y="686" text-anchor="middle" class="arrow-label">Legacy Figma project → context for Claude Code</text>
+</svg>
