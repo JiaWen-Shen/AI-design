@@ -7,6 +7,24 @@
 
 ---
 
+## 目錄
+
+- [🎨 UI Designers — 這份簡報的主要受眾](#-ui-designers--這份簡報的主要受眾)
+  - [跟 Figma 搭配使用](#-跟-figma-搭配使用-)
+  - [跟 Claude Code CLI 搭配使用](#-跟-claude-code-cli-搭配使用-)
+  - [把 convention / skill 帶進 Claude Design](#-把-convention--skill-帶進-claude-design-)
+- [🧑‍💻 RDs — 接收設計交付的工程師](#-rds--接收設計交付的工程師)
+  - [跟現在團隊協作架構的整合](#-跟現在團隊協作架構的整合-)
+- [📋 PMs — 產品 / 專案](#-pms--產品--專案)
+- [🧭 Managers — 設計 / 工程主管](#-managers--設計--工程主管)
+  - [效率提升：哪裡、多少](#-效率提升哪裡多少-)
+  - [適合的場景：它贏在哪](#-適合的場景它贏在哪-)
+- [🌀 橫跨所有聽眾的問題（Q&A 閃電輪）](#-橫跨所有聽眾的問題qa-閃電輪)
+- [被問到時要換框架的題目](#被問到時要換框架的題目)
+- [Slide 跳頁小抄（現場 Q&A 用）](#slide-跳頁小抄現場-qa-用)
+
+---
+
 ## 🎨 UI Designers — 這份簡報的主要受眾
 
 ### 🔥 「它會取代 Figma（或我的工作）嗎？」
@@ -65,6 +83,29 @@ Plugin：不行 — 它們住在 Figma。community 元件透過 `.fig` 匯入可
 說真的，對現在的你們來說可能是。最受益的是**今天還在用 Google Docs 寫設計規格 + 粗略交付**的設計師。如果你們的 Figma-to-Storybook-to-prod pipeline 已經很完整，Claude Design 加進來只是雜訊，除非特定情境是 Figma 真的慢的那種（簡報、marketing artifacts、臨時 prototype）。
 
 ### — 跟 Claude Code CLI 搭配使用 —
+
+### 🔥 「可以在 Claude Design 和 Claude Code 之間交替使用嗎？怎麼協作？」
+可以，但**不是 peer-to-peer 協作，是單向 relay（接力）**。
+
+**三種協作模式：**
+
+**① 接力模式（主流用法）**
+Claude Design 做視覺探索 → 一鍵 "Send to Claude Code" → 產出 handoff bundle（`PROMPT.md` + reference code + 視覺 canvas）→ Claude Code 接手做自動化 / 版控 / RD 交付。這就是 Slide 28 "It's a relay" 講的流程。
+
+**② 上下游模式（推薦流程）**
+**Figma（DS 與細節 craft 的 source of truth）→ Claude Design（視覺快速通道 + stakeholder review）→ Claude Code（handoff + RD 交付 + 自動化）**。每個 phase 住在最適合的工具裡，handoff bundle 跟 Figma MCP 當銜接橋樑。
+
+**③ 選邊站模式**
+某些情況不需要兩者都用：
+- 純視覺素材、stakeholder review → 只用 Claude Design
+- CLI 用得順、stakeholder 接受看 code preview → 跳過 Claude Design
+
+**關鍵限制：**
+- **handoff 是單向的**：Claude Design → Claude Code 有一鍵流程；Claude Code → Claude Design 不是 first-class path。離開 Claude Design 後，**同一個專案就不要再回頭**
+- **沒有 live sync**：不存在「改 Claude Code 的 code，Claude Design 畫布自動更新」這種雙向同步
+- **決策要一次做對**：選 Claude Design 開場前，要先想清楚之後會不會切到 Claude Code — 切過去後，視覺 canvas 就跟 code 脫鉤了
+
+**怎麼知道什麼時候該切？** 觸發點列在下方〈同一個專案什麼時候切換〉那題。
 
 ### 「我要不要一起學 Claude Code CLI？」
 看你要交付什麼：
