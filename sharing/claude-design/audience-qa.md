@@ -26,7 +26,7 @@
 匯出格式：HTML、PDF、PPTX、Canva（Slide 2）。**沒有官方的 Figma 匯出** — 需要 Anima 或 html.to.design。建議：把 Claude Design 的 output 當成「交付物」（簡報、marketing 頁），**不要**當成一個長期 DS 的 canonical source。
 
 ### 「可以像 Figma 那樣多人即時共編嗎？」
-⚠ **不確定 — 回答要保守。** Team / Enterprise plan 有 shared workspace + inline comments + org share URL。我沒驗證過「同時共編」。被問到就老實說 *「非同步評論確認有；即時 multiplayer 我沒實測，有試過的人請指正」*。
+⚠ **沒有 team-level 協作機制（2026-04-22 已用企業帳號確認）。** Claude Design Team plan 裡沒有 team members 管理、沒有 team project、沒有 shared workspace / shared skills / shared documents。分享只能透過 org share URL 給單篇 artifact，沒有 Figma 那種多人即時共編。被問到就直接講：*「目前沒有多人即時共編，只能用分享連結做非同步 review」*。
 
 ### 「可以微調像素嗎？1px 的 margin 可以動嗎？」
 有 spacing / color / layout 的 GUI sliders（Slide 11）。**像素級細修**還是 Figma 比較好。Claude Design 的上限是「在 scaffold 上微調」，不是「從頭刻」。
@@ -125,7 +125,7 @@ Onboarding 完成後，走 *Organization settings → design system → Open →
 → 離開這個 project 就沒了，但可以塞任意 prose 規則。
 
 ### 「Team / Enterprise plan 有『workspace instruction』之類可以統一注入的欄位嗎？」
-⚠ **我還沒實際確認 Claude Design 的 UI 有沒有這種獨立欄位**。有文件記載的只有上面 3 個機制（DS setup / Remix / chat）。如果 UI 翻出來找到類似 *Project instructions* / *Workspace guidelines* 的欄位，可以當成第 ④ 個更持久的選項，但**在 confirm 前不要在台上講死**。
+**沒有（2026-04-22 已用企業帳號確認）。** Claude Design Team plan 的 UI 裡沒看到 workspace-level instruction 欄位、沒有 team shared skills / documents、沒有 team members 設定、沒有 team project 管理。目前能用的 convention 注入機制就只有上面 3 個（DS setup / Remix / chat）。如果要跨人 / 跨 project 共用規則，唯一持久的選項是把規則寫進 DS 本身（①），Workspace 層級沒有 hook 點。
 
 ### 「理想的做法是？」
 **skill 留給 Claude Code。** Claude Design 這邊只放 DS + 結構性 convention；skill 層級的檢查 / 轉換 / commit / sync 走 handoff bundle 到 Claude Code 那端執行。這就是 Slide 28「It's a relay」講的分工：
