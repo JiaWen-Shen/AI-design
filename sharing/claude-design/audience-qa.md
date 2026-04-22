@@ -130,7 +130,9 @@ Rule of thumb：
 目前**單向**。**Claude Design → Claude Code** 是有文件的流程（一鍵「Send to Claude Code」）。**Claude Code → Claude Design** 不是 first-class path。規劃 flow 時要注意 — 離開 Claude Design 後，同一個專案就不要再回頭。
 
 ### 「我 Claude Code 用得很順，還需要 Claude Design 嗎？」
-說實話，自己做的話不用。Claude Design 的價值是「**給 stakeholder 看的視覺 canvas**」與「**降低非 CLI 設計師的門檻**」。如果你已經 Claude Code prompt 寫得很順，stakeholder 也能接受看 code preview，跳過 Claude Design 沒差。
+不一定。如果用得很順，不用刻意換環境 — 原本的 harness 設定（`CLAUDE.md`、skill、MCP、hook）都已經就位，搬到 Claude Design 等於從頭重建一個能力更窄的環境。
+
+但如果是**新專案**、想要**快速產出**（stakeholder mockup、marketing one-pager、pitch 視覺），可以試試 Claude Design — 它的 scaffolding 跟 GUI 操作對「從零到 0.5」的階段比較省力。
 
 ### 「Claude Code 的 Figma MCP 工具 — 對設計師有用嗎？」
 非常有用，且很多人不知道。`mcp__figma__get_design_context`、`mcp__figma__get_screenshot`、`mcp__figma__get_variable_defs` 讓你丟一個 Figma URL 給 Claude Code，就能拿到一致的 output。**這就是 Team UX repo 現在透過 submodule workflow 走的路。** 想學 Claude Code CLI 的話，這幾個 MCP 工具是第一波該熟悉的。
