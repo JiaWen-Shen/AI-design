@@ -1,0 +1,15 @@
+{
+  "name": "proposals",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build-week2-pptx.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}

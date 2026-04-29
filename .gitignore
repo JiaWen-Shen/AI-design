@@ -3,6 +3,9 @@ proposals/slide-*.jpg
 proposals/*.pdf
 sharing/claude-design/qa/
 
+# pptxgenjs build deps (regenerable via npm install)
+proposals/node_modules/
+
 # Intermediate build backups (kept locally, not in repo)
 sharing/claude-design/claude-design-sharing.prepatch*.pptx
 sharing/claude-design/claude-design-sharing.v1.pptx

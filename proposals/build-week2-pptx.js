@@ -129,7 +129,7 @@ function addPill(slide, x, y, label, bg, fg) {
 
   const items = [
     { n: "01", zh: "Git vs GitHub", en: "The first thing people confuse",
-      sub: "最常搞混的第一題", subEn: "GitHub is the web version of Git" },
+      sub: "最常搞混的第一題", subEn: "GitHub hosts Git repos + a collaboration layer" },
     { n: "02", zh: "從 GitHub Clone 到電腦", en: "Cloning a repo onto your machine",
       sub: "新人上路的第一步", subEn: "Getting started — the first step" },
     { n: "03", zh: "三個空間 + 本機 vs 遠端", en: "Three zones + Local vs Remote",
@@ -138,6 +138,8 @@ function addPill(slide, x, y, label, bg, fg) {
       sub: "為什麼同事看不到我的改動？", subEn: "Why colleagues don't see your edits" },
     { n: "05", zh: "Branch — 平行世界的工作空間", en: "Branch — parallel workspaces",
       sub: "Git 最強大的功能之一", subEn: "One of Git's most powerful features" },
+    { n: "06", zh: "Rebase 與 Force Push", en: "Rebase & force push",
+      sub: "進階概念 + 防 AI 自作聰明", subEn: "Advanced + defensive prompts" },
   ];
 
   // separator line above list
@@ -147,7 +149,7 @@ function addPill(slide, x, y, label, bg, fg) {
   });
 
   items.forEach((it, i) => {
-    const y = 2.15 + i * 0.74;
+    const y = 2.15 + i * 0.65;
     // Small index pill
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
       x: 0.6, y: y + 0.1, w: 0.65, h: 0.32,
@@ -186,7 +188,7 @@ function addPill(slide, x, y, label, bg, fg) {
 
     // row separator
     s.addShape(pres.shapes.RECTANGLE, {
-      x: 0.6, y: y + 0.66, w: 9, h: 0.005,
+      x: 0.6, y: y + 0.58, w: 9, h: 0.005,
       fill: { color: C.line }, line: { color: C.line, width: 0 },
     });
   });
@@ -199,7 +201,7 @@ function addPill(slide, x, y, label, bg, fg) {
   const s = pres.addSlide();
   s.background = { color: C.bg };
   addEyebrow(s, "Comparison");
-  addTitle(s, "Git 還是 GitHub？", "GitHub is the web version of Git");
+  addTitle(s, "Git 還是 GitHub？", "GitHub hosts Git repos and adds a collaboration layer on top");
 
   // Header row
   addPill(s, 3.05, 2.05, "Figma-style label", C.figmaBg, C.figmaText); // placeholder removed below
@@ -217,7 +219,7 @@ pres.slides.pop(); // remove the buggy slide above
   const s = pres.addSlide();
   s.background = { color: C.bg };
   addEyebrow(s, "Comparison");
-  addTitle(s, "Git 還是 GitHub？", "GitHub is the web version of Git");
+  addTitle(s, "Git 還是 GitHub？", "GitHub hosts Git repos and adds a collaboration layer on top");
 
   // Column headers
   s.addText("Git", {
@@ -293,12 +295,12 @@ pres.slides.pop(); // remove the buggy slide above
   });
 
   // small note
-  s.addText("工程師可以完全在 CLI 上操作 Git，GitHub 只是視覺化查看的地方", {
+  s.addText("Git 本身就能跑在任何伺服器；GitHub 在 Git 之上加了 Pull Request、Review、Issues 等協作功能", {
     x: 0.6, y: 5.85, w: 9, h: 0.22,
     fontSize: 11, fontFace: FONT,
     color: C.muted, align: "left", valign: "middle", margin: 0,
   });
-  s.addText("Engineers can operate Git entirely from the CLI — GitHub is just the visual view", {
+  s.addText("Git can run on any server. GitHub adds collaboration features (PRs, reviews, issues) on top.", {
     x: 0.6, y: 6.05, w: 9, h: 0.18,
     fontSize: 10, fontFace: FONT,
     color: C.subtle, align: "left", valign: "middle", margin: 0,
@@ -306,62 +308,203 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 4 — GitHub 頁面導覽 (table style)
+// Slide 4 — GitHub 頁面導覽（截圖 + 三個 callout）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
   addEyebrow(s, "GitHub Page");
-  addTitle(s, "GitHub 重點頁面導覽", "Key pages on a repo");
+  addTitle(s, "GitHub 重點頁面導覽", "Three things to spot on a repo page");
 
-  // header
-  s.addText("區域", { x: 0.8, y: 2.05, w: 1.8, h: 0.28, fontSize: 12, bold: true, color: C.text, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-  s.addText("Area", { x: 0.8, y: 2.32, w: 1.8, h: 0.22, fontSize: 10, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-  s.addText("在哪裡", { x: 2.9, y: 2.05, w: 3.0, h: 0.28, fontSize: 12, bold: true, color: C.text, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-  s.addText("Where", { x: 2.9, y: 2.32, w: 3.0, h: 0.22, fontSize: 10, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-  s.addText("用途", { x: 6.1, y: 2.05, w: 3.4, h: 0.28, fontSize: 12, bold: true, color: C.text, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-  s.addText("Purpose", { x: 6.1, y: 2.32, w: 3.4, h: 0.22, fontSize: 10, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-
-  // separator under header
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.6, y: 2.7, w: 9, h: 0.005,
-    fill: { color: C.line }, line: { color: C.line, width: 0 },
+  // 左側截圖（截圖比例約 16:10，已含紅色標記 ①②③）
+  // 截圖位於 ../assets/Github-repo.jpg，相對 proposals/ 為 ../assets/
+  s.addImage({
+    path: "assets/Github-repo.jpg",
+    x: 0.6, y: 2.0, w: 5.6, h: 3.5,
+    sizing: { type: "contain", w: 5.6, h: 3.5 },
   });
 
-  const rows = [
-    { area: "Code 按鈕", areaEn: "Code button", where: "主頁右上方，綠色", whereEn: "Top-right, green", purpose: "取得 Clone 網址、下載 zip", purposeEn: "Get clone URL, download zip" },
-    { area: "Commits", areaEn: "", where: "主頁 → X commits 連結", whereEn: "Main page X commits link", purpose: "查看所有版本歷史", purposeEn: "View full version history" },
-    { area: "Branches", areaEn: "分支", where: "左上角 main ▾ 下拉", whereEn: "Top-left main ▾ dropdown", purpose: "切換、查看所有 branch", purposeEn: "Switch and view branches" },
-    { area: "Pull Requests", areaEn: "", where: "上方導覽列", whereEn: "Top nav bar", purpose: "查看待 review 的改動", purposeEn: "Review pending changes" },
-    { area: "Issues", areaEn: "", where: "上方導覽列", whereEn: "Top nav bar", purpose: "任務 / 問題追蹤", purposeEn: "Task / issue tracking" },
-    { area: "Settings", areaEn: "設定", where: "上方導覽列（需權限）", whereEn: "Top nav (if permitted)", purpose: "管理成員、保護規則", purposeEn: "Manage members & rules" },
+  // 細邊框讓截圖在 near-white 背景上有定義
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 2.0, w: 5.6, h: 3.5,
+    fill: { type: "none" }, line: { color: C.line, width: 0.75 },
+  });
+
+  // 右側三個 callout
+  const callouts = [
+    {
+      n: "1",
+      title: "Repo 名稱",
+      titleEn: "Repository name",
+      desc: "trendlife-general / hie-rei = 帳號 / 專案名。Repo（repository）就是一個 Git 專案的容器。",
+      descEn: "owner / repo. A repository is the container for one Git project.",
+    },
+    {
+      n: "2",
+      title: "Code",
+      titleEn: "Code tab",
+      desc: "看檔案、取得 clone 網址、下載 zip。預設停在這頁。",
+      descEn: "Browse files, get the clone URL, download zip. Default landing tab.",
+    },
+    {
+      n: "3",
+      title: "Pull Requests",
+      titleEn: "Pull requests",
+      desc: "請別人 review 你的改動、看別人的改動。設計師最常進的頁面。",
+      descEn: "Request a review on your changes, or review others'. Designers' most-used tab.",
+    },
   ];
 
-  rows.forEach((r, i) => {
-    const y = 2.85 + i * 0.5;
-    if (i % 2 === 1) {
-      s.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.05, w: 9, h: 0.5,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
-      });
-    }
-    s.addText(r.area, { x: 0.8, y: y, w: 1.8, h: 0.24, fontSize: 12, bold: true, color: C.ink, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-    s.addText(r.areaEn, { x: 0.8, y: y + 0.22, w: 1.8, h: 0.2, fontSize: 9.5, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-    s.addText(r.where, { x: 2.9, y: y, w: 3.0, h: 0.24, fontSize: 12, color: C.text, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-    s.addText(r.whereEn, { x: 2.9, y: y + 0.22, w: 3.0, h: 0.2, fontSize: 9.5, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-    s.addText(r.purpose, { x: 6.1, y: y, w: 3.4, h: 0.24, fontSize: 12, color: C.text, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
-    s.addText(r.purposeEn, { x: 6.1, y: y + 0.22, w: 3.4, h: 0.2, fontSize: 9.5, color: C.muted, fontFace: FONT, align: "left", valign: "middle", margin: 0 });
+  callouts.forEach((c, i) => {
+    const y = 2.0 + i * 1.2;
+
+    // 紅色圓圈編號（對應截圖上的標記）
+    s.addShape(pres.shapes.OVAL, {
+      x: 6.45, y: y, w: 0.4, h: 0.4,
+      fill: { color: "E11D48" }, line: { color: "E11D48", width: 0 },
+    });
+    s.addText(c.n, {
+      x: 6.45, y: y, w: 0.4, h: 0.4,
+      fontSize: 14, bold: true, fontFace: FONT,
+      color: C.white, align: "center", valign: "middle", margin: 0,
+    });
+
+    // 中文標題
+    s.addText(c.title, {
+      x: 6.95, y: y - 0.02, w: 2.8, h: 0.3,
+      fontSize: 14, bold: true, fontFace: FONT,
+      color: C.ink, align: "left", valign: "middle", margin: 0,
+    });
+    // 英文小字
+    s.addText(c.titleEn, {
+      x: 6.95, y: y + 0.24, w: 2.8, h: 0.22,
+      fontSize: 10, fontFace: FONT,
+      color: C.muted, align: "left", valign: "middle", margin: 0,
+    });
+
+    // 中文說明
+    s.addText(c.desc, {
+      x: 6.95, y: y + 0.48, w: 2.8, h: 0.4,
+      fontSize: 10, fontFace: FONT,
+      color: C.text, align: "left", valign: "top", margin: 0,
+    });
+    // 英文說明
+    s.addText(c.descEn, {
+      x: 6.95, y: y + 0.86, w: 2.8, h: 0.3,
+      fontSize: 9, fontFace: FONT, italic: true,
+      color: C.muted, align: "left", valign: "top", margin: 0,
+    });
   });
 
+  // 底部 takeaway
   s.addText("設計師最重要的兩個：Code（取得連結）與 Pull Requests（請人 review）", {
-    x: 0.6, y: 5.95, w: 9, h: 0.22,
+    x: 0.6, y: 5.85, w: 9, h: 0.22,
     fontSize: 11, fontFace: FONT,
     color: C.text, align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Two tabs that matter most: Code (get the URL) and Pull Requests (ask for review)", {
+    x: 0.6, y: 6.05, w: 9, h: 0.18,
+    fontSize: 10, fontFace: FONT,
+    color: C.subtle, align: "left", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 5 — 新人上路：兩件事 (two-card)
+// Slide 5 — 常用操作清單（截圖 + 三個操作入口 callout）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Common Actions");
+  addTitle(s, "常用操作清單", "Where to click for the things you'll do most");
+
+  // 左側截圖（已含紅色標記 ①②③）
+  s.addImage({
+    path: "assets/Github-important_functions.jpg",
+    x: 0.6, y: 2.0, w: 5.6, h: 3.5,
+    sizing: { type: "contain", w: 5.6, h: 3.5 },
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 2.0, w: 5.6, h: 3.5,
+    fill: { type: "none" }, line: { color: C.line, width: 0.75 },
+  });
+
+  // 右側三個 callout — 對應截圖標記順序（① Code、② Branches、③ Pull requests）
+  const callouts = [
+    {
+      n: "1",
+      title: "Code 按鈕",
+      titleEn: "Code button",
+      desc: "右上方綠色按鈕。點開複製 HTTPS 網址 → 貼給 Claude Code 就能 clone 到本機。",
+      descEn: "Top-right green button. Copy the HTTPS URL → give it to Claude Code to clone.",
+    },
+    {
+      n: "2",
+      title: "Branches",
+      titleEn: "Branches list",
+      desc: "看現在有哪些 branch、誰在做什麼。也能從這裡刪掉舊 branch。",
+      descEn: "See active branches and who's working on what. Delete old ones from here.",
+    },
+    {
+      n: "3",
+      title: "Pull requests",
+      titleEn: "Pull requests tab",
+      desc: "建立新的 PR、看別人開的 PR、留 review 留言。Branch 改完要被 merge 都從這裡走。",
+      descEn: "Open a new PR, review others', leave comments. The merge gate for every branch.",
+    },
+  ];
+
+  callouts.forEach((c, i) => {
+    const y = 2.0 + i * 1.2;
+
+    s.addShape(pres.shapes.OVAL, {
+      x: 6.45, y: y, w: 0.4, h: 0.4,
+      fill: { color: "E11D48" }, line: { color: "E11D48", width: 0 },
+    });
+    s.addText(c.n, {
+      x: 6.45, y: y, w: 0.4, h: 0.4,
+      fontSize: 14, bold: true, fontFace: FONT,
+      color: C.white, align: "center", valign: "middle", margin: 0,
+    });
+
+    s.addText(c.title, {
+      x: 6.95, y: y - 0.02, w: 2.8, h: 0.3,
+      fontSize: 14, bold: true, fontFace: FONT,
+      color: C.ink, align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(c.titleEn, {
+      x: 6.95, y: y + 0.24, w: 2.8, h: 0.22,
+      fontSize: 10, fontFace: FONT,
+      color: C.muted, align: "left", valign: "middle", margin: 0,
+    });
+
+    s.addText(c.desc, {
+      x: 6.95, y: y + 0.48, w: 2.8, h: 0.4,
+      fontSize: 10, fontFace: FONT,
+      color: C.text, align: "left", valign: "top", margin: 0,
+    });
+    s.addText(c.descEn, {
+      x: 6.95, y: y + 0.86, w: 2.8, h: 0.3,
+      fontSize: 9, fontFace: FONT, italic: true,
+      color: C.muted, align: "left", valign: "top", margin: 0,
+    });
+  });
+
+  // 底部 takeaway
+  s.addText("90% 的設計師日常，這三個入口就夠用：拿程式碼、切換 branch、發 / 看 PR", {
+    x: 0.6, y: 5.85, w: 9, h: 0.22,
+    fontSize: 11, fontFace: FONT,
+    color: C.text, align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("90% of designer-daily flows live in these three: get code, switch branch, open / review a PR.", {
+    x: 0.6, y: 6.05, w: 9, h: 0.18,
+    fontSize: 10, fontFace: FONT,
+    color: C.subtle, align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 6 — 新人上路：兩件事 (two-card)
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -439,7 +582,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 6 — 取得 Clone 網址
+// Slide 7 — 取得 Clone 網址
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -544,7 +687,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 7 — 決定本機資料夾位置
+// Slide 8 — 決定本機資料夾位置
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -616,29 +759,21 @@ pres.slides.pop(); // remove the buggy slide above
     });
   });
 
-  // warning
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 4.95, w: 9, h: 0.85,
-    fill: { color: "FEF2F2" }, line: { color: "FEF2F2", width: 0 }, rectRadius: 0.05,
+  // bottom hint
+  s.addText("放哪裡其實不嚴格 — 重點是路徑乾淨、找得到、自己順手", {
+    x: 0.6, y: 5.85, w: 9, h: 0.22,
+    fontSize: 11, fontFace: FONT,
+    color: C.text, align: "left", valign: "middle", margin: 0,
   });
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.6, y: 4.95, w: 0.06, h: 0.85,
-    fill: { color: "DC2626" }, line: { color: "DC2626", width: 0 },
-  });
-  s.addText("最重要的：不要放在 iCloud / Dropbox / OneDrive — 會跟 Git 衝突", {
-    x: 0.85, y: 5.0, w: 8.6, h: 0.35,
-    fontSize: 13, fontFace: FONT, bold: true, color: "991B1B",
-    align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Most important: don't put the repo inside iCloud / Dropbox / OneDrive — it conflicts with Git", {
-    x: 0.85, y: 5.4, w: 8.6, h: 0.32,
-    fontSize: 11, fontFace: FONT, color: "B91C1C",
-    align: "left", valign: "middle", margin: 0,
+  s.addText("Where doesn't matter much — clean path, easy to find, comfortable for you.", {
+    x: 0.6, y: 6.05, w: 9, h: 0.18,
+    fontSize: 10, fontFace: FONT,
+    color: C.subtle, align: "left", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 8 — Clone 失敗常見原因
+// Slide 9 — Clone 失敗常見原因
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -709,7 +844,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 9 — 三個空間
+// Slide 10 — 三個空間
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -820,7 +955,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 10 — 本機 vs 遠端
+// Slide 11 — 本機 vs 遠端
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -929,7 +1064,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 11 — 三種狀態
+// Slide 12 — 三種狀態
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1030,7 +1165,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 12 — Branch 概念
+// Slide 13 — Branch 概念
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1125,7 +1260,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 13 — Branch 命名
+// Slide 14 — Branch 命名
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1175,7 +1310,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 14 — 何時該用 Branch
+// Slide 15 — 何時該用 Branch
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1238,7 +1373,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 15 — 實戰：Dark Mode 實驗
+// Slide 16 — 實戰：Dark Mode 實驗
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1324,7 +1459,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 16 — 對 Claude Code 說
+// Slide 17 — 對 Claude Code 說
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1373,7 +1508,416 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 17 — Key Takeaway
+// Slide 18 — Rebase ≠ Merge（進階概念）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Advanced Concept");
+  addTitle(s, "Rebase ≠ Merge", "Two ways to bring in main's latest changes");
+
+  // 一句話 thesis
+  s.addText("把我的 commit「重做一次」，接到 main 最新位置上", {
+    x: 0.6, y: 1.85, w: 9, h: 0.3,
+    fontSize: 14, fontFace: FONT, bold: true,
+    color: C.primary, align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Replay my commits onto the latest main", {
+    x: 0.6, y: 2.15, w: 9, h: 0.24,
+    fontSize: 11, fontFace: FONT, italic: true,
+    color: C.muted, align: "left", valign: "middle", margin: 0,
+  });
+
+  // 上半：Merge 圖示
+  s.addText("Merge — 保留分岔歷史", {
+    x: 0.6, y: 2.6, w: 4.4, h: 0.28,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Keeps the branch history", {
+    x: 0.6, y: 2.86, w: 4.4, h: 0.22,
+    fontSize: 10, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Merge 視覺：兩條線交會
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 3.15, w: 4.4, h: 1.5,
+    fill: { color: C.rowAlt }, line: { color: C.line, width: 0.75 }, rectRadius: 0.05,
+  });
+  // main line
+  s.addText("main:", { x: 0.8, y: 3.3, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
+  s.addText("● ── ● ── ● ── ●         ◆", {
+    x: 1.5, y: 3.3, w: 3.4, h: 0.25,
+    fontSize: 14, fontFace: "Consolas", color: C.primary,
+    align: "left", valign: "middle", margin: 0,
+  });
+  // branch line
+  s.addText("branch:", { x: 0.8, y: 3.85, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
+  s.addText("    ╲             ╱", {
+    x: 1.5, y: 3.62, w: 3.4, h: 0.22,
+    fontSize: 13, fontFace: "Consolas", color: C.subtle,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("       F ── G ──",  {
+    x: 1.5, y: 3.85, w: 3.4, h: 0.25,
+    fontSize: 14, fontFace: "Consolas", color: "8B5CF6",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("◆ = merge commit（多一個節點）", {
+    x: 0.8, y: 4.25, w: 4, h: 0.25,
+    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // 下半：Rebase 圖示
+  s.addText("Rebase — 拉成一條直線", {
+    x: 5.2, y: 2.6, w: 4.4, h: 0.28,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Rewrites into a clean line", {
+    x: 5.2, y: 2.86, w: 4.4, h: 0.22,
+    fontSize: 10, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 5.2, y: 3.15, w: 4.4, h: 1.5,
+    fill: { color: C.rowAlt }, line: { color: C.line, width: 0.75 }, rectRadius: 0.05,
+  });
+  s.addText("main:", { x: 5.4, y: 3.3, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
+  s.addText("● ── ● ── ● ── ● ── F'── G'", {
+    x: 6.1, y: 3.3, w: 3.4, h: 0.25,
+    fontSize: 14, fontFace: "Consolas", color: C.primary,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("F' ／ G' = 同樣的改動，但 commit hash 變了", {
+    x: 5.4, y: 4.05, w: 4, h: 0.25,
+    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Same changes, different commit hashes", {
+    x: 5.4, y: 4.28, w: 4, h: 0.22,
+    fontSize: 9, fontFace: FONT, italic: true, color: C.subtle,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // 底部 takeaway
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 4.95, w: 9, h: 0.95,
+    fill: { color: "FEF3C7" }, line: { color: "FEF3C7", width: 0 }, rectRadius: 0.05,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 4.95, w: 0.06, h: 0.95,
+    fill: { color: "D97706" }, line: { color: "D97706", width: 0 },
+  });
+  s.addText("關鍵：rebase 會「改寫歷史」— commit hash 變了。個人 branch 沒問題，shared branch 會搞死隊友。", {
+    x: 0.85, y: 5.0, w: 8.6, h: 0.4,
+    fontSize: 12, fontFace: FONT, bold: true, color: "78350F",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Rebase rewrites history. Safe on your own branch — disastrous on shared branches.", {
+    x: 0.85, y: 5.45, w: 8.6, h: 0.4,
+    fontSize: 10, fontFace: FONT, italic: true, color: "92400E",
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 19 — Force Push 的危險
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Danger Zone");
+  addTitle(s, "為什麼設計師要怕 force push", "Why force push is the trap to watch for");
+
+  // 一句話 thesis
+  s.addText("Rebase 改寫歷史 → 普通 push 推不上去 → AI 會建議 force push → 可能覆蓋隊友的 commit", {
+    x: 0.6, y: 1.85, w: 9, h: 0.3,
+    fontSize: 13, fontFace: FONT, bold: true,
+    color: "DC2626", align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Rebase rewrites history → normal push fails → AI suggests force → may overwrite teammates", {
+    x: 0.6, y: 2.18, w: 9, h: 0.24,
+    fontSize: 10, fontFace: FONT, italic: true,
+    color: C.muted, align: "left", valign: "middle", margin: 0,
+  });
+
+  // 三欄對比
+  const cols = [
+    {
+      x: 0.6,
+      title: "git push",
+      titleEn: "Normal push",
+      verdict: "✅ 安全",
+      verdictColor: "059669",
+      bg: "ECFDF5",
+      desc: "推不上去就停。\n從不覆蓋遠端歷史。",
+      descEn: "Stops if conflict. Never overwrites.",
+    },
+    {
+      x: 3.7,
+      title: "git push --force",
+      titleEn: "Force push",
+      verdict: "❌ 危險",
+      verdictColor: "DC2626",
+      bg: "FEF2F2",
+      desc: "「我說了算」。\n直接覆蓋遠端，\n隊友的 commit 消失。",
+      descEn: "\"My way.\" Overwrites remote — teammates' work gone.",
+    },
+    {
+      x: 6.8,
+      title: "--force-with-lease",
+      titleEn: "Safe force",
+      verdict: "⚠️ 可控",
+      verdictColor: "D97706",
+      bg: "FEF3C7",
+      desc: "「我說了算，\n但別人改過就停。」\n預設用這個。",
+      descEn: "\"My way, unless someone changed it.\" Use this.",
+    },
+  ];
+
+  cols.forEach(c => {
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: c.x, y: 2.6, w: 2.8, h: 3.0,
+      fill: { color: c.bg }, line: { color: C.line, width: 0.75 }, rectRadius: 0.06,
+    });
+    s.addText(c.title, {
+      x: c.x + 0.15, y: 2.75, w: 2.5, h: 0.32,
+      fontSize: 13, fontFace: "Consolas", bold: true, color: C.ink,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(c.titleEn, {
+      x: c.x + 0.15, y: 3.05, w: 2.5, h: 0.22,
+      fontSize: 10, fontFace: FONT, color: C.muted,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(c.verdict, {
+      x: c.x + 0.15, y: 3.4, w: 2.5, h: 0.32,
+      fontSize: 16, fontFace: FONT, bold: true, color: c.verdictColor,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(c.desc, {
+      x: c.x + 0.15, y: 3.85, w: 2.5, h: 1.1,
+      fontSize: 11, fontFace: FONT, color: C.text,
+      align: "left", valign: "top", margin: 0, paraSpaceAfter: 2,
+    });
+    s.addText(c.descEn, {
+      x: c.x + 0.15, y: 4.95, w: 2.5, h: 0.55,
+      fontSize: 9, fontFace: FONT, italic: true, color: C.muted,
+      align: "left", valign: "top", margin: 0,
+    });
+  });
+
+  // 底部 — AI 為什麼自作聰明
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 5.85, w: 9, h: 0.55,
+    fill: { color: C.rowAlt }, line: { color: C.line, width: 0 }, rectRadius: 0.05,
+  });
+  s.addText("⚠️ AI 看到 push 失敗會自然建議 --force —— 你要主動要求 --force-with-lease，下一頁教你怎麼說。", {
+    x: 0.85, y: 5.92, w: 8.6, h: 0.42,
+    fontSize: 11, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 20 — 對 AI 說的三個防禦提示
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Defensive Prompts");
+  addTitle(s, "對 AI 說這幾句，避免災難", "Three sentences to keep AI from breaking your branch");
+
+  s.addText("AI 預設會「快點解決問題」— 這幾句明確的指令把你的安全要求講清楚", {
+    x: 0.6, y: 1.85, w: 9, h: 0.3,
+    fontSize: 12, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  const prompts = [
+    {
+      n: "1",
+      title: "Rebase 前先預告",
+      titleEn: "Preview before rebase",
+      prompt: "「rebase 之前，先告訴我會影響哪些 commit。」",
+      promptEn: "\"Before rebasing, tell me which commits will change.\"",
+      defends: "防的是：AI 直接 rebase + force push 完才告訴你，發現出事已晚。",
+      defendsEn: "Prevents: AI rebasing and force-pushing before you can review.",
+    },
+    {
+      n: "2",
+      title: "永遠不要 --force",
+      titleEn: "Never use --force",
+      prompt: "「需要 force push 時，請用 --force-with-lease，不要用 --force。」",
+      promptEn: "\"Use --force-with-lease, never --force.\"",
+      defends: "防的是：AI 預設 --force 覆蓋遠端，隊友 commit 消失。",
+      defendsEn: "Prevents: AI overwriting teammates' commits with bare --force.",
+    },
+    {
+      n: "3",
+      title: "不碰 main / shared branch",
+      titleEn: "Hands off shared branches",
+      prompt: "「不要在 main 或別人也在用的 branch 上 rebase。」",
+      promptEn: "\"Don't rebase main or any shared branch.\"",
+      defends: "防的是：對共用 branch rebase，整團隊歷史錯亂。",
+      defendsEn: "Prevents: rebase on shared branches breaking everyone's history.",
+    },
+  ];
+
+  prompts.forEach((p, i) => {
+    const y = 2.3 + i * 1.15;
+
+    // 編號圓圈
+    s.addShape(pres.shapes.OVAL, {
+      x: 0.6, y: y + 0.1, w: 0.45, h: 0.45,
+      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+    });
+    s.addText(p.n, {
+      x: 0.6, y: y + 0.1, w: 0.45, h: 0.45,
+      fontSize: 16, bold: true, fontFace: FONT,
+      color: C.white, align: "center", valign: "middle", margin: 0,
+    });
+
+    // 標題
+    s.addText(p.title, {
+      x: 1.2, y: y, w: 4.5, h: 0.3,
+      fontSize: 14, fontFace: FONT, bold: true, color: C.ink,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(p.titleEn, {
+      x: 1.2, y: y + 0.28, w: 4.5, h: 0.22,
+      fontSize: 10, fontFace: FONT, color: C.muted,
+      align: "left", valign: "middle", margin: 0,
+    });
+
+    // Prompt（黑底）
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: 1.2, y: y + 0.55, w: 8.4, h: 0.4,
+      fill: { color: "1F2937" }, line: { color: "1F2937", width: 0 }, rectRadius: 0.04,
+    });
+    s.addText(p.prompt, {
+      x: 1.35, y: y + 0.58, w: 8.1, h: 0.34,
+      fontSize: 11.5, fontFace: FONT, color: "5EEAD4",
+      align: "left", valign: "middle", margin: 0,
+    });
+
+    // 防什麼
+    s.addText(p.defends, {
+      x: 1.2, y: y + 1.0, w: 8.4, h: 0.18,
+      fontSize: 9.5, fontFace: FONT, italic: true, color: C.muted,
+      align: "left", valign: "middle", margin: 0,
+    });
+  });
+
+  // 底部 takeaway
+  s.addText("把這三句話寫進 CLAUDE.md，AI 每次都會遵守 — 比每次手動提醒可靠。", {
+    x: 0.6, y: 5.95, w: 9, h: 0.22,
+    fontSize: 11, fontFace: FONT, bold: true,
+    color: C.text, align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Add these to CLAUDE.md once — more reliable than reminding AI every session.", {
+    x: 0.6, y: 6.15, w: 9, h: 0.18,
+    fontSize: 10, fontFace: FONT, italic: true,
+    color: C.subtle, align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 21 — Safety Net（Michael 的 hooks 補充說明）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Safety Net");
+  addTitle(s, "你不是一個人在防範這些", "You're not defending alone");
+
+  // Big shield-style hero card
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 1.95, w: 9, h: 1.7,
+    fill: { color: "ECFDF5" }, line: { color: "10B981", width: 1 }, rectRadius: 0.08,
+  });
+
+  // Shield emoji as visual anchor
+  s.addText("🛡️", {
+    x: 0.85, y: 2.15, w: 1.2, h: 1.2,
+    fontSize: 60, fontFace: FONT,
+    align: "center", valign: "middle", margin: 0,
+  });
+
+  // Main message
+  s.addText("Michael 已經在這個 repo 裡寫了 git hooks", {
+    x: 2.2, y: 2.15, w: 7.2, h: 0.4,
+    fontSize: 18, fontFace: FONT, bold: true, color: "065F46",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Michael set up git hooks for this repo", {
+    x: 2.2, y: 2.55, w: 7.2, h: 0.28,
+    fontSize: 12, fontFace: FONT, italic: true, color: "047857",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  s.addText("AI 想做剛才提的那些危險操作（force push、git add . 全部、commit 含 secret⋯）會被自動擋下，不用擔心一不小心犯錯。", {
+    x: 2.2, y: 2.95, w: 7.2, h: 0.4,
+    fontSize: 12, fontFace: FONT, color: "065F46",
+    align: "left", valign: "top", margin: 0,
+  });
+  s.addText("Hooks block AI from running the dangerous operations we just talked about — you can't accidentally break things.", {
+    x: 2.2, y: 3.32, w: 7.2, h: 0.3,
+    fontSize: 10, fontFace: FONT, italic: true, color: "047857",
+    align: "left", valign: "top", margin: 0,
+  });
+
+  // Scope warning card
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 3.95, w: 9, h: 1.55,
+    fill: { color: "FEF3C7" }, line: { color: "FEF3C7", width: 0 }, rectRadius: 0.06,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 3.95, w: 0.06, h: 1.55,
+    fill: { color: "D97706" }, line: { color: "D97706", width: 0 },
+  });
+
+  s.addText("⚠️  但是 — 這層保護只在這個 repo 裡有效", {
+    x: 0.85, y: 4.05, w: 8.6, h: 0.35,
+    fontSize: 14, fontFace: FONT, bold: true, color: "78350F",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("This safety net only applies inside this repo", {
+    x: 0.85, y: 4.4, w: 8.6, h: 0.26,
+    fontSize: 10.5, fontFace: FONT, italic: true, color: "92400E",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  s.addText("離開這個 repo（你的個人專案、其他 team 的 repo）就沒有這套防呆。", {
+    x: 0.85, y: 4.78, w: 8.6, h: 0.32,
+    fontSize: 12, fontFace: FONT, color: "78350F",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Outside this repo (your own projects, other teams' repos), there's no safety net.", {
+    x: 0.85, y: 5.13, w: 8.6, h: 0.28,
+    fontSize: 10, fontFace: FONT, italic: true, color: "92400E",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Bottom takeaway
+  s.addText("→ 所以前一頁的三個防禦 prompt 還是要寫進你個人的 CLAUDE.md，自律才是不依賴環境的根本。", {
+    x: 0.6, y: 5.78, w: 9, h: 0.3,
+    fontSize: 11.5, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Keep the three prompts from the previous slide in your personal CLAUDE.md — discipline is what travels with you.", {
+    x: 0.6, y: 6.08, w: 9, h: 0.22,
+    fontSize: 9.5, fontFace: FONT, italic: true, color: C.subtle,
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 22 — Key Takeaway
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1424,7 +1968,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 18 — Next Week
+// Slide 23 — Next Week
 // ==========================================================
 {
   const s = pres.addSlide();
