@@ -13,6 +13,11 @@ sharing/claude-design/claude-design-sharing.v1.pptx
 # macOS
 .DS_Store
 
+# Loose image assets
+assets/*.png
+assets/*.jpg
+assets/*.jpeg
+
 # Jottacloud sync conflicts
 *(*conflicted copy*)*
 
