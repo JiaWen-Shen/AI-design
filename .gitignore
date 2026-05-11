@@ -21,6 +21,9 @@ assets/*.jpeg
 # Jottacloud sync conflicts
 *(*conflicted copy*)*
 
+# Claude Code internal state
+**/.claude_review_state.json
+
 # Secrets
 .env
 .env.*

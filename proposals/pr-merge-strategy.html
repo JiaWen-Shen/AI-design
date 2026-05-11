@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PR Merge Strategy — Merge vs Rebase vs Squash</title>
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --ink: #0F172A;
+      --text: #334155;
+      --muted: #64748B;
+      --subtle: #94A3B8;
+      --line: #E2E8F0;
+      --card: #FFFFFF;
+      --merge: #2563EB;
+      --merge-bg: #EFF6FF;
+      --rebase: #8B5CF6;
+      --rebase-bg: #F5F3FF;
+      --squash: #059669;
+      --squash-bg: #ECFDF5;
+      --warn: #DC2626;
+      --warn-bg: #FEF2F2;
+      --ok: #059669;
+      --amber: #D97706;
+      --amber-bg: #FEF3C7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      overflow: hidden;
+    }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide {
+      width: 100vw; height: 100vh;
+      padding: 4vh 6vw 6vh;
+      position: absolute;
+      top: 0; left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--merge);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 44px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+    h2 {
+      font-size: 28px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    h3 {
+      font-size: 18px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .lede { font-size: 18px; color: var(--muted); margin-bottom: 24px; max-width: 900px; }
+    .body-text { font-size: 15px; color: var(--text); }
+
+    .footer {
+      position: fixed;
+      bottom: 20px; right: 24px;
+      display: flex; gap: 16px;
+      font-size: 11px; color: var(--subtle);
+      letter-spacing: 0.05em;
+      z-index: 100;
+    }
+    .counter { font-variant-numeric: tabular-nums; }
+
+    /* Cover */
+    .cover {
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .cover .meta { color: var(--muted); font-size: 14px; margin-top: 32px; }
+
+    /* Commit graph (monospace) */
+    .graph {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      font-size: 16px;
+      letter-spacing: 0.02em;
+      white-space: pre;
+      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .graph .label { color: var(--muted); font-size: 11px; display: inline-block; min-width: 80px; font-weight: 600; }
+    .dot { color: var(--ink); font-weight: bold; }
+    .yours { color: var(--amber); font-weight: bold; }
+    .theirs { color: var(--warn); font-weight: bold; }
+    .rebased { color: var(--rebase); font-weight: bold; }
+    .squashed { color: var(--squash); font-weight: bold; }
+    .merge-commit { color: var(--merge); font-weight: bold; }
+    .conn { color: var(--subtle); }
+
+    /* Layout helpers */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; flex: 1; min-height: 0; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card.merge-card { border-top: 3px solid var(--merge); }
+    .card.rebase-card { border-top: 3px solid var(--rebase); }
+    .card.squash-card { border-top: 3px solid var(--squash); }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .pill.merge { background: var(--merge-bg); color: var(--merge); }
+    .pill.rebase { background: var(--rebase-bg); color: var(--rebase); }
+    .pill.squash { background: var(--squash-bg); color: var(--squash); }
+    .pill.warn { background: var(--warn-bg); color: var(--warn); }
+    .pill.ok { background: var(--squash-bg); color: var(--ok); }
+    .pill.amber { background: var(--amber-bg); color: var(--amber); }
+
+    .pros, .cons {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .pros li, .cons li { list-style: none; padding-left: 18px; position: relative; }
+    .pros li:before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: bold; }
+    .cons li:before { content: "✗"; position: absolute; left: 0; color: var(--warn); font-weight: bold; }
+    .pros li, .cons li { margin-bottom: 4px; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #F1F5F9; font-weight: 600; color: var(--ink); font-size: 12px; }
+    tr:last-child td { border-bottom: 0; }
+    td.merge-col { color: var(--merge); font-weight: 600; }
+    td.rebase-col { color: var(--rebase); font-weight: 600; }
+    td.squash-col { color: var(--squash); font-weight: 600; }
+    td.warn { color: var(--warn); }
+    td.ok { color: var(--ok); }
+
+    /* Decision matrix */
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .decision-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .decision-item h4 {
+      font-size: 14px;
+      color: var(--ink);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .decision-item p { font-size: 13px; color: var(--text); line-height: 1.55; }
+
+    /* Status box */
+    .status-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--amber);
+      border-radius: 6px;
+      padding: 16px 20px;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    .status-box.warn-border { border-left-color: var(--warn); }
+    .status-box code { font-family: "SF Mono", Menlo, monospace; background: #F1F5F9; padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+
+    .footnote { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
+    .footnote em { font-style: italic; }
+
+    .nav-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px; height: 36px;
+      background: transparent;
+      border: none;
+      color: var(--subtle);
+      font-size: 22px;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+    .nav-arrow:hover { opacity: 1; color: var(--ink); }
+    .nav-prev { left: 16px; }
+    .nav-next { right: 16px; }
+
+    @media (max-width: 900px) {
+      .two-col, .three-col, .decision-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 32px; }
+      h2 { font-size: 22px; }
+      .graph { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+
+    <!-- Slide 1 — Cover -->
+    <section class="slide cover active">
+      <div class="eyebrow">PR Merge Strategy</div>
+      <h1>Merge vs Rebase vs Squash</h1>
+      <p class="lede">三種把 feature branch 合進 main 的方式 — 形狀、優缺、風險、團隊取捨</p>
+      <div class="meta">
+        For hie-rei operation team · 2026-05-12<br>
+        Karen Shen
+      </div>
+    </section>
+
+    <!-- Slide 2 — Why discuss -->
+    <section class="slide">
+      <div class="eyebrow">Context</div>
+      <h2>為什麼今天要對齊這個</h2>
+      <p class="lede">hie-rei repo 目前 PR merge 設定可能是 GitHub 預設沒改，業界主流另有共識。</p>
+
+      <div class="two-col" style="flex: 0 0 auto;">
+        <div class="card">
+          <h3>hie-rei 目前狀態</h3>
+          <table>
+            <tr><th>Strategy</th><th>Enabled?</th></tr>
+            <tr><td>Create a merge commit</td><td class="ok">✓ 開</td></tr>
+            <tr><td>Squash and merge</td><td class="warn">✗ 關</td></tr>
+            <tr><td>Rebase and merge</td><td class="warn">✗ 關</td></tr>
+          </table>
+          <p class="footnote">查自 <code>gh api repos/trendlife-general/hie-rei</code>，2026-05-11。</p>
+        </div>
+        <div class="card">
+          <h3>業界主流</h3>
+          <ul class="pros">
+            <li>很多團隊改用 <strong>squash-and-merge</strong> 讓 main 線性、PR 一顆 commit</li>
+            <li>Academind、GitHub 自家 repo、許多 open source 大宗皆採用</li>
+            <li>對 Junior / 不熟 Git 的成員最友善</li>
+          </ul>
+          <p class="footnote">影片參考：Academind「Git MERGE vs REBASE」推薦 squash-and-merge。</p>
+        </div>
+      </div>
+
+      <div class="status-box" style="margin-top: 24px;">
+        <strong>今天目標</strong>：對齊三種策略的 trade-off → 決定要不要動 hie-rei 的 repo 設定 → 對齊設計師的 daily workflow。
+      </div>
+    </section>
+
+    <!-- Slide 3 — Common scenario -->
+    <section class="slide">
+      <div class="eyebrow">Shared Scenario</div>
+      <h2>同一個情境，三種結果</h2>
+      <p class="lede">用同一個起點比較三種合法 strategy 最終的 commit history 形狀。</p>
+
+      <div class="card" style="margin-top: 8px;">
+        <h3>起點</h3>
+        <div class="graph">
+<span class="label">main:</span>      <span class="dot">A</span> ── <span class="dot">B</span> ── <span class="theirs">C</span>                <span class="conn">← 別人剛 push 了 C</span>
+                <span class="conn">\</span>
+<span class="label">feature:</span>          <span class="yours">F1</span> ── <span class="yours">F2</span> ── <span class="yours">F3</span>      <span class="conn">← 你的 feature branch 有 3 個 commit</span>
+        </div>
+        <p class="body-text" style="margin-top: 8px;">
+          你的 PR 準備合進 main。三種 merge strategy 都能完成這件事，但最終 main 的 history 長相完全不同。
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 4 — Merge -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--merge);">Strategy 1 / 3</div>
+      <h2><span class="pill merge">MERGE COMMIT</span> 保留分岔形狀</h2>
+
+      <div class="card merge-card" style="margin-top: 12px;">
+        <div class="graph">
+<span class="label">main 合併後:</span> <span class="dot">A</span> ── <span class="dot">B</span> ── <span class="theirs">C</span> ──────────── <span class="merge-commit">M</span>
+                        <span class="conn">\                /</span>
+                         <span class="yours">F1</span> ── <span class="yours">F2</span> ── <span class="yours">F3</span>
+        </div>
+        <p class="body-text">產生一個新的 <strong>merge commit M</strong>，把兩條 line 接回來。所有原本的 commit SHA 都保留。</p>
+      </div>
+
+      <div class="two-col" style="margin-top: 16px;">
+        <div class="card">
+          <h3>優點</h3>
+          <ul class="pros">
+            <li>SHA 全部不變 — 對已分享的 commit 友善</li>
+            <li>保留真實開發歷史 — 看得到「parallel work」</li>
+            <li>衝突一次解完（在 merge commit 內）</li>
+            <li>操作最直觀，新手友善</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>缺點</h3>
+          <ul class="cons">
+            <li>每次合併多一顆 merge commit — repo 一週累積幾十顆</li>
+            <li><code>git log --oneline</code> 變迷宮，要 <code>--graph</code> 才看得懂</li>
+            <li>Bisect debug 難 — bug 出在哪條 line 不易判斷</li>
+            <li>長期下來 main 看起來「不乾淨」</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5 — Rebase -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--rebase);">Strategy 2 / 3</div>
+      <h2><span class="pill rebase">REBASE AND MERGE</span> 拉成一條直線</h2>
+
+      <div class="card rebase-card" style="margin-top: 12px;">
+        <div class="graph">
+<span class="label">main 合併後:</span> <span class="dot">A</span> ── <span class="dot">B</span> ── <span class="theirs">C</span> ── <span class="rebased">F1'</span> ── <span class="rebased">F2'</span> ── <span class="rebased">F3'</span>
+        </div>
+        <p class="body-text">把 F1/F2/F3 「拆下來」重接到 C 後面，產生 <strong>F1'/F2'/F3'（新 SHA，內容相同）</strong>。沒 merge commit。</p>
+      </div>
+
+      <div class="two-col" style="margin-top: 16px;">
+        <div class="card">
+          <h3>優點</h3>
+          <ul class="pros">
+            <li>main history 線性、乾淨</li>
+            <li>保留每個 commit 細節（不像 squash）</li>
+            <li><code>git log --oneline</code> 一目了然</li>
+            <li>Bisect debug 好用</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>缺點 / 風險</h3>
+          <ul class="cons">
+            <li><strong>SHA 改寫</strong> — 已分享出去且別人 base 過的 commit 不能 rebase</li>
+            <li>衝突可能要解多次（每個 commit replay 各撞一次）</li>
+            <li>Reviewer 已在 PR 上 comment 後 rebase，行內 comment 會掛在不存在 SHA</li>
+            <li>新人較難上手</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6 — Squash -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--squash);">Strategy 3 / 3</div>
+      <h2><span class="pill squash">SQUASH AND MERGE</span> 壓成一顆</h2>
+
+      <div class="card squash-card" style="margin-top: 12px;">
+        <div class="graph">
+<span class="label">main 合併後:</span> <span class="dot">A</span> ── <span class="dot">B</span> ── <span class="theirs">C</span> ── <span class="squashed">S</span>
+
+<span class="label">feature:</span>     (<span class="yours">F1</span> ── <span class="yours">F2</span> ── <span class="yours">F3</span> 在 feature branch 還在，但 main 看不到)
+        </div>
+        <p class="body-text">F1+F2+F3 三顆 commit 壓成 <strong>一顆 S</strong> 接到 main。S 包含所有改動，但 F1/F2/F3 在 main 不存在。</p>
+      </div>
+
+      <div class="two-col" style="margin-top: 16px;">
+        <div class="card">
+          <h3>優點</h3>
+          <ul class="pros">
+            <li>main 超級乾淨 — 一個 PR = 一顆 commit</li>
+            <li>不用設計師自己會 rebase</li>
+            <li>Feature branch 內部可以隨便亂 commit（反正會被壓平）</li>
+            <li>對 Junior / 設計師 / 非工程背景最友善</li>
+            <li>Branch protection 容易配（main 全線性）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>缺點</h3>
+          <ul class="cons">
+            <li><strong>個別 commit 永久消失</strong> — main 上 bisect 不到 F2 是 bug 來源</li>
+            <li>沒辦法 partial revert（要 revert F2 只能整顆 S revert）</li>
+            <li>多人協作的 feature commit 作者全併成一個</li>
+            <li>長期 feature branch 細節歷史在 main 全沒</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7 — Side-by-side -->
+    <section class="slide">
+      <div class="eyebrow">Side-by-side</div>
+      <h2>同情境，三種結果並列</h2>
+
+      <div class="three-col" style="margin-top: 16px;">
+        <div class="card merge-card">
+          <span class="pill merge">MERGE</span>
+          <div class="graph" style="font-size: 13px;">
+<span class="dot">A</span>──<span class="dot">B</span>──<span class="theirs">C</span>─────<span class="merge-commit">M</span>
+       <span class="conn">\       /</span>
+        <span class="yours">F1</span>─<span class="yours">F2</span>─<span class="yours">F3</span>
+          </div>
+          <p class="body-text"><strong>7 顆 commit</strong>，保留分岔形狀，多一顆 merge commit。</p>
+        </div>
+        <div class="card rebase-card">
+          <span class="pill rebase">REBASE</span>
+          <div class="graph" style="font-size: 13px;">
+<span class="dot">A</span>──<span class="dot">B</span>──<span class="theirs">C</span>──<span class="rebased">F1'</span>──<span class="rebased">F2'</span>──<span class="rebased">F3'</span>
+          </div>
+          <p class="body-text"><strong>6 顆 commit</strong>，線性、SHA 全變新，保留每顆細節。</p>
+        </div>
+        <div class="card squash-card">
+          <span class="pill squash">SQUASH</span>
+          <div class="graph" style="font-size: 13px;">
+<span class="dot">A</span>──<span class="dot">B</span>──<span class="theirs">C</span>──<span class="squashed">S</span>
+          </div>
+          <p class="body-text"><strong>4 顆 commit</strong>，超乾淨，F1/F2/F3 在 main 消失。</p>
+        </div>
+      </div>
+
+      <p class="footnote" style="margin-top: 18px;">
+        <em>同樣的改動內容 · 不同的 history 形狀 · 不同的 trade-off</em>
+      </p>
+    </section>
+
+    <!-- Slide 8 — Risk matrix -->
+    <section class="slide">
+      <div class="eyebrow">Risk Matrix</div>
+      <h2>風險與特性矩陣</h2>
+
+      <table style="margin-top: 12px;">
+        <tr>
+          <th>維度</th>
+          <th>Merge</th>
+          <th>Rebase</th>
+          <th>Squash</th>
+        </tr>
+        <tr>
+          <td>SHA 是否改寫</td>
+          <td class="ok">不變</td>
+          <td class="warn">改寫</td>
+          <td class="warn">改寫（合成新 SHA）</td>
+        </tr>
+        <tr>
+          <td>會踩到 force push 嗎</td>
+          <td class="ok">不會</td>
+          <td>可能（rebase 已 push 的 commit）</td>
+          <td class="ok">不會（PR 按鈕自動處理）</td>
+        </tr>
+        <tr>
+          <td>Main history 形狀</td>
+          <td>樹狀（雜訊多）</td>
+          <td class="ok">線性</td>
+          <td class="ok">線性、最簡單</td>
+        </tr>
+        <tr>
+          <td>個別 commit 保留？</td>
+          <td class="ok">全部</td>
+          <td class="ok">全部（SHA 改）</td>
+          <td class="warn">全部消失（合成一顆）</td>
+        </tr>
+        <tr>
+          <td>Bisect debug</td>
+          <td>難（分岔）</td>
+          <td class="ok">好用</td>
+          <td>到 PR 層級（不能 commit 層級）</td>
+        </tr>
+        <tr>
+          <td>Partial revert</td>
+          <td class="ok">可以</td>
+          <td class="ok">可以</td>
+          <td class="warn">整顆 revert</td>
+        </tr>
+        <tr>
+          <td>衝突解決</td>
+          <td class="ok">一次解完</td>
+          <td>可能多次</td>
+          <td class="ok">一次解完</td>
+        </tr>
+        <tr>
+          <td>對新手 / 設計師友善</td>
+          <td class="ok">尚可</td>
+          <td>難</td>
+          <td class="ok">最友善</td>
+        </tr>
+        <tr>
+          <td>對 reviewer 體驗</td>
+          <td>OK</td>
+          <td>SHA 變後 inline comment 掉</td>
+          <td class="ok">PR 整體看，乾淨</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Slide 9 — When to use which -->
+    <section class="slide">
+      <div class="eyebrow">Industry Consensus</div>
+      <h2>什麼時候用哪個</h2>
+      <p class="lede">業界沒有單一答案，但多數團隊有清楚的分工模式。</p>
+
+      <div class="decision-grid" style="margin-top: 12px;">
+        <div class="decision-item">
+          <h4><span class="pill rebase">日常 git pull</span></h4>
+          <p>整合別人 commit 到自己 local，動的是「還沒 push 的 commit」。多數團隊用 <strong>rebase</strong>（hie-rei 預設這條）。</p>
+        </div>
+        <div class="decision-item">
+          <h4><span class="pill squash">feature → main（PR 合併）</span></h4>
+          <p>PR review 通過後，feature branch 合進 main。多數產品團隊用 <strong>squash</strong>，main 一 PR 一顆 commit、超乾淨。</p>
+        </div>
+        <div class="decision-item">
+          <h4><span class="pill merge">多人協作 long-lived branch</span></h4>
+          <p>跨團隊大型 feature 跑幾週、有多人 commit。用 <strong>merge commit</strong> 保留每人軌跡。</p>
+        </div>
+        <div class="decision-item">
+          <h4><span class="pill amber">Open source big projects</span></h4>
+          <p>Linux kernel、Git 本身、Node.js 等多用 <strong>rebase / merge</strong> 混合，極少用 squash（保留每個貢獻者的細節）。</p>
+        </div>
+      </div>
+
+      <p class="footnote" style="margin-top: 18px;">
+        日常 pull 跟 PR 合併**是兩個不同決定**，可以分別選不同策略。多數團隊的甜蜜點：<strong>日常 rebase + PR squash</strong>。
+      </p>
+    </section>
+
+    <!-- Slide 10 — hie-rei 現況 -->
+    <section class="slide">
+      <div class="eyebrow">hie-rei 現況檢視</div>
+      <h2>目前設定 vs 業界建議</h2>
+
+      <div class="two-col" style="margin-top: 12px;">
+        <div class="card">
+          <h3>目前 repo 設定（GitHub）</h3>
+          <table>
+            <tr><th>Strategy</th><th>Status</th></tr>
+            <tr><td>Create a merge commit</td><td class="ok">✓ 開（唯一選項）</td></tr>
+            <tr><td>Squash and merge</td><td class="warn">✗ 關</td></tr>
+            <tr><td>Rebase and merge</td><td class="warn">✗ 關</td></tr>
+          </table>
+          <p class="footnote">所有 PR 合進 main 都會產生 merge commit。</p>
+        </div>
+        <div class="card">
+          <h3>git-operation-guide.md 預設</h3>
+          <table>
+            <tr><th>場景</th><th>動作</th></tr>
+            <tr><td>push rejected</td><td class="rebase-col">git pull --rebase</td></tr>
+            <tr><td>git push --force</td><td class="warn">hook 完全擋下</td></tr>
+            <tr><td>--force-with-lease</td><td>沒擋（不鼓勵但可）</td></tr>
+            <tr><td>Branch naming</td><td>強制 user/feature/...</td></tr>
+          </table>
+          <p class="footnote">日常 pull 走 rebase；PR 合 main 走 merge commit。<strong>混搭</strong>。</p>
+        </div>
+      </div>
+
+      <div class="status-box warn-border" style="margin-top: 20px;">
+        <strong>觀察：</strong> hie-rei 目前是「日常 rebase + PR merge commit」組合。Main history 仍會累積每個 PR 的 merge commit，
+        Academind / 多數產品團隊推的「PR squash」沒採用。<strong>這個選擇是有意識的還是 GitHub 預設沒改？</strong>
+      </div>
+    </section>
+
+    <!-- Slide 11 — Decision questions -->
+    <section class="slide">
+      <div class="eyebrow">Team Decision</div>
+      <h2>要對齊的問題</h2>
+      <p class="lede">下面四題決定我們的 PR workflow 長相。可以一題一題討論。</p>
+
+      <div class="decision-grid" style="margin-top: 12px;">
+        <div class="decision-item">
+          <h4>Q1 · 要不要開 Squash-and-Merge？</h4>
+          <p>業界主流、設計師最友善。<strong>主要 trade-off</strong>：main 上失去個別 commit 細節（bisect 只到 PR 層級）。</p>
+        </div>
+        <div class="decision-item">
+          <h4>Q2 · Merge Commit 要保留嗎？</h4>
+          <p>若開 squash 後是否禁用 merge commit？選 squash-only 可以強制 main 線性；保留 merge commit 給特殊情況彈性。</p>
+        </div>
+        <div class="decision-item">
+          <h4>Q3 · 設計師日常 push 改變嗎？</h4>
+          <p>日常 <code>git pull --rebase</code> 不論 PR 策略都不變。但簡報怎麼教需要 align。</p>
+        </div>
+        <div class="decision-item">
+          <h4>Q4 · Branch Protection Rules？</h4>
+          <p>要不要強制 PR review 才能 merge？要不要強制 squash？要不要禁直接 push 到 main？</p>
+        </div>
+      </div>
+
+      <div class="status-box" style="margin-top: 20px;">
+        <strong>建議下一步：</strong> 對齊 Q1（最高槓桿）→ 試開 squash 一週看設計師反應 → 看是否要禁 merge commit。
+        Designer 教學的簡報依結論調整。
+      </div>
+    </section>
+
+  </div>
+
+  <button class="nav-arrow nav-prev" aria-label="prev">‹</button>
+  <button class="nav-arrow nav-next" aria-label="next">›</button>
+
+  <div class="footer">
+    <span class="counter"><span id="cur">1</span> / <span id="total">11</span></span>
+    <span class="hint">← →  Space</span>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    const totalEl = document.getElementById('total');
+    const curEl = document.getElementById('cur');
+    totalEl.textContent = total;
+    let i = 0;
+
+    function show(n) {
+      i = Math.max(0, Math.min(total - 1, n));
+      slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+      curEl.textContent = i + 1;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+      else if (e.key === 'Home') { show(0); }
+      else if (e.key === 'End') { show(total - 1); }
+    });
+
+    document.querySelector('.nav-prev').addEventListener('click', () => show(i - 1));
+    document.querySelector('.nav-next').addEventListener('click', () => show(i + 1));
+  </script>
+</body>
+</html>

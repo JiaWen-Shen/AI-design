@@ -1221,7 +1221,7 @@ pres.slides.pop(); // remove the buggy slide above
 
   const reasons = [
     { zh: "想試新東西又怕改壞", en: "Try without risk" },
-    { zh: "還沒確定，先給 PM 看", en: "Show PM before merging" },
+    { zh: "團隊多人協作", en: "Team collaboration" },
     { zh: "同時做兩個任務不混一起", en: "Keep parallel tasks separate" },
   ];
   reasons.forEach((r, i) => {
@@ -1266,13 +1266,13 @@ pres.slides.pop(); // remove the buggy slide above
   const s = pres.addSlide();
   s.background = { color: C.bg };
   addEyebrow(s, "Branch");
-  addTitle(s, "Branch 命名慣例", "Naming conventions — type/short-description, lowercase with hyphens");
+  addTitle(s, "Branch 命名慣例", "name/type/short-description — name first in team repos, lowercase with hyphens");
 
   const prefixes = [
-    { type: "feature/", use: "新功能、新頁面", useEn: "New features / pages", example: "feature/user-profile", color: C.primary },
-    { type: "fix/", use: "修復問題", useEn: "Fix a bug", example: "fix/carousel-overflow", color: "DC2626" },
-    { type: "experiment/", use: "實驗性質，可能不會合併", useEn: "Experiments, may not merge", example: "experiment/dark-mode-test", color: C.figmaText },
-    { type: "refactor/", use: "重構、整理程式碼", useEn: "Clean-up / restructuring", example: "refactor/component-structure", color: C.muted },
+    { type: "feature/", use: "新功能、新頁面", useEn: "New features / pages", example: "karen/feature/user-profile", color: C.primary },
+    { type: "fix/", use: "修復問題", useEn: "Fix a bug", example: "kevin/fix/carousel-overflow", color: "DC2626" },
+    { type: "experiment/", use: "實驗性質，可能不會合併", useEn: "Experiments, may not merge", example: "shuhan/experiment/dark-mode-test", color: C.figmaText },
+    { type: "refactor/", use: "重構、整理程式碼", useEn: "Clean-up / restructuring", example: "peter/refactor/component-structure", color: C.muted },
   ];
 
   prefixes.forEach((p, i) => {
@@ -1306,6 +1306,22 @@ pres.slides.pop(); // remove the buggy slide above
       fontSize: 12, fontFace: "Consolas", color: C.muted,
       align: "left", valign: "middle", margin: 0,
     });
+  });
+
+  // footer callout: explain name prefix
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 5.85, w: 9, h: 0.65,
+    fill: { color: C.gitBg }, line: { color: C.gitBg, width: 0 }, rectRadius: 0.05,
+  });
+  s.addText("團隊 repo 把自己名字放最前面，避免和別人撞名、也方便 review 時一眼認出是誰的 branch", {
+    x: 0.85, y: 5.9, w: 8.5, h: 0.3,
+    fontSize: 11.5, fontFace: FONT, bold: true, color: C.primary,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("In team repos, put your name first — prevents name clashes and makes ownership obvious during review.", {
+    x: 0.85, y: 6.2, w: 8.5, h: 0.28,
+    fontSize: 10, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
   });
 }
 
@@ -1508,326 +1524,405 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 18 — Rebase ≠ Merge（進階概念）
+// Slide 18 — Setup: push 被擋了？
 // ==========================================================
 {
   const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Advanced Concept");
-  addTitle(s, "Rebase ≠ Merge", "Two ways to bring in main's latest changes");
+  s.background = { color: C.bgQuestion };
+  addEyebrow(s, "PART 2 · Push Rejected");
+  addTitle(s, "如果 push 被擋了，怎麼辦？", "When commit & push gets rejected");
 
-  // 一句話 thesis
-  s.addText("把我的 commit「重做一次」，接到 main 最新位置上", {
-    x: 0.6, y: 1.85, w: 9, h: 0.3,
-    fontSize: 14, fontFace: FONT, bold: true,
-    color: C.primary, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Replay my commits onto the latest main", {
-    x: 0.6, y: 2.15, w: 9, h: 0.24,
-    fontSize: 11, fontFace: FONT, italic: true,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
-  });
-
-  // 上半：Merge 圖示
-  s.addText("Merge — 保留分岔歷史", {
-    x: 0.6, y: 2.6, w: 4.4, h: 0.28,
-    fontSize: 13, fontFace: FONT, bold: true, color: C.ink,
-    align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Keeps the branch history", {
-    x: 0.6, y: 2.86, w: 4.4, h: 0.22,
-    fontSize: 10, fontFace: FONT, color: C.muted,
-    align: "left", valign: "middle", margin: 0,
-  });
-
-  // Merge 視覺：兩條線交會
+  // Mock terminal error
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 3.15, w: 4.4, h: 1.5,
-    fill: { color: C.rowAlt }, line: { color: C.line, width: 0.75 }, rectRadius: 0.05,
+    x: 1.0, y: 2.1, w: 8, h: 1.5,
+    fill: { color: "1F2937" }, line: { color: "1F2937", width: 0 }, rectRadius: 0.06,
   });
-  // main line
-  s.addText("main:", { x: 0.8, y: 3.3, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
-  s.addText("● ── ● ── ● ── ●         ◆", {
-    x: 1.5, y: 3.3, w: 3.4, h: 0.25,
-    fontSize: 14, fontFace: "Consolas", color: C.primary,
+  s.addText("$ git push", {
+    x: 1.25, y: 2.2, w: 7.5, h: 0.28,
+    fontSize: 12, fontFace: "Consolas", color: "9CA3AF",
     align: "left", valign: "middle", margin: 0,
   });
-  // branch line
-  s.addText("branch:", { x: 0.8, y: 3.85, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
-  s.addText("    ╲             ╱", {
-    x: 1.5, y: 3.62, w: 3.4, h: 0.22,
-    fontSize: 13, fontFace: "Consolas", color: C.subtle,
+  s.addText("! [rejected]    main -> main (non-fast-forward)", {
+    x: 1.25, y: 2.55, w: 7.5, h: 0.3,
+    fontSize: 13, fontFace: "Consolas", bold: true, color: "FCA5A5",
     align: "left", valign: "middle", margin: 0,
   });
-  s.addText("       F ── G ──",  {
-    x: 1.5, y: 3.85, w: 3.4, h: 0.25,
-    fontSize: 14, fontFace: "Consolas", color: "8B5CF6",
+  s.addText("hint: Updates were rejected because the remote contains work", {
+    x: 1.25, y: 2.92, w: 7.5, h: 0.26,
+    fontSize: 11, fontFace: "Consolas", color: "D1D5DB",
     align: "left", valign: "middle", margin: 0,
   });
-  s.addText("◆ = merge commit（多一個節點）", {
-    x: 0.8, y: 4.25, w: 4, h: 0.25,
-    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
+  s.addText("      that you do not have locally.", {
+    x: 1.25, y: 3.18, w: 7.5, h: 0.26,
+    fontSize: 11, fontFace: "Consolas", color: "D1D5DB",
     align: "left", valign: "middle", margin: 0,
   });
 
-  // 下半：Rebase 圖示
-  s.addText("Rebase — 拉成一條直線", {
-    x: 5.2, y: 2.6, w: 4.4, h: 0.28,
-    fontSize: 13, fontFace: FONT, bold: true, color: C.ink,
+  // Thesis 1
+  s.addText("這不是失敗——是 Git 在保護你不要蓋掉別人剛 push 的東西", {
+    x: 0.6, y: 4.0, w: 9, h: 0.36,
+    fontSize: 16, fontFace: FONT, bold: true, color: C.ink,
     align: "left", valign: "middle", margin: 0,
   });
-  s.addText("Rewrites into a clean line", {
-    x: 5.2, y: 2.86, w: 4.4, h: 0.22,
-    fontSize: 10, fontFace: FONT, color: C.muted,
+  s.addText("This isn't failure — it's Git protecting you from overwriting others", {
+    x: 0.6, y: 4.38, w: 9, h: 0.26,
+    fontSize: 11, fontFace: FONT, italic: true, color: C.muted,
     align: "left", valign: "middle", margin: 0,
   });
 
+  // Action hint card (blue)
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 5.2, y: 3.15, w: 4.4, h: 1.5,
-    fill: { color: C.rowAlt }, line: { color: C.line, width: 0.75 }, rectRadius: 0.05,
-  });
-  s.addText("main:", { x: 5.4, y: 3.3, w: 0.8, h: 0.25, fontSize: 11, fontFace: "Consolas", color: C.muted, align: "left", valign: "middle", margin: 0 });
-  s.addText("● ── ● ── ● ── ● ── F'── G'", {
-    x: 6.1, y: 3.3, w: 3.4, h: 0.25,
-    fontSize: 14, fontFace: "Consolas", color: C.primary,
-    align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("F' ／ G' = 同樣的改動，但 commit hash 變了", {
-    x: 5.4, y: 4.05, w: 4, h: 0.25,
-    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
-    align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Same changes, different commit hashes", {
-    x: 5.4, y: 4.28, w: 4, h: 0.22,
-    fontSize: 9, fontFace: FONT, italic: true, color: C.subtle,
-    align: "left", valign: "middle", margin: 0,
-  });
-
-  // 底部 takeaway
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 4.95, w: 9, h: 0.95,
-    fill: { color: "FEF3C7" }, line: { color: "FEF3C7", width: 0 }, rectRadius: 0.05,
+    x: 0.6, y: 5.05, w: 9, h: 0.95,
+    fill: { color: "DBEAFE" }, line: { color: "93C5FD", width: 0.75 }, rectRadius: 0.06,
   });
   s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.6, y: 4.95, w: 0.06, h: 0.95,
-    fill: { color: "D97706" }, line: { color: "D97706", width: 0 },
+    x: 0.6, y: 5.05, w: 0.06, h: 0.95,
+    fill: { color: "1E40AF" }, line: { color: "1E40AF", width: 0 },
   });
-  s.addText("關鍵：rebase 會「改寫歷史」— commit hash 變了。個人 branch 沒問題，shared branch 會搞死隊友。", {
-    x: 0.85, y: 5.0, w: 8.6, h: 0.4,
-    fontSize: 12, fontFace: FONT, bold: true, color: "78350F",
+  s.addText("90% 情況下，對 AI 說「push 被擋了，幫我處理」就解決", {
+    x: 0.85, y: 5.15, w: 8.5, h: 0.36,
+    fontSize: 15, fontFace: FONT, bold: true, color: "1E3A8A",
     align: "left", valign: "middle", margin: 0,
   });
-  s.addText("Rebase rewrites history. Safe on your own branch — disastrous on shared branches.", {
-    x: 0.85, y: 5.45, w: 8.6, h: 0.4,
-    fontSize: 10, fontFace: FONT, italic: true, color: "92400E",
+  s.addText("In 90% of cases, just say \"push was rejected, please handle it\" — done.", {
+    x: 0.85, y: 5.52, w: 8.5, h: 0.28,
+    fontSize: 11, fontFace: FONT, italic: true, color: "1E40AF",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("細節下面三頁說明 · Details on next 3 slides", {
+    x: 0.85, y: 5.78, w: 8.5, h: 0.22,
+    fontSize: 9, fontFace: FONT, italic: true, color: "3B82F6",
     align: "left", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 19 — Force Push 的危險
+// Slide 19 — 四種常見情境（push reject 的變體）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Danger Zone");
-  addTitle(s, "為什麼設計師要怕 force push", "Why force push is the trap to watch for");
+  addEyebrow(s, "Scenarios");
+  addTitle(s, "為什麼會被擋？四種常見情境", "Four common reasons — same symptom");
 
-  // 一句話 thesis
-  s.addText("Rebase 改寫歷史 → 普通 push 推不上去 → AI 會建議 force push → 可能覆蓋隊友的 commit", {
-    x: 0.6, y: 1.85, w: 9, h: 0.3,
-    fontSize: 13, fontFace: FONT, bold: true,
-    color: "DC2626", align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Rebase rewrites history → normal push fails → AI suggests force → may overwrite teammates", {
-    x: 0.6, y: 2.18, w: 9, h: 0.24,
-    fontSize: 10, fontFace: FONT, italic: true,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
-  });
-
-  // 三欄對比
-  const cols = [
+  const variants = [
     {
-      x: 0.6,
-      title: "git push",
-      titleEn: "Normal push",
-      verdict: "✅ 安全",
-      verdictColor: "059669",
-      bg: "ECFDF5",
-      desc: "推不上去就停。\n從不覆蓋遠端歷史。",
-      descEn: "Stops if conflict. Never overwrites.",
+      tag: "最常見",
+      tagBg: "DBEAFE",
+      tagFg: "1E40AF",
+      zh: "別人剛 push 到同一個 branch",
+      en: "Teammate pushed to the same branch",
+      detail: "你在 main 上工作，期間隊友剛推了 commit 上去",
+      detailEn: "Teammate pushed to main while you were editing",
     },
     {
-      x: 3.7,
-      title: "git push --force",
-      titleEn: "Force push",
-      verdict: "❌ 危險",
-      verdictColor: "DC2626",
-      bg: "FEF2F2",
-      desc: "「我說了算」。\n直接覆蓋遠端，\n隊友的 commit 消失。",
-      descEn: "\"My way.\" Overwrites remote — teammates' work gone.",
+      tag: "常見",
+      tagBg: "D1FAE5",
+      tagFg: "065F46",
+      zh: "多裝置切換沒先 pull",
+      en: "Switched device without pulling first",
+      detail: "在 A 機 push 後，B 機繼續工作但忘了 pull",
+      detailEn: "Pushed from A, kept working on B without pulling",
     },
     {
-      x: 6.8,
-      title: "--force-with-lease",
-      titleEn: "Safe force",
-      verdict: "⚠️ 可控",
-      verdictColor: "D97706",
-      bg: "FEF3C7",
-      desc: "「我說了算，\n但別人改過就停。」\n預設用這個。",
-      descEn: "\"My way, unless someone changed it.\" Use this.",
+      tag: "偶發",
+      tagBg: "FEF3C7",
+      tagFg: "92400E",
+      zh: "AI 在背景動過你沒注意",
+      en: "AI did some git work last session",
+      detail: "Claude 上一輪 session 自動 commit/push 過，你不知道",
+      detailEn: "AI auto-committed in a prior session you didn't see",
+    },
+    {
+      tag: "罕見",
+      tagBg: "F3F4F6",
+      tagFg: "374151",
+      zh: "自己的 branch 也被推過",
+      en: "Your own branch was pushed elsewhere",
+      detail: "hie-rei 用 <name>/feature/ 命名後幾乎不會撞",
+      detailEn: "Rare in hie-rei due to <name>/feature/ naming",
     },
   ];
 
-  cols.forEach(c => {
+  variants.forEach((v, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = 0.6 + col * 4.55;
+    const y = 1.95 + row * 1.65;
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: c.x, y: 2.6, w: 2.8, h: 3.0,
-      fill: { color: c.bg }, line: { color: C.line, width: 0.75 }, rectRadius: 0.06,
+      x, y, w: 4.4, h: 1.45,
+      fill: { color: C.white }, line: { color: C.line, width: 1 }, rectRadius: 0.06,
     });
-    s.addText(c.title, {
-      x: c.x + 0.15, y: 2.75, w: 2.5, h: 0.32,
-      fontSize: 13, fontFace: "Consolas", bold: true, color: C.ink,
+    // Tag pill
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: x + 0.2, y: y + 0.18, w: 0.85, h: 0.28,
+      fill: { color: v.tagBg }, line: { color: v.tagBg, width: 0 }, rectRadius: 0.14,
+    });
+    s.addText(v.tag, {
+      x: x + 0.2, y: y + 0.18, w: 0.85, h: 0.28,
+      fontSize: 10, fontFace: FONT, bold: true, color: v.tagFg,
+      align: "center", valign: "middle", margin: 0,
+    });
+    s.addText(v.zh, {
+      x: x + 0.2, y: y + 0.55, w: 4.0, h: 0.32,
+      fontSize: 13.5, fontFace: FONT, bold: true, color: C.ink,
       align: "left", valign: "middle", margin: 0,
     });
-    s.addText(c.titleEn, {
-      x: c.x + 0.15, y: 3.05, w: 2.5, h: 0.22,
-      fontSize: 10, fontFace: FONT, color: C.muted,
+    s.addText(v.en, {
+      x: x + 0.2, y: y + 0.85, w: 4.0, h: 0.22,
+      fontSize: 9.5, fontFace: FONT, italic: true, color: C.muted,
       align: "left", valign: "middle", margin: 0,
     });
-    s.addText(c.verdict, {
-      x: c.x + 0.15, y: 3.4, w: 2.5, h: 0.32,
-      fontSize: 16, fontFace: FONT, bold: true, color: c.verdictColor,
-      align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(c.desc, {
-      x: c.x + 0.15, y: 3.85, w: 2.5, h: 1.1,
-      fontSize: 11, fontFace: FONT, color: C.text,
-      align: "left", valign: "top", margin: 0, paraSpaceAfter: 2,
-    });
-    s.addText(c.descEn, {
-      x: c.x + 0.15, y: 4.95, w: 2.5, h: 0.55,
-      fontSize: 9, fontFace: FONT, italic: true, color: C.muted,
+    s.addText(v.detail, {
+      x: x + 0.2, y: y + 1.08, w: 4.0, h: 0.32,
+      fontSize: 10.5, fontFace: FONT, color: C.text,
       align: "left", valign: "top", margin: 0,
     });
   });
 
-  // 底部 — AI 為什麼自作聰明
+  // Bottom callout
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 5.85, w: 9, h: 0.55,
-    fill: { color: C.rowAlt }, line: { color: C.line, width: 0 }, rectRadius: 0.05,
+    x: 0.6, y: 5.5, w: 9, h: 0.7,
+    fill: { color: "DBEAFE" }, line: { color: "93C5FD", width: 0.75 }, rectRadius: 0.05,
   });
-  s.addText("⚠️ AI 看到 push 失敗會自然建議 --force —— 你要主動要求 --force-with-lease，下一頁教你怎麼說。", {
-    x: 0.85, y: 5.92, w: 8.6, h: 0.42,
-    fontSize: 11, fontFace: FONT, color: C.text,
+  s.addText("症狀都長一樣——你不需要分辨是哪種，AI 看 git 自己就知道", {
+    x: 0.85, y: 5.58, w: 8.5, h: 0.32,
+    fontSize: 12, fontFace: FONT, bold: true, color: "1E40AF",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Same symptom — you don't need to diagnose. AI will figure it out.", {
+    x: 0.85, y: 5.9, w: 8.5, h: 0.26,
+    fontSize: 10, fontFace: FONT, italic: true, color: "1E40AF",
     align: "left", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 20 — 對 AI 說的三個防禦提示
+// Slide 20 — 設計師該做什麼：對 AI 說「處理一下」
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Defensive Prompts");
-  addTitle(s, "對 AI 說這幾句，避免災難", "Three sentences to keep AI from breaking your branch");
+  addEyebrow(s, "Designer Actions");
+  addTitle(s, "對 AI 說：「處理一下」", "Three ways to ask AI to handle it");
 
-  s.addText("AI 預設會「快點解決問題」— 這幾句明確的指令把你的安全要求講清楚", {
+  // Section header
+  s.addText("有效的講法（任一即可）", {
     x: 0.6, y: 1.85, w: 9, h: 0.3,
-    fontSize: 12, fontFace: FONT, color: C.muted,
+    fontSize: 14, fontFace: FONT, bold: true, color: "059669",
     align: "left", valign: "middle", margin: 0,
   });
 
   const prompts = [
     {
-      n: "1",
-      title: "Rebase 前先預告",
-      titleEn: "Preview before rebase",
-      prompt: "「rebase 之前，先告訴我會影響哪些 commit。」",
-      promptEn: "\"Before rebasing, tell me which commits will change.\"",
-      defends: "防的是：AI 直接 rebase + force push 完才告訴你，發現出事已晚。",
-      defendsEn: "Prevents: AI rebasing and force-pushing before you can review.",
+      zh: "「push 被擋了，幫我處理」",
+      en: "\"Push was rejected, please handle it\"",
     },
     {
-      n: "2",
-      title: "永遠不要 --force",
-      titleEn: "Never use --force",
-      prompt: "「需要 force push 時，請用 --force-with-lease，不要用 --force。」",
-      promptEn: "\"Use --force-with-lease, never --force.\"",
-      defends: "防的是：AI 預設 --force 覆蓋遠端，隊友 commit 消失。",
-      defendsEn: "Prevents: AI overwriting teammates' commits with bare --force.",
+      zh: "「先把別人的更新拉下來再 push」",
+      en: "\"Pull the remote updates first, then push\"",
     },
     {
-      n: "3",
-      title: "不碰 main / shared branch",
-      titleEn: "Hands off shared branches",
-      prompt: "「不要在 main 或別人也在用的 branch 上 rebase。」",
-      promptEn: "\"Don't rebase main or any shared branch.\"",
-      defends: "防的是：對共用 branch rebase，整團隊歷史錯亂。",
-      defendsEn: "Prevents: rebase on shared branches breaking everyone's history.",
+      zh: "「告訴我為什麼被擋」",
+      en: "\"Tell me why it was rejected\"",
     },
   ];
 
   prompts.forEach((p, i) => {
-    const y = 2.3 + i * 1.15;
-
-    // 編號圓圈
-    s.addShape(pres.shapes.OVAL, {
-      x: 0.6, y: y + 0.1, w: 0.45, h: 0.45,
-      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+    const y = 2.25 + i * 0.7;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: 0.6, y: y, w: 9, h: 0.6,
+      fill: { color: "ECFDF5" }, line: { color: "6EE7B7", width: 1 }, rectRadius: 0.06,
     });
-    s.addText(p.n, {
-      x: 0.6, y: y + 0.1, w: 0.45, h: 0.45,
-      fontSize: 16, bold: true, fontFace: FONT,
-      color: C.white, align: "center", valign: "middle", margin: 0,
+    s.addShape(pres.shapes.RECTANGLE, {
+      x: 0.6, y: y, w: 0.08, h: 0.6,
+      fill: { color: "059669" }, line: { color: "059669", width: 0 },
     });
-
-    // 標題
-    s.addText(p.title, {
-      x: 1.2, y: y, w: 4.5, h: 0.3,
+    s.addText("✓", {
+      x: 0.8, y, w: 0.3, h: 0.6,
+      fontSize: 18, fontFace: FONT, bold: true, color: "059669",
+      align: "center", valign: "middle", margin: 0,
+    });
+    s.addText(p.zh, {
+      x: 1.2, y: y + 0.05, w: 8.3, h: 0.32,
       fontSize: 14, fontFace: FONT, bold: true, color: C.ink,
       align: "left", valign: "middle", margin: 0,
     });
-    s.addText(p.titleEn, {
-      x: 1.2, y: y + 0.28, w: 4.5, h: 0.22,
-      fontSize: 10, fontFace: FONT, color: C.muted,
-      align: "left", valign: "middle", margin: 0,
-    });
-
-    // Prompt（黑底）
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 1.2, y: y + 0.55, w: 8.4, h: 0.4,
-      fill: { color: "1F2937" }, line: { color: "1F2937", width: 0 }, rectRadius: 0.04,
-    });
-    s.addText(p.prompt, {
-      x: 1.35, y: y + 0.58, w: 8.1, h: 0.34,
-      fontSize: 11.5, fontFace: FONT, color: "5EEAD4",
-      align: "left", valign: "middle", margin: 0,
-    });
-
-    // 防什麼
-    s.addText(p.defends, {
-      x: 1.2, y: y + 1.0, w: 8.4, h: 0.18,
-      fontSize: 9.5, fontFace: FONT, italic: true, color: C.muted,
+    s.addText(p.en, {
+      x: 1.2, y: y + 0.34, w: 8.3, h: 0.24,
+      fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
       align: "left", valign: "middle", margin: 0,
     });
   });
 
-  // 底部 takeaway
-  s.addText("把這三句話寫進 CLAUDE.md，AI 每次都會遵守 — 比每次手動提醒可靠。", {
-    x: 0.6, y: 5.95, w: 9, h: 0.22,
-    fontSize: 11, fontFace: FONT, bold: true,
-    color: C.text, align: "left", valign: "middle", margin: 0,
+  // AI will do header
+  s.addText("AI 接著會做的事  ·  What AI will do", {
+    x: 0.6, y: 4.55, w: 9, h: 0.28,
+    fontSize: 12, fontFace: FONT, bold: true, color: C.text,
+    align: "left", valign: "middle", margin: 0,
   });
-  s.addText("Add these to CLAUDE.md once — more reliable than reminding AI every session.", {
-    x: 0.6, y: 6.15, w: 9, h: 0.18,
-    fontSize: 10, fontFace: FONT, italic: true,
-    color: C.subtle, align: "left", valign: "middle", margin: 0,
+
+  const steps = [
+    { zh: "看一下 remote 上是什麼狀態", en: "Check remote state" },
+    { zh: "把別人的更新整合進你的 local", en: "Integrate teammate's updates into your local" },
+    { zh: "再 push 一次", en: "Push again" },
+    { zh: "有衝突就問你——不會 silent overwrite", en: "Show conflicts to you, never overwrite silently" },
+  ];
+
+  steps.forEach((step, i) => {
+    const y = 4.95 + i * 0.3;
+    s.addText("→", {
+      x: 0.85, y, w: 0.3, h: 0.24,
+      fontSize: 12, fontFace: FONT, bold: true, color: C.primary,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText([
+      { text: step.zh, options: { color: C.text } },
+      { text: "    " + step.en, options: { color: C.muted, italic: true, fontSize: 9 } },
+    ], {
+      x: 1.15, y, w: 8.5, h: 0.24,
+      fontSize: 11, fontFace: FONT,
+      align: "left", valign: "middle", margin: 0,
+    });
   });
 }
 
 // ==========================================================
-// Slide 21 — Safety Net（Michael 的 hooks 補充說明）
+// Slide 21 — 不該說的話 + Force Push 後果
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Designer Actions (continued)");
+  addTitle(s, "不要說：「強推」、「force」、「蓋過去」", "Phrases that trigger force push");
+
+  // ===== LEFT: don't-say list =====
+  s.addText("避開這些字眼", {
+    x: 0.6, y: 1.85, w: 4.4, h: 0.3,
+    fontSize: 14, fontFace: FONT, bold: true, color: "DC2626",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  const dontSay = [
+    "強推上去 / force push it",
+    "不管它了直接推 / just push it",
+    "直接蓋過去 / just overwrite",
+    "我要 --force / --force-with-lease",
+  ];
+
+  dontSay.forEach((phrase, i) => {
+    const y = 2.3 + i * 0.5;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: 0.6, y, w: 4.4, h: 0.42,
+      fill: { color: "FEF2F2" }, line: { color: "FCA5A5", width: 0.75 }, rectRadius: 0.05,
+    });
+    s.addText("✗", {
+      x: 0.7, y, w: 0.3, h: 0.42,
+      fontSize: 14, fontFace: FONT, bold: true, color: "DC2626",
+      align: "center", valign: "middle", margin: 0,
+    });
+    s.addText(phrase, {
+      x: 1.05, y, w: 3.3, h: 0.42,
+      fontSize: 11, fontFace: FONT, color: C.text,
+      align: "left", valign: "middle", margin: 0,
+    });
+  });
+
+  // ===== RIGHT: force push consequence =====
+  s.addText("為什麼會出事——Force Push 的後果", {
+    x: 5.2, y: 1.85, w: 4.4, h: 0.3,
+    fontSize: 14, fontFace: FONT, bold: true, color: "DC2626",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Before label
+  s.addText("Before:", {
+    x: 5.2, y: 2.35, w: 1, h: 0.24,
+    fontSize: 10, fontFace: FONT, bold: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText([
+    { text: "● ─ ● ─ ", options: { color: C.primary, bold: true } },
+    { text: "▲", options: { color: "DC2626", bold: true } },
+  ], {
+    x: 6.1, y: 2.35, w: 3.5, h: 0.3,
+    fontSize: 18, fontFace: "Consolas",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("(▲ = 隊友剛 push 的 commit)", {
+    x: 5.2, y: 2.7, w: 4.4, h: 0.22,
+    fontSize: 9, fontFace: FONT, italic: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Arrow
+  s.addText("AI force push ↓", {
+    x: 5.2, y: 3.05, w: 4.4, h: 0.26,
+    fontSize: 11, fontFace: FONT, italic: true, bold: true, color: "DC2626",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // After label
+  s.addText("After:", {
+    x: 5.2, y: 3.4, w: 1, h: 0.24,
+    fontSize: 10, fontFace: FONT, bold: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText([
+    { text: "● ─ ● ─ ", options: { color: C.primary, bold: true } },
+    { text: "●", options: { color: "F59E0B", bold: true } },
+    { text: " ─ ", options: { color: C.subtle } },
+    { text: "●", options: { color: "F59E0B", bold: true } },
+  ], {
+    x: 6.1, y: 3.4, w: 3.5, h: 0.3,
+    fontSize: 18, fontFace: "Consolas",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("(▲ 不見了——被你 commit 覆蓋)", {
+    x: 5.2, y: 3.75, w: 4.4, h: 0.22,
+    fontSize: 9, fontFace: FONT, italic: true, color: "DC2626",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Result tag
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 5.2, y: 4.2, w: 4.4, h: 0.5,
+    fill: { color: "FEE2E2" }, line: { color: "DC2626", width: 0.75 }, rectRadius: 0.05,
+  });
+  s.addText("→ 隊友的工作消失了", {
+    x: 5.35, y: 4.22, w: 4.15, h: 0.26,
+    fontSize: 12, fontFace: FONT, bold: true, color: "DC2626",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Their work is gone", {
+    x: 5.35, y: 4.45, w: 4.15, h: 0.22,
+    fontSize: 9.5, fontFace: FONT, italic: true, color: "991B1B",
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // Bottom: don't worry, hooks block it
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 5.35, w: 9, h: 0.85,
+    fill: { color: "DBEAFE" }, line: { color: "93C5FD", width: 0.75 }, rectRadius: 0.05,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.6, y: 5.35, w: 0.06, h: 0.85,
+    fill: { color: "1E40AF" }, line: { color: "1E40AF", width: 0 },
+  });
+  s.addText("別擔心：hie-rei 的 hooks 已經機械擋下 force push——說錯話也跑不出來。", {
+    x: 0.85, y: 5.45, w: 8.5, h: 0.32,
+    fontSize: 12.5, fontFace: FONT, bold: true, color: "1E3A8A",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Don't worry — hie-rei's hooks already block force push, even if your wording is off. (Next slide)", {
+    x: 0.85, y: 5.8, w: 8.5, h: 0.3,
+    fontSize: 10, fontFace: FONT, italic: true, color: "1E40AF",
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 22 — Safety Net（Michael 的 hooks 補充說明）
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1904,12 +1999,12 @@ pres.slides.pop(); // remove the buggy slide above
   });
 
   // Bottom takeaway
-  s.addText("→ 所以前一頁的三個防禦 prompt 還是要寫進你個人的 CLAUDE.md，自律才是不依賴環境的根本。", {
+  s.addText("→ 養成不對 AI 說「強推」「force」「直接覆蓋」的習慣，離開 repo 也帶得走。", {
     x: 0.6, y: 5.78, w: 9, h: 0.3,
     fontSize: 11.5, fontFace: FONT, bold: true, color: C.ink,
     align: "left", valign: "middle", margin: 0,
   });
-  s.addText("Keep the three prompts from the previous slide in your personal CLAUDE.md — discipline is what travels with you.", {
+  s.addText("Build the habit of not saying \"force\" / \"overwrite\" — discipline travels with you.", {
     x: 0.6, y: 6.08, w: 9, h: 0.22,
     fontSize: 9.5, fontFace: FONT, italic: true, color: C.subtle,
     align: "left", valign: "middle", margin: 0,
@@ -1917,7 +2012,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 22 — Key Takeaway
+// Slide 23 — Key Takeaway
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1968,7 +2063,7 @@ pres.slides.pop(); // remove the buggy slide above
 }
 
 // ==========================================================
-// Slide 23 — Next Week
+// Slide 24 — Next Week
 // ==========================================================
 {
   const s = pres.addSlide();
