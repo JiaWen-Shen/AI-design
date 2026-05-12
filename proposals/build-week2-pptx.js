@@ -138,8 +138,8 @@ function addPill(slide, x, y, label, bg, fg) {
       sub: "為什麼同事看不到我的改動？", subEn: "Why colleagues don't see your edits" },
     { n: "05", zh: "Branch — 平行世界的工作空間", en: "Branch — parallel workspaces",
       sub: "Git 最強大的功能之一", subEn: "One of Git's most powerful features" },
-    { n: "06", zh: "Rebase 與 Force Push", en: "Rebase & force push",
-      sub: "進階概念 + 防 AI 自作聰明", subEn: "Advanced + defensive prompts" },
+    { n: "06", zh: "Push 被擋怎麼辦", en: "When push gets rejected",
+      sub: "對 AI 說「處理一下」就好", subEn: "Just say \"handle it\" — and don't say force" },
   ];
 
   // separator line above list
