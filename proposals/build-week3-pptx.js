@@ -1,20 +1,20 @@
-// Week 3: Git 常見名詞解惑 — PPTX builder
+// Week 3: Git 常見名詞解惑 + 三種 Working Repo — PPTX builder v2
 // Design language mirrors Week 1 Figma + Week 2 pptx
 // Run: node build-week3-pptx.js
 
 const pptxgen = require("pptxgenjs");
 
 const pres = new pptxgen();
-pres.layout = "LAYOUT_16x10"; // 10" × 6.25"
+pres.layout = "LAYOUT_16x10";
 pres.author = "Karen Shen";
 pres.title = "Git 常見名詞解惑 — Week 3";
 
 // ---------- Palette ----------
 const C = {
   bg: "F8FAFC",
-  bgSection: "1A66FF",  // full-bleed section divider
+  bgSection: "1A66FF",
   bgQuestion: "EAF2FF",
-  bgWarning: "FFF7ED",  // warm amber for warning slide
+  bgWarning: "FFF7ED",
   primary: "1A66FF",
   ink: "111827",
   text: "374151",
@@ -28,27 +28,20 @@ const C = {
   gitText: "1A66FF",
   warningBg: "FEF3C7",
   warningText: "D97706",
+  greenBg: "DCFCE7",
+  greenText: "16A34A",
   white: "FFFFFF",
 };
 
 const FONT = "Calibri";
 
 // ---------- Helpers ----------
-function addEyebrow(slide, label) {
+function addEyebrow(slide, label, color) {
   slide.addText(label.toUpperCase(), {
     x: 0.6, y: 0.45, w: 9, h: 0.25,
     fontSize: 10, fontFace: FONT, bold: true,
-    color: C.primary, align: "left", valign: "middle",
-    charSpacing: 3, margin: 0,
-  });
-}
-
-function addEyebrowWhite(slide, label) {
-  slide.addText(label.toUpperCase(), {
-    x: 0.6, y: 0.45, w: 9, h: 0.25,
-    fontSize: 10, fontFace: FONT, bold: true,
-    color: "FFFFFF", align: "left", valign: "middle",
-    charSpacing: 3, margin: 0,
+    color: color || C.primary,
+    align: "left", valign: "middle", charSpacing: 3, margin: 0,
   });
 }
 
@@ -60,92 +53,39 @@ function addTitle(slide, zh, en) {
   });
   if (en) {
     slide.addText(en, {
-      x: 0.6, y: 1.44, w: 9.4, h: 0.3,
+      x: 0.6, y: 1.44, w: 9.4, h: 0.28,
       fontSize: 13, fontFace: FONT,
       color: C.muted, align: "left", valign: "middle", margin: 0,
     });
   }
 }
 
-function addPill(slide, x, y, label, bg, fg) {
-  const w = Math.max(0.7, 0.3 + label.length * 0.11);
+function hLine(slide, y, x, w) {
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: x || 0.6, y, w: w || 9, h: 0.004,
+    fill: { color: C.line }, line: { color: C.line, width: 0 },
+  });
+}
+
+function pill(slide, x, y, label, bg, fg, w) {
+  const pw = w || Math.max(0.8, 0.3 + label.length * 0.12);
   slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x, y, w, h: 0.3,
-    fill: { color: bg }, line: { color: bg, width: 0 },
-    rectRadius: 0.15,
+    x, y, w: pw, h: 0.3,
+    fill: { color: bg }, line: { color: bg, width: 0 }, rectRadius: 0.15,
   });
   slide.addText(label, {
-    x, y, w, h: 0.3,
+    x, y, w: pw, h: 0.3,
     fontSize: 11, fontFace: FONT, bold: true,
     color: fg, align: "center", valign: "middle", margin: 0,
   });
 }
 
-// Full-width separator line
-function hLine(slide, y) {
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 0.6, y, w: 9, h: 0.004,
-    fill: { color: C.line }, line: { color: C.line, width: 0 },
-  });
-}
-
-// Comparison table: headers + rows
-// cols: [{ label, labelEn, x, w }]
-// rows: [{ label, labelEn, cols: [text, ...] }]
-function addCompareTable(slide, startY, colHeaders, rows, rowH = 0.9) {
-  // Column headers
-  colHeaders.forEach(h => {
-    slide.addText(h.label, {
-      x: h.x, y: startY, w: h.w, h: 0.32,
-      fontSize: 16, fontFace: FONT, bold: true,
-      color: h.color || C.primary,
-      align: "left", valign: "middle", margin: 0,
-    });
-    if (h.labelEn) {
-      slide.addText(h.labelEn, {
-        x: h.x, y: startY + 0.32, w: h.w, h: 0.22,
-        fontSize: 10, fontFace: FONT,
-        color: C.muted, align: "left", valign: "middle", margin: 0,
-      });
-    }
-  });
-
-  const headerH = colHeaders[0]?.labelEn ? 0.6 : 0.4;
-  hLine(slide, startY + headerH);
-
-  rows.forEach((row, i) => {
-    const y = startY + headerH + 0.1 + i * rowH;
-    if (i % 2 === 1) {
-      slide.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.06, w: 9, h: rowH,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
-      });
-    }
-    // Row label
-    slide.addText(row.label, {
-      x: 0.6, y: y, w: 1.55, h: 0.32,
-      fontSize: 12, fontFace: FONT, bold: true,
-      color: C.text, align: "left", valign: "middle", margin: 0,
-    });
-    if (row.labelEn) {
-      slide.addText(row.labelEn, {
-        x: 0.6, y: y + 0.32, w: 1.55, h: 0.22,
-        fontSize: 10, fontFace: FONT,
-        color: C.muted, align: "left", valign: "middle", margin: 0,
-      });
-    }
-    // Cells
-    row.cols.forEach((cell, ci) => {
-      const col = colHeaders[ci];
-      slide.addText(cell, {
-        x: col.x, y: y, w: col.w, h: rowH - 0.15,
-        fontSize: 13, fontFace: FONT,
-        color: C.text, align: "left", valign: "middle",
-        margin: [0, 4, 0, 0], wrap: true,
-      });
-    });
-
-    hLine(slide, y + rowH - 0.1);
+function box(slide, x, y, w, h, bg, border) {
+  slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x, y, w, h,
+    fill: { color: bg },
+    line: border ? { color: border, width: 1 } : { color: bg, width: 0 },
+    rectRadius: 0.1,
   });
 }
 
@@ -156,41 +96,33 @@ function addCompareTable(slide, startY, colHeaders, rows, rowH = 0.9) {
   const s = pres.addSlide();
   s.background = { color: C.bg };
 
-  // Week badge
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
     x: 0.8, y: 2.2, w: 1.1, h: 0.36,
-    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-    rectRadius: 0.18,
+    fill: { color: C.primary }, line: { color: C.primary, width: 0 }, rectRadius: 0.18,
   });
   s.addText("Week 3 / 6", {
     x: 0.8, y: 2.2, w: 1.1, h: 0.36,
     fontSize: 11, fontFace: FONT, bold: true,
     color: C.white, align: "center", valign: "middle", margin: 0,
   });
-
-  // Chinese title
-  s.addText("Git 常見名詞解惑", {
+  s.addText("Git 名詞速查 + 三種 Working Repo", {
     x: 0.8, y: 2.65, w: 9.2, h: 0.9,
-    fontSize: 44, fontFace: FONT, bold: true,
+    fontSize: 38, fontFace: FONT, bold: true,
     color: C.ink, align: "left", valign: "middle", margin: 0,
   });
-
-  // English subtitle
-  s.addText("Git Vocabulary", {
+  s.addText("Git Vocabulary + Working Repo Types", {
     x: 0.8, y: 3.55, w: 9.2, h: 0.5,
-    fontSize: 26, fontFace: FONT,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
+    fontSize: 22, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
   });
-
-  // Accent line + series label
   s.addShape(pres.shapes.RECTANGLE, {
     x: 0.8, y: 4.25, w: 0.6, h: 0.04,
     fill: { color: C.primary }, line: { color: C.primary, width: 0 },
   });
   s.addText("GitHub for UI Designers", {
     x: 0.8, y: 4.35, w: 9, h: 0.3,
-    fontSize: 12, fontFace: FONT,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
+    fontSize: 12, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
   });
 }
 
@@ -203,879 +135,938 @@ function addCompareTable(slide, startY, colHeaders, rows, rowH = 0.9) {
   addEyebrow(s, "Agenda");
   addTitle(s, "這週會講什麼", "What we'll cover today");
 
-  const items = [
+  const parts = [
     {
-      n: "A", zh: "容易搞混的名詞", en: "Confusing Terms",
-      subs: ["Commit vs Push", "Branch vs Fork", "怎麼判斷用哪個"],
+      label: "A", color: C.primary, bg: C.gitBg,
+      zh: "Git 名詞速查", en: "Vocabulary Quick Reference",
+      items: ["Commit vs Push", "Branch vs Fork + 何時開 branch"],
     },
     {
-      n: "B", zh: "管理你的 Changes", en: "Managing Changes",
-      subs: ["Staged vs Unstaged", "Discard — 還原不想要的改動", "Stash — 暫存但不 commit"],
+      label: "B", color: "16A34A", bg: C.greenBg,
+      zh: "Changes 管理", en: "Managing Changes — Quick Review",
+      items: ["Staged / Unstaged / Discard", "Stash"],
+    },
+    {
+      label: "C", color: C.primary, bg: C.primary,
+      zh: "三種 Working Repo", en: "Three Working Repo Types — Main Focus",
+      items: ["Type A 協作 repo", "Type B 引用 repo（DS + 部門規範）", "Type C 個人 repo"],
+      isMain: true,
     },
   ];
 
-  hLine(s, 2.0);
+  hLine(s, 2.02);
 
-  items.forEach((it, i) => {
-    const y = 2.15 + i * 1.65;
+  parts.forEach((p, i) => {
+    const y = 2.15 + i * 1.35;
 
-    // Section pill (A / B)
+    // Badge
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 0.6, y: y + 0.12, w: 0.45, h: 0.45,
-      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-      rectRadius: 0.1,
+      x: 0.6, y: y + 0.1, w: 0.46, h: 0.46,
+      fill: { color: p.isMain ? C.primary : p.bg },
+      line: { color: p.isMain ? C.primary : p.bg, width: 0 }, rectRadius: 0.1,
     });
-    s.addText(it.n, {
-      x: 0.6, y: y + 0.12, w: 0.45, h: 0.45,
-      fontSize: 16, fontFace: FONT, bold: true,
-      color: C.white, align: "center", valign: "middle", margin: 0,
+    s.addText(p.label, {
+      x: 0.6, y: y + 0.1, w: 0.46, h: 0.46,
+      fontSize: 17, fontFace: FONT, bold: true,
+      color: p.isMain ? C.white : p.color,
+      align: "center", valign: "middle", margin: 0,
     });
 
-    // Topic
-    s.addText(it.zh, {
-      x: 1.25, y: y, w: 8, h: 0.38,
-      fontSize: 18, fontFace: FONT, bold: true,
+    s.addText(p.zh, {
+      x: 1.25, y: y, w: 3.5, h: 0.36,
+      fontSize: 17, fontFace: FONT, bold: true,
       color: C.ink, align: "left", valign: "middle", margin: 0,
     });
-    s.addText(it.en, {
-      x: 1.25, y: y + 0.38, w: 8, h: 0.26,
-      fontSize: 11.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
+    s.addText(p.en, {
+      x: 1.25, y: y + 0.36, w: 3.5, h: 0.24,
+      fontSize: 10.5, fontFace: FONT, color: C.muted,
+      align: "left", valign: "middle", margin: 0,
     });
 
-    // Sub-items
-    const subY = y + 0.72;
-    it.subs.forEach((sub, si) => {
+    p.items.forEach((item, si) => {
       s.addShape(pres.shapes.OVAL, {
-        x: 1.28, y: subY + si * 0.3 + 0.08, w: 0.08, h: 0.08,
-        fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+        x: 5.1, y: y + si * 0.3 + 0.12, w: 0.08, h: 0.08,
+        fill: { color: p.isMain ? C.primary : p.color },
+        line: { color: p.isMain ? C.primary : p.color, width: 0 },
       });
-      s.addText(sub, {
-        x: 1.5, y: subY + si * 0.3, w: 7.5, h: 0.28,
-        fontSize: 13, fontFace: FONT,
-        color: C.text, align: "left", valign: "middle", margin: 0,
+      s.addText(item, {
+        x: 5.3, y: y + si * 0.3, w: 4.5, h: 0.28,
+        fontSize: 12.5, fontFace: FONT,
+        color: p.isMain ? C.primary : C.text,
+        bold: p.isMain,
+        align: "left", valign: "middle", margin: 0,
       });
     });
 
-    hLine(s, y + 1.58);
+    hLine(s, y + 1.27);
   });
 }
 
 // ==========================================================
-// Slide 3 — Section Divider A
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bgSection };
-
-  addEyebrowWhite(s, "Part A");
-
-  s.addText("容易搞混的名詞", {
-    x: 0.8, y: 1.5, w: 8.5, h: 1.1,
-    fontSize: 48, fontFace: FONT, bold: true,
-    color: C.white, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Confusing Terms", {
-    x: 0.8, y: 2.6, w: 8.5, h: 0.5,
-    fontSize: 22, fontFace: FONT,
-    color: "D0DEFF", align: "left", valign: "middle", margin: 0,
-  });
-
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.8, y: 3.3, w: 1.0, h: 0.04,
-    fill: { color: C.white }, line: { color: C.white, width: 0 },
-  });
-  s.addText("Commit vs Push　·　Branch vs Fork　·　決策指南", {
-    x: 0.8, y: 3.45, w: 8.5, h: 0.3,
-    fontSize: 13, fontFace: FONT,
-    color: "B8CCFF", align: "left", valign: "middle", margin: 0,
-  });
-}
-
-// ==========================================================
-// Slide 4 — Commit vs Push 對照表
+// Slide 3 — Commit vs Push（Part A）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Confusing Terms — 01");
+  addEyebrow(s, "Part A  ·  Git 名詞速查  —  01");
   addTitle(s, "Commit vs Push", "What's the difference?");
 
   const cols = [
     { label: "Commit", color: C.primary, x: 2.3, w: 3.3 },
     { label: "Push", color: C.figmaText, x: 5.8, w: 3.6 },
   ];
-
   const rows = [
-    {
-      label: "做了什麼", labelEn: "Action",
-      cols: ["在本機建立一個存檔點", "把存檔點上傳到 GitHub"],
-    },
-    {
-      label: "誰看得到", labelEn: "Visibility",
-      cols: ["只有你", "團隊所有人"],
-    },
-    {
-      label: "可以反悔嗎", labelEn: "Reversible?",
-      cols: ["可以，還沒 push 之前都在你電腦裡", "push 之後別人可能已經看到了"],
-    },
-    {
-      label: "Figma 類比", labelEn: "Figma analogy",
-      cols: ["存檔（Cmd+S）", "分享連結給同事"],
-    },
+    { label: "做了什麼", labelEn: "Action",
+      cols: ["在本機建立存檔點", "把存檔點上傳到 GitHub"] },
+    { label: "誰看得到", labelEn: "Visibility",
+      cols: ["只有你", "團隊所有人"] },
+    { label: "可以反悔嗎", labelEn: "Reversible?",
+      cols: ["可以，push 之前都在你電腦裡", "Push 後別人可能已經看到"] },
+    { label: "Figma 類比", labelEn: "Figma analogy",
+      cols: ["存檔（Cmd+S）", "分享連結給同事"] },
   ];
 
-  addCompareTable(s, 2.0, cols, rows, 0.82);
-}
-
-// ==========================================================
-// Slide 5 — Commit vs Push 流程圖
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Confusing Terms — 01");
-  addTitle(s, "兩個動作，兩個時機", "Two actions, two moments");
-
-  // 三個方塊：本機改動 → Commit → Push → GitHub
-  const boxes = [
-    { x: 0.5, label: "本機改動", labelEn: "Local changes", bg: C.rowAlt, fg: C.ink },
-    { x: 3.3, label: "Commit", labelEn: "存檔點建立", bg: C.gitBg, fg: C.primary },
-    { x: 6.1, label: "GitHub", labelEn: "遠端，團隊可見", bg: C.figmaBg, fg: C.figmaText },
-  ];
-
-  boxes.forEach(b => {
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: b.x, y: 2.4, w: 2.6, h: 1.4,
-      fill: { color: b.bg }, line: { color: C.line, width: 1 },
-      rectRadius: 0.12,
-    });
-    s.addText(b.label, {
-      x: b.x, y: 2.5, w: 2.6, h: 0.55,
-      fontSize: 18, fontFace: FONT, bold: true,
-      color: b.fg, align: "center", valign: "middle", margin: 0,
-    });
-    s.addText(b.labelEn, {
-      x: b.x, y: 3.05, w: 2.6, h: 0.35,
-      fontSize: 11, fontFace: FONT,
-      color: C.muted, align: "center", valign: "middle", margin: 0,
+  // Headers
+  cols.forEach(c => {
+    s.addText(c.label, {
+      x: c.x, y: 2.05, w: c.w, h: 0.32,
+      fontSize: 16, fontFace: FONT, bold: true, color: c.color,
+      align: "left", valign: "middle", margin: 0,
     });
   });
+  hLine(s, 2.44);
 
-  // Arrows
-  // Arrow 1: 本機→Commit（git commit）
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 3.05, y: 3.06, w: 0.35, h: 0.04,
-    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-  });
-  s.addText("git commit / Claude Code", {
-    x: 2.92, y: 3.85, w: 1.0, h: 0.38,
-    fontSize: 10, fontFace: FONT,
-    color: C.primary, align: "center", valign: "middle", margin: 0, italic: true,
-  });
-
-  // Arrow 2: Commit→GitHub（git push）
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 5.85, y: 3.06, w: 0.35, h: 0.04,
-    fill: { color: C.figmaText }, line: { color: C.figmaText, width: 0 },
-  });
-  s.addText("git push / Claude Code", {
-    x: 5.72, y: 3.85, w: 1.0, h: 0.38,
-    fontSize: 10, fontFace: FONT,
-    color: C.figmaText, align: "center", valign: "middle", margin: 0, italic: true,
+  rows.forEach((r, i) => {
+    const y = 2.56 + i * 0.82;
+    if (i % 2 === 1) {
+      box(s, 0.6, y - 0.06, 9, 0.82, C.rowAlt);
+    }
+    s.addText(r.label, { x: 0.8, y, w: 1.4, h: 0.3, fontSize: 12, fontFace: FONT, bold: true, color: C.text, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.labelEn, { x: 0.8, y: y + 0.3, w: 1.4, h: 0.22, fontSize: 10, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+    cols.forEach((c, ci) => {
+      s.addText(r.cols[ci], { x: c.x, y, w: c.w, h: 0.68, fontSize: 13, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: [0,4,0,0], wrap: true });
+    });
+    hLine(s, y + 0.74);
   });
 
   // Key insight
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.5, y: 4.5, w: 8.8, h: 0.52,
-    fill: { color: C.gitBg }, line: { color: C.gitBg, width: 0 },
-    rectRadius: 0.1,
-  });
-  s.addText("💡  可以 commit 很多次，累積好再一口氣 push — 不是每次 commit 都要立刻 push", {
-    x: 0.5, y: 4.5, w: 8.8, h: 0.52,
-    fontSize: 13, fontFace: FONT,
-    color: C.primary, align: "center", valign: "middle", margin: 0,
+  box(s, 0.6, 5.88, 9, 0.4, C.gitBg);
+  s.addText("💡  可以 commit 很多次再一起 push；Push 的時機：收工、換裝置、要給人看", {
+    x: 0.6, y: 5.88, w: 9, h: 0.4,
+    fontSize: 12.5, fontFace: FONT, bold: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 6 — Branch vs Fork 對照表
+// Slide 4 — Branch vs Fork（合併決策指南 + 情境）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Confusing Terms — 02");
-  addTitle(s, "Branch vs Fork", "Two ways to work without breaking the original");
+  addEyebrow(s, "Part A  ·  Git 名詞速查  —  02");
+  addTitle(s, "Branch vs Fork", "And when to use which");
 
-  const cols = [
-    { label: "Branch", color: C.primary, x: 2.3, w: 3.3 },
-    { label: "Fork", color: C.figmaText, x: 5.8, w: 3.6 },
+  // Left: compact compare table (top half)
+  const tableRows = [
+    { label: "在哪裡", a: "同一個 repo 裡", b: "複製到你自己的帳號" },
+    { label: "誰用", a: "有寫入權限的人", b: "外部貢獻者" },
+    { label: "Figma 類比", a: "Figma Branch", b: "Duplicate 整個檔到 Draft" },
   ];
 
-  const rows = [
-    {
-      label: "在哪裡", labelEn: "Location",
-      cols: ["同一個 repo 裡面", "複製一整個 repo 到你的帳號"],
-    },
-    {
-      label: "誰用", labelEn: "Who uses it",
-      cols: ["團隊成員（有寫入權限）", "外部貢獻者（沒有直接寫入權限）"],
-    },
-    {
-      label: "Figma 類比", labelEn: "Figma analogy",
-      cols: ["Figma Branch（同一個檔案分支）", "Duplicate 整個 Figma 到自己的 Draft"],
-    },
-    {
-      label: "什麼時候用", labelEn: "When to use",
-      cols: ["日常開發，每個任務開一條", "貢獻別人的開源專案"],
-    },
-  ];
+  s.addText("Branch", { x: 2.1, y: 2.05, w: 3.0, h: 0.3, fontSize: 15, fontFace: FONT, bold: true, color: C.primary, align: "left", valign: "middle", margin: 0 });
+  s.addText("Fork", { x: 5.3, y: 2.05, w: 3.0, h: 0.3, fontSize: 15, fontFace: FONT, bold: true, color: C.figmaText, align: "left", valign: "middle", margin: 0 });
+  hLine(s, 2.4);
 
-  addCompareTable(s, 2.0, cols, rows, 0.82);
-}
-
-// ==========================================================
-// Slide 7 — 決策指南：Branch 還是 Fork？
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Confusing Terms — 02");
-  addTitle(s, "怎麼判斷該用哪個？", "Branch or Fork — a decision guide");
-
-  hLine(s, 2.0);
-
-  const questions = [
-    {
-      q: "你是這個 repo 的成員嗎？",
-      qEn: "Are you a member of this repo?",
-      yes: "→ 用 Branch",
-      yesEn: "You have write access — branch directly",
-      yesColor: C.primary,
-    },
-    {
-      q: "你想改別人的開源專案？",
-      qEn: "Want to contribute to someone else's open-source project?",
-      yes: "→ 用 Fork",
-      yesEn: "Fork → PR back to the original repo",
-      yesColor: C.figmaText,
-    },
-    {
-      q: "你想拿別人的專案當模板？",
-      qEn: "Want to use someone's project as a starting point?",
-      yes: "→ Fork 或 Use this template",
-      yesEn: "Your copy, your repo — no connection to the original",
-      yesColor: C.figmaText,
-    },
-  ];
-
-  questions.forEach((q, i) => {
-    const y = 2.18 + i * 1.2;
-
-    // Question number
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 0.6, y: y + 0.12, w: 0.4, h: 0.4,
-      fill: { color: C.rowAlt }, line: { color: C.line, width: 1 },
-      rectRadius: 0.08,
-    });
-    s.addText(String(i + 1), {
-      x: 0.6, y: y + 0.12, w: 0.4, h: 0.4,
-      fontSize: 14, fontFace: FONT, bold: true,
-      color: C.muted, align: "center", valign: "middle", margin: 0,
-    });
-
-    // Question text
-    s.addText(q.q, {
-      x: 1.2, y: y, w: 5.5, h: 0.36,
-      fontSize: 15, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(q.qEn, {
-      x: 1.2, y: y + 0.36, w: 5.5, h: 0.26,
-      fontSize: 10.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    // Answer pill
-    const ansW = Math.max(1.4, 0.3 + q.yes.length * 0.14);
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 6.9, y: y + 0.1, w: ansW, h: 0.38,
-      fill: { color: q.yesColor }, line: { color: q.yesColor, width: 0 },
-      rectRadius: 0.19,
-    });
-    s.addText(q.yes, {
-      x: 6.9, y: y + 0.1, w: ansW, h: 0.38,
-      fontSize: 12, fontFace: FONT, bold: true,
-      color: C.white, align: "center", valign: "middle", margin: 0,
-    });
-    s.addText(q.yesEn, {
-      x: 6.9, y: y + 0.52, w: 2.8, h: 0.28,
-      fontSize: 10, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 1.12);
-  });
-}
-
-// ==========================================================
-// Slide 8 — 設計師常見情境
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Confusing Terms — 02");
-  addTitle(s, "設計師最常碰到的情境", "Common scenarios for UI designers");
-
-  hLine(s, 2.0);
-
-  const rows = [
-    {
-      scenario: "在公司 team repo 裡改自己負責的頁面",
-      scenarioEn: "Editing your own pages in the company repo",
-      answer: "Branch",
-      answerColor: C.primary,
-      answerBg: C.gitBg,
-    },
-    {
-      scenario: "想幫開源 design system 修一個 icon",
-      scenarioEn: "Contributing a fix to an open-source design system",
-      answer: "Fork → PR",
-      answerColor: C.figmaText,
-      answerBg: C.figmaBg,
-    },
-    {
-      scenario: "想拿同事的 side project 當起點自己做",
-      scenarioEn: "Using a colleague's project as a template",
-      answer: "Fork",
-      answerColor: C.figmaText,
-      answerBg: C.figmaBg,
-    },
-    {
-      scenario: "在自己的 personal repo 做實驗",
-      scenarioEn: "Experimenting in your own personal repo",
-      answer: "Branch（或直接 main）",
-      answerColor: C.primary,
-      answerBg: C.gitBg,
-    },
-  ];
-
-  rows.forEach((r, i) => {
-    const y = 2.18 + i * 0.9;
-    if (i % 2 === 1) {
-      s.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.06, w: 9, h: 0.9,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
-      });
-    }
-
-    s.addText(r.scenario, {
-      x: 0.8, y: y, w: 6.5, h: 0.34,
-      fontSize: 14, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(r.scenarioEn, {
-      x: 0.8, y: y + 0.34, w: 6.5, h: 0.26,
-      fontSize: 10.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    const aw = Math.max(1.0, 0.3 + r.answer.length * 0.13);
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 7.5, y: y + 0.14, w: aw, h: 0.36,
-      fill: { color: r.answerBg }, line: { color: r.answerBg, width: 0 },
-      rectRadius: 0.18,
-    });
-    s.addText(r.answer, {
-      x: 7.5, y: y + 0.14, w: aw, h: 0.36,
-      fontSize: 12, fontFace: FONT, bold: true,
-      color: r.answerColor, align: "center", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 0.82);
-  });
-}
-
-// ==========================================================
-// Slide 9 — Section Divider B
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bgSection };
-
-  addEyebrowWhite(s, "Part B");
-
-  s.addText("管理你的 Changes", {
-    x: 0.8, y: 1.5, w: 8.5, h: 1.1,
-    fontSize: 44, fontFace: FONT, bold: true,
-    color: C.white, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Managing Changes", {
-    x: 0.8, y: 2.6, w: 8.5, h: 0.5,
-    fontSize: 22, fontFace: FONT,
-    color: "D0DEFF", align: "left", valign: "middle", margin: 0,
+  tableRows.forEach((r, i) => {
+    const y = 2.5 + i * 0.68;
+    if (i % 2 === 1) box(s, 0.6, y - 0.05, 8.6, 0.68, C.rowAlt);
+    s.addText(r.label, { x: 0.7, y, w: 1.3, h: 0.58, fontSize: 11.5, fontFace: FONT, bold: true, color: C.text, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.a, { x: 2.1, y, w: 3.0, h: 0.58, fontSize: 12, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.b, { x: 5.3, y, w: 3.5, h: 0.58, fontSize: 12, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
+    hLine(s, y + 0.6);
   });
 
+  // Divider
   s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.8, y: 3.3, w: 1.0, h: 0.04,
-    fill: { color: C.white }, line: { color: C.white, width: 0 },
+    x: 0.6, y: 4.56, w: 9, h: 0.004,
+    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
   });
-  s.addText("查看 Changes　·　Staged / Unstaged　·　Discard　·　Stash", {
-    x: 0.8, y: 3.45, w: 8.5, h: 0.3,
-    fontSize: 13, fontFace: FONT,
-    color: "B8CCFF", align: "left", valign: "middle", margin: 0,
+
+  // Bottom: decision + scenarios side by side
+  s.addText("怎麼判斷？", { x: 0.7, y: 4.68, w: 3.8, h: 0.28, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  s.addText("常見情境", { x: 5.2, y: 4.68, w: 4.2, h: 0.28, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+
+  const decisions = [
+    { q: "你是 repo 成員？", a: "Branch", ac: C.primary, ab: C.gitBg },
+    { q: "改別人的開源專案？", a: "Fork", ac: C.figmaText, ab: C.figmaBg },
+    { q: "拿當模板？", a: "Fork", ac: C.figmaText, ab: C.figmaBg },
+  ];
+  decisions.forEach((d, i) => {
+    const y = 5.04 + i * 0.34;
+    s.addText(d.q, { x: 0.7, y, w: 2.6, h: 0.3, fontSize: 11.5, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
+    pill(s, 3.4, y, d.a, d.ab, d.ac, 0.72);
+  });
+
+  const scenarios = [
+    { s: "改公司 repo 自己負責的頁面", a: "Branch", ac: C.primary, ab: C.gitBg },
+    { s: "幫開源 design system 修 icon", a: "Fork", ac: C.figmaText, ab: C.figmaBg },
+    { s: "personal repo 做實驗", a: "Branch", ac: C.primary, ab: C.gitBg },
+  ];
+  scenarios.forEach((sc, i) => {
+    const y = 5.04 + i * 0.34;
+    s.addText(sc.s, { x: 5.2, y, w: 2.9, h: 0.3, fontSize: 11, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
+    pill(s, 8.2, y, sc.a, sc.ab, sc.ac, 0.72);
   });
 }
 
 // ==========================================================
-// Slide 10 — 查看目前的 Changes
+// Slide 5 — 開 Branch 的時機 + 三種方式
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 01");
-  addTitle(s, "查看目前的 Changes", "VS Code Source Control panel");
+  addEyebrow(s, "Part A  ·  Git 名詞速查  —  03");
+  addTitle(s, "什麼時候開 Branch？怎麼開？", "When and how to create a branch");
 
-  // VS Code panel mock
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 2.1, w: 3.8, h: 2.7,
-    fill: { color: "1E1E1E" }, line: { color: "333333", width: 1 },
-    rectRadius: 0.1,
+  // Top: timing rule
+  box(s, 0.6, 2.05, 9, 0.52, C.gitBg);
+  s.addText("原則：編輯開始前就開，不是 commit 的時候才開", {
+    x: 0.6, y: 2.05, w: 9, h: 0.52,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
   });
-  // Panel title
-  s.addText("SOURCE CONTROL", {
-    x: 0.7, y: 2.2, w: 3.6, h: 0.3,
-    fontSize: 10, fontFace: FONT, bold: true,
-    color: "BBBBBB", align: "left", valign: "middle",
-    charSpacing: 2, margin: 0,
-  });
-  // Mock lines
-  const mockLines = [
-    { indent: 0, text: "▸ Staged Changes", color: "CCCCCC", bold: true },
-    { indent: 1, text: "Header.tsx  M", color: "6CC644" },
-    { indent: 0, text: "▾ Changes", color: "CCCCCC", bold: true },
-    { indent: 1, text: "Footer.tsx  M", color: "6CC644" },
-    { indent: 1, text: "config.json  M", color: "6CC644" },
-    { indent: 0, text: "▾ Untracked Files", color: "CCCCCC", bold: true },
-    { indent: 1, text: "NewBanner.tsx  U", color: "73C991" },
-  ];
 
-  mockLines.forEach((l, i) => {
-    s.addText(l.text, {
-      x: 0.75 + l.indent * 0.22, y: 2.62 + i * 0.32, w: 3.5, h: 0.28,
-      fontSize: 11, fontFace: "Courier New",
-      color: l.color, bold: l.bold || false,
-      align: "left", valign: "middle", margin: 0,
+  // Flow: 開 branch → 編輯 → commit → push → PR
+  const steps = ["開 Branch", "編輯", "Commit", "Push", "開 PR"];
+  const stepColors = [C.primary, C.ink, C.ink, C.ink, C.figmaText];
+  steps.forEach((step, i) => {
+    const x = 0.55 + i * 1.82;
+    box(s, x, 2.72, 1.5, 0.46, i === 0 ? C.primary : C.rowAlt, i === 0 ? null : C.line);
+    s.addText(step, {
+      x, y: 2.72, w: 1.5, h: 0.46,
+      fontSize: 13, fontFace: FONT, bold: true,
+      color: i === 0 ? C.white : stepColors[i],
+      align: "center", valign: "middle", margin: 0,
     });
-  });
-
-  // State table (right side)
-  const stateRows = [
-    { state: "Staged", stateEn: "已選好要 commit 的", badge: "S", badgeColor: C.primary, badgeBg: C.gitBg },
-    { state: "Unstaged", stateEn: "改了但還沒決定要不要存", badge: "M", badgeColor: "D97706", badgeBg: "FEF3C7" },
-    { state: "Untracked", stateEn: "全新檔案，Git 還不認識", badge: "U", badgeColor: "16A34A", badgeBg: "DCFCE7" },
-  ];
-
-  s.addText("三種狀態", {
-    x: 4.9, y: 2.1, w: 4.8, h: 0.36,
-    fontSize: 15, fontFace: FONT, bold: true,
-    color: C.ink, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Three states of your changed files", {
-    x: 4.9, y: 2.45, w: 4.8, h: 0.26,
-    fontSize: 10.5, fontFace: FONT,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
-  });
-  hLine(s, 2.78);
-
-  stateRows.forEach((r, i) => {
-    const y = 2.9 + i * 0.82;
-
-    // Badge
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 4.9, y: y + 0.08, w: 0.38, h: 0.38,
-      fill: { color: r.badgeBg }, line: { color: r.badgeBg, width: 0 },
-      rectRadius: 0.06,
-    });
-    s.addText(r.badge, {
-      x: 4.9, y: y + 0.08, w: 0.38, h: 0.38,
-      fontSize: 13, fontFace: "Courier New", bold: true,
-      color: r.badgeColor, align: "center", valign: "middle", margin: 0,
-    });
-
-    s.addText(r.state, {
-      x: 5.4, y: y, w: 4.2, h: 0.34,
-      fontSize: 14, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(r.stateEn, {
-      x: 5.4, y: y + 0.34, w: 4.2, h: 0.26,
-      fontSize: 11, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 0.74);
-  });
-}
-
-// ==========================================================
-// Slide 11 — Staged vs Unstaged：我該在意嗎？
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 01");
-  addTitle(s, "Staged vs Unstaged：我該在意嗎？", "Do I need to care about staging?");
-
-  // Highlight box
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 2.08, w: 9, h: 0.5,
-    fill: { color: C.gitBg }, line: { color: C.gitBg, width: 0 },
-    rectRadius: 0.1,
-  });
-  s.addText("用 Claude Code 時，通常不用手動管理 — Agent 會自動判斷哪些檔案該 commit", {
-    x: 0.6, y: 2.08, w: 9, h: 0.5,
-    fontSize: 13.5, fontFace: FONT, bold: true,
-    color: C.primary, align: "center", valign: "middle", margin: 0,
-  });
-
-  s.addText("但如果你想要更細的控制，可以這樣說：", {
-    x: 0.6, y: 2.72, w: 9, h: 0.3,
-    fontSize: 13, fontFace: FONT,
-    color: C.text, align: "left", valign: "middle", margin: 0,
-  });
-
-  hLine(s, 3.06);
-
-  const rows = [
-    {
-      want: "只 commit 部分檔案",
-      wantEn: "Commit only some files",
-      say: "「只 commit Header.tsx，其他先不要」",
-    },
-    {
-      want: "看目前哪些會被 commit",
-      wantEn: "See what's currently staged",
-      say: "「目前 staged 了哪些檔案？」",
-    },
-    {
-      want: "把某個檔案從 staged 移除",
-      wantEn: "Remove a file from staging",
-      say: "「把 config.json unstage，我還要再改」",
-    },
-  ];
-
-  rows.forEach((r, i) => {
-    const y = 3.18 + i * 0.9;
-    if (i % 2 === 1) {
-      s.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.06, w: 9, h: 0.9,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
+    if (i < steps.length - 1) {
+      s.addText("→", {
+        x: x + 1.5, y: 2.78, w: 0.32, h: 0.34,
+        fontSize: 14, fontFace: FONT, color: C.muted,
+        align: "center", valign: "middle", margin: 0,
       });
     }
-
-    s.addText(r.want, {
-      x: 0.8, y: y, w: 3.8, h: 0.32,
-      fontSize: 14, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(r.wantEn, {
-      x: 0.8, y: y + 0.32, w: 3.8, h: 0.26,
-      fontSize: 10.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    // Speech bubble style for the Claude Code prompt
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 4.8, y: y + 0.06, w: 4.8, h: 0.52,
-      fill: { color: C.rowAlt }, line: { color: C.line, width: 1 },
-      rectRadius: 0.12,
-    });
-    s.addText(r.say, {
-      x: 4.8, y: y + 0.06, w: 4.8, h: 0.52,
-      fontSize: 12.5, fontFace: FONT,
-      color: C.primary, align: "center", valign: "middle", margin: 0, italic: true,
-    });
-
-    hLine(s, y + 0.82);
   });
-}
 
-// ==========================================================
-// Slide 12 — Discard Changes
-// ==========================================================
-{
-  const s = pres.addSlide();
-  s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 02");
-  addTitle(s, "Discard Changes：還原不想要的改動", "Reverting unwanted changes");
+  // Rescue note
+  box(s, 0.6, 3.3, 9, 0.4, C.warningBg, "FCD34D");
+  s.addText("💡  忘了開就直接在 main 改了？只要還沒 commit，現在開 branch，改動會自動跟過去", {
+    x: 0.6, y: 3.3, w: 9, h: 0.4,
+    fontSize: 11.5, fontFace: FONT, color: C.warningText,
+    align: "center", valign: "middle", margin: 0,
+  });
 
-  hLine(s, 2.02);
+  // Three ways table
+  hLine(s, 3.85);
+  s.addText("三種開 Branch 的方式", {
+    x: 0.6, y: 3.92, w: 9, h: 0.32,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
 
-  const rows = [
-    {
-      want: "放棄單一檔案的改動",
-      wantEn: "Discard one file",
-      say: "「把 Header.tsx 還原到上次 commit 的狀態」",
-      result: "這個檔案的改動消失，回到乾淨狀態",
-    },
-    {
-      want: "放棄所有改動",
-      wantEn: "Discard everything",
-      say: "「放棄所有未 commit 的改動」",
-      result: "⚠️ 所有改動消失，謹慎使用",
-    },
-    {
-      want: "只是想看看上一版",
-      wantEn: "Just preview the previous version",
-      say: "「顯示 Header.tsx 上次 commit 的內容」",
-      result: "不會改動檔案，只讓你看",
-    },
+  const ways = [
+    { label: "GitHub 網頁", desc: "Branch 切換器 → 輸入新名稱 → Enter", when: "小改動、改文件，不需要本機跑程式", badge: "可以", bc: C.greenBg, bfg: C.greenText },
+    { label: "對 Agent 說", desc: "「幫我開一條 branch 叫 feat/xxx」", when: "用 Claude Code 工作時（最常用）", badge: "最推薦", bc: C.gitBg, bfg: C.primary },
+    { label: "指令", desc: "git checkout -b feat/xxx", when: "自己熟悉指令，想手動控制", badge: "進階", bc: C.rowAlt, bfg: C.muted },
   ];
 
-  rows.forEach((r, i) => {
-    const y = 2.15 + i * 1.05;
-    if (i % 2 === 1) {
-      s.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.06, w: 9, h: 1.05,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
-      });
-    }
-
-    s.addText(r.want, {
-      x: 0.8, y: y, w: 3.0, h: 0.34,
-      fontSize: 13.5, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(r.wantEn, {
-      x: 0.8, y: y + 0.34, w: 3.0, h: 0.26,
-      fontSize: 10.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText("對 Claude Code 說：", {
-      x: 0.8, y: y + 0.6, w: 3.0, h: 0.24,
-      fontSize: 10, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 3.95, y: y + 0.06, w: 5.5, h: 0.42,
-      fill: { color: "EFF6FF" }, line: { color: C.line, width: 1 },
-      rectRadius: 0.1,
-    });
-    s.addText(r.say, {
-      x: 3.95, y: y + 0.06, w: 5.5, h: 0.42,
-      fontSize: 11.5, fontFace: FONT,
-      color: C.primary, align: "center", valign: "middle", margin: 0, italic: true,
-    });
-    s.addText(r.result, {
-      x: 3.95, y: y + 0.56, w: 5.5, h: 0.3,
-      fontSize: 11, fontFace: FONT,
-      color: i === 1 ? C.warningText : C.muted,
-      align: "left", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 0.97);
-  });
-
-  // Warning callout
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 5.3, w: 9, h: 0.52,
-    fill: { color: C.warningBg }, line: { color: "FCD34D", width: 1 },
-    rectRadius: 0.1,
-  });
-  s.addText("⚠️  Discard 是不可逆的 — 改動會真的消失。不確定時，先 commit 或 stash 再說", {
-    x: 0.6, y: 5.3, w: 9, h: 0.52,
-    fontSize: 13, fontFace: FONT, bold: true,
-    color: C.warningText, align: "center", valign: "middle", margin: 0,
+  ways.forEach((w, i) => {
+    const y = 4.36 + i * 0.56;
+    if (i % 2 === 1) box(s, 0.6, y - 0.04, 9, 0.56, C.rowAlt);
+    s.addText(w.label, { x: 0.75, y, w: 1.6, h: 0.48, fontSize: 12.5, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(w.desc, { x: 2.45, y, w: 3.6, h: 0.48, fontSize: 11.5, fontFace: FONT, color: C.primary, italic: true, align: "left", valign: "middle", margin: 0 });
+    s.addText(w.when, { x: 6.15, y, w: 2.4, h: 0.48, fontSize: 10.5, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+    pill(s, 8.65, y + 0.08, w.badge, w.bc, w.bfg);
+    hLine(s, y + 0.5);
   });
 }
 
 // ==========================================================
-// Slide 13 — Stash 概念 + Claude Code 對話
+// Slide 6 — Staged / Unstaged / Discard（Part B）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 03");
-  addTitle(s, "Stash：暫存但不 commit", "Save your work-in-progress without committing");
+  addEyebrow(s, "Part B  ·  Changes 管理  —  01", "16A34A");
+  addTitle(s, "查看 Changes + Discard", "Viewing and reverting your changes");
 
-  // Concept line
+  // Three state badges
+  const states = [
+    { badge: "S", bg: C.gitBg, fg: C.primary, label: "Staged", desc: "已選好要 commit 的改動" },
+    { badge: "M", bg: C.warningBg, fg: C.warningText, label: "Unstaged", desc: "改了但還沒決定要不要存" },
+    { badge: "U", bg: C.greenBg, fg: C.greenText, label: "Untracked", desc: "全新檔案，Git 還不認識" },
+  ];
+
+  states.forEach((st, i) => {
+    const x = 0.6 + i * 3.1;
+    box(s, x, 2.05, 2.9, 0.84, st.bg);
+    s.addText(st.badge, { x, y: 2.05, w: 0.6, h: 0.84, fontSize: 20, fontFace: "Courier New", bold: true, color: st.fg, align: "center", valign: "middle", margin: 0 });
+    s.addText(st.label, { x: x + 0.62, y: 2.12, w: 2.2, h: 0.32, fontSize: 14, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(st.desc, { x: x + 0.62, y: 2.44, w: 2.2, h: 0.36, fontSize: 10.5, fontFace: FONT, color: C.muted, align: "left", valign: "top", margin: 0, wrap: true });
+  });
+
+  box(s, 0.6, 3.02, 9, 0.38, C.rowAlt);
+  s.addText("用 Claude Code 時通常不用手動管理 — Agent 會自動判斷該 commit 哪些檔", {
+    x: 0.6, y: 3.02, w: 9, h: 0.38,
+    fontSize: 12, fontFace: FONT, color: C.text, italic: true,
+    align: "center", valign: "middle", margin: 0,
+  });
+
+  // Discard section
+  hLine(s, 3.55);
+  s.addText("Discard Changes — 還原不想要的改動", {
+    x: 0.6, y: 3.62, w: 9, h: 0.32,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  const discardRows = [
+    { want: "放棄單一檔案", say: "「把 Header.tsx 還原到上次 commit 的狀態」", safe: true },
+    { want: "放棄所有改動", say: "「放棄所有未 commit 的改動」", safe: false },
+    { want: "只是想看看上一版", say: "「顯示 Header.tsx 上次 commit 的內容」", safe: true },
+  ];
+
+  discardRows.forEach((r, i) => {
+    const y = 4.04 + i * 0.56;
+    if (i % 2 === 1) box(s, 0.6, y - 0.04, 9, 0.56, C.rowAlt);
+    s.addText(r.want, { x: 0.75, y, w: 2.2, h: 0.48, fontSize: 12.5, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    box(s, 3.05, y + 0.06, 5.5, 0.36, "EFF6FF", C.line);
+    s.addText(r.say, { x: 3.05, y: y + 0.06, w: 5.5, h: 0.36, fontSize: 11.5, fontFace: FONT, color: C.primary, italic: true, align: "center", valign: "middle", margin: 0 });
+    pill(s, 8.65, y + 0.1, r.safe ? "安全" : "⚠️ 慎", r.safe ? C.greenBg : C.warningBg, r.safe ? C.greenText : C.warningText, 0.78);
+    hLine(s, y + 0.5);
+  });
+
+  box(s, 0.6, 5.74, 9, 0.4, C.warningBg, "FCD34D");
+  s.addText("⚠️  Discard 不可逆 — 改動會真的消失。不確定就先 commit 或 stash", {
+    x: 0.6, y: 5.74, w: 9, h: 0.4,
+    fontSize: 12.5, fontFace: FONT, bold: true, color: C.warningText,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 7 — Stash（Part B）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Part B  ·  Changes 管理  —  02", "16A34A");
+  addTitle(s, "Stash：暫存但不 commit", "Save work-in-progress without committing");
+
   s.addText("改到一半要切任務？先把改動「收起來」，之後再拿出來繼續。", {
-    x: 0.6, y: 1.85, w: 9, h: 0.3,
-    fontSize: 13, fontFace: FONT,
-    color: C.text, align: "left", valign: "middle", margin: 0,
+    x: 0.6, y: 1.86, w: 9, h: 0.28,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
   });
 
   hLine(s, 2.22);
 
   const stashRows = [
-    {
-      situation: "要切 branch，但目前改動還沒好",
-      situationEn: "Need to switch branch but work isn't done",
-      say: "「先 stash 目前的改動」",
-    },
-    {
-      situation: "處理完緊急事，想繼續剛才的工作",
-      situationEn: "Back from the detour — resume where you left off",
-      say: "「把 stash 的東西拿回來」",
-    },
-    {
-      situation: "看看 stash 裡有什麼",
-      situationEn: "Check what's been stashed",
-      say: "「列出目前的 stash」",
-    },
-    {
-      situation: "Stash 的東西不要了",
-      situationEn: "Done with the stashed changes",
-      say: "「清掉 stash」",
-    },
+    { s: "要切 branch，但目前改動還沒好", say: "「先 stash 目前的改動」" },
+    { s: "處理完緊急事，想繼續剛才的工作", say: "「把 stash 的東西拿回來」" },
+    { s: "看看 stash 裡有什麼", say: "「列出目前的 stash」" },
+    { s: "stash 的東西不要了", say: "「清掉 stash」" },
   ];
 
   stashRows.forEach((r, i) => {
-    const y = 2.35 + i * 0.8;
-    if (i % 2 === 1) {
-      s.addShape(pres.shapes.RECTANGLE, {
-        x: 0.6, y: y - 0.05, w: 9, h: 0.8,
-        fill: { color: C.rowAlt }, line: { color: C.rowAlt, width: 0 },
-      });
-    }
+    const y = 2.35 + i * 0.76;
+    if (i % 2 === 1) box(s, 0.6, y - 0.04, 9, 0.76, C.rowAlt);
+    s.addText(r.s, { x: 0.75, y: y + 0.06, w: 4.5, h: 0.56, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0, wrap: true });
+    box(s, 5.4, y + 0.1, 4.1, 0.42, "EFF6FF", C.line);
+    s.addText(r.say, { x: 5.4, y: y + 0.1, w: 4.1, h: 0.42, fontSize: 12, fontFace: FONT, color: C.primary, italic: true, align: "center", valign: "middle", margin: 0 });
+    hLine(s, y + 0.68);
+  });
 
-    s.addText(r.situation, {
-      x: 0.8, y: y, w: 4.8, h: 0.34,
-      fontSize: 13.5, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(r.situationEn, {
-      x: 0.8, y: y + 0.34, w: 4.8, h: 0.26,
-      fontSize: 10.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
+  // Stash vs Discard
+  box(s, 0.6, 5.44, 9, 0.72, C.rowAlt, C.line);
+  s.addText("Stash vs Discard", { x: 0.8, y: 5.5, w: 2, h: 0.28, fontSize: 12, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
 
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 5.8, y: y + 0.1, w: 3.7, h: 0.4,
-      fill: { color: "EFF6FF" }, line: { color: C.line, width: 1 },
-      rectRadius: 0.1,
-    });
-    s.addText(r.say, {
-      x: 5.8, y: y + 0.1, w: 3.7, h: 0.4,
-      fontSize: 12, fontFace: FONT,
-      color: C.primary, align: "center", valign: "middle", margin: 0, italic: true,
-    });
-
-    hLine(s, y + 0.72);
+  const compare = [
+    { label: "Stash", text: "改動保留，收起來，隨時拿回來", color: C.primary },
+    { label: "Discard", text: "改動消失，⚠️ 無法復原", color: C.warningText },
+  ];
+  compare.forEach((c, i) => {
+    pill(s, 0.8 + i * 4.5, 5.86, c.label, i === 0 ? C.gitBg : C.warningBg, c.color, 1.0);
+    s.addText(c.text, { x: 1.9 + i * 4.5, y: 5.84, w: 3.3, h: 0.34, fontSize: 11.5, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
   });
 }
 
 // ==========================================================
-// Slide 14 — Stash vs Commit 對照表
+// Slide 8 — Agent Session 怎麼保存？（Part B）
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 03");
-  addTitle(s, "Stash vs Commit", "When to use which");
+  addEyebrow(s, "Part B  ·  Changes 管理  —  03");
+  addTitle(s, "Agent Session 怎麼保存？", "Saving code vs. agent context when you pause");
 
-  const cols = [
-    { label: "Stash", color: C.primary, x: 2.3, w: 3.3 },
-    { label: "Commit", color: C.figmaText, x: 5.8, w: 3.6 },
+  s.addText("重開機或明天繼續時，Code 的狀態跟 Agent 的記憶是兩件事，要分開處理。", {
+    x: 0.6, y: 1.86, w: 9.2, h: 0.28,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  hLine(s, 2.22);
+
+  // ── Left: Code ──
+  box(s, 0.6, 2.38, 4.1, 3.1, C.gitBg, C.gitText);
+  s.addText("💾  Code 的狀態", {
+    x: 0.78, y: 2.52, w: 3.7, h: 0.34,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.gitText,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Git 負責", {
+    x: 0.78, y: 2.84, w: 3.7, h: 0.26,
+    fontSize: 11, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, 3.08, 0.78, 3.7);
+  [
+    "改好了 → commit + push",
+    "改到一半不想 commit\n→  git stash（本機）\n→  WIP commit（需跨裝置時）",
+  ].forEach((t, i) => {
+    s.addText("•  " + t, {
+      x: 0.78, y: 3.16 + i * 1.08, w: 3.7, h: 1.0,
+      fontSize: 12, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // ── Right: Agent memory ──
+  box(s, 5.1, 2.38, 4.3, 3.1, C.figmaBg, C.figmaText);
+  s.addText("🧠  Agent 的記憶", {
+    x: 5.28, y: 2.52, w: 3.9, h: 0.34,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.figmaText,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("對話 context — 要主動保存", {
+    x: 5.28, y: 2.84, w: 3.9, h: 0.26,
+    fontSize: 11, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, 3.08, 5.28, 3.9);
+  [
+    "Session 關掉就消失\n下次開啟 agent 是「失憶」的",
+    "暫停前：叫 agent 把進度、\n下一步寫成一份 handoff note",
+    "下次開工：讓 agent 讀那份 note\n接回來繼續",
+  ].forEach((t, i) => {
+    s.addText("•  " + t, {
+      x: 5.28, y: 3.16 + i * 0.76, w: 3.9, h: 0.72,
+      fontSize: 12, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // ── Bottom takeaway ──
+  hLine(s, 5.64);
+  box(s, 0.6, 5.74, 8.8, 0.44, "EAF2FF", C.primary);
+  s.addText("Code 靠 Git 保存　　Agent 記憶靠你叫它「先寫下來」", {
+    x: 0.6, y: 5.74, w: 8.8, h: 0.44,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 9 — Section Divider C
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bgSection };
+
+  addEyebrow(s, "Part C  ·  Main Focus", C.white);
+
+  s.addText("三種 Working Repo", {
+    x: 0.8, y: 1.5, w: 8.5, h: 1.0,
+    fontSize: 46, fontFace: FONT, bold: true, color: C.white,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Three Working Repo Types", {
+    x: 0.8, y: 2.5, w: 8.5, h: 0.48,
+    fontSize: 22, fontFace: FONT, color: "D0DEFF",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.8, y: 3.15, w: 1.0, h: 0.04,
+    fill: { color: C.white }, line: { color: C.white, width: 0 },
+  });
+  s.addText("Type A 協作 repo  ·  Type B 引用 repo  ·  Type C 個人 repo", {
+    x: 0.8, y: 3.28, w: 8.5, h: 0.3,
+    fontSize: 13, fontFace: FONT, color: "B8CCFF",
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 9 — 三種類型總覽
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "三種 Working Repo  —  總覽");
+  addTitle(s, "你跟這個 repo 的關係是什麼？", "What's your relationship with this repo?");
+
+  const types = [
+    {
+      type: "A", label: "協作 repo", labelEn: "Collaboration",
+      example: "產品 repo、team repo",
+      role: "貢獻者（有寫入權限）",
+      mechanism: "Branch → PR → Merge",
+      freq: "每天都在改",
+      bg: C.gitBg, fg: C.primary,
+    },
+    {
+      type: "B", label: "引用 repo", labelEn: "Reference",
+      example: "Design System、部門規範",
+      role: "讀者（很少編輯）",
+      mechanism: "Agent hooks + local cache",
+      freq: "跟著版本更新",
+      bg: C.figmaBg, fg: C.figmaText,
+    },
+    {
+      type: "C", label: "個人 repo", labelEn: "Personal",
+      example: "Side project、實驗、dotfiles",
+      role: "擁有者（完全自主）",
+      mechanism: "Commit + Push（無 PR）",
+      freq: "自己決定",
+      bg: C.greenBg, fg: C.greenText,
+    },
   ];
+
+  types.forEach((t, i) => {
+    const x = 0.5 + i * 3.17;
+    const cardW = 3.0;
+
+    // Card header
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x, y: 2.05, w: cardW, h: 3.82,
+      fill: { color: C.rowAlt }, line: { color: C.line, width: 1 }, rectRadius: 0.12,
+    });
+
+    // Type badge
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: x + 0.15, y: 2.15, w: 0.46, h: 0.46,
+      fill: { color: t.bg }, line: { color: t.bg, width: 0 }, rectRadius: 0.1,
+    });
+    s.addText(t.type, { x: x + 0.15, y: 2.15, w: 0.46, h: 0.46, fontSize: 17, fontFace: FONT, bold: true, color: t.fg, align: "center", valign: "middle", margin: 0 });
+
+    s.addText(t.label, { x: x + 0.72, y: 2.2, w: 2.1, h: 0.28, fontSize: 15, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(t.labelEn, { x: x + 0.72, y: 2.48, w: 2.1, h: 0.22, fontSize: 10, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+
+    hLine(s, 2.76, x + 0.15, cardW - 0.3);
+
+    const rows = [
+      { key: "典型例子", val: t.example },
+      { key: "我的角色", val: t.role },
+      { key: "核心機制", val: t.mechanism },
+      { key: "改動頻率", val: t.freq },
+    ];
+    rows.forEach((r, ri) => {
+      const ry = 2.86 + ri * 0.72;
+      s.addText(r.key, { x: x + 0.2, y: ry, w: cardW - 0.4, h: 0.26, fontSize: 10, fontFace: FONT, bold: true, color: C.muted, align: "left", valign: "middle", margin: 0 });
+      s.addText(r.val, { x: x + 0.2, y: ry + 0.26, w: cardW - 0.4, h: 0.36, fontSize: 11.5, fontFace: FONT, color: C.ink, align: "left", valign: "top", margin: 0, wrap: true });
+    });
+  });
+}
+
+// ==========================================================
+// Slide 10 — Type A：概念 + 日常流程
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Type A  ·  協作 Repo  —  01");
+  addTitle(s, "你是貢獻者", "You have write access — work with your team");
+
+  // Left: concept
+  s.addText("核心觀念", { x: 0.6, y: 2.05, w: 4.3, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  const concepts = [
+    "Main branch = 團隊共識版本，不直接改",
+    "你的工作在 branch 上進行",
+    "改好了 → PR → review → merge 才進 main",
+    "Agent 幫你 commit + push，你決定 PR 時機",
+  ];
+  concepts.forEach((c, i) => {
+    s.addShape(pres.shapes.OVAL, { x: 0.65, y: 2.46 + i * 0.44 + 0.1, w: 0.08, h: 0.08, fill: { color: C.primary }, line: { color: C.primary, width: 0 } });
+    s.addText(c, { x: 0.86, y: 2.46 + i * 0.44, w: 3.9, h: 0.4, fontSize: 12.5, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0, wrap: true });
+  });
+
+  // Vertical divider
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 5.08, y: 2.05, w: 0.004, h: 3.8,
+    fill: { color: C.line }, line: { color: C.line, width: 0 },
+  });
+
+  // Right: daily flow
+  s.addText("日常同步流程", { x: 5.3, y: 2.05, w: 4.3, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+
+  const flowSteps = [
+    { icon: "☀️", when: "開工前", action: "pull main，更新到最新" },
+    { icon: "🌿", when: "工作中", action: "branch 上 commit，視情況把 main merge 進來" },
+    { icon: "🚀", when: "收工前", action: "push branch，視情況開 PR" },
+  ];
+  flowSteps.forEach((f, i) => {
+    const y = 2.46 + i * 1.1;
+    box(s, 5.3, y, 4.3, 0.96, i % 2 === 0 ? C.rowAlt : C.bg, C.line);
+    s.addText(f.icon, { x: 5.35, y: y + 0.08, w: 0.5, h: 0.8, fontSize: 20, align: "center", valign: "middle", margin: 0 });
+    s.addText(f.when, { x: 5.9, y: y + 0.06, w: 3.5, h: 0.3, fontSize: 11, fontFace: FONT, bold: true, color: C.muted, align: "left", valign: "middle", margin: 0 });
+    s.addText(f.action, { x: 5.9, y: y + 0.34, w: 3.5, h: 0.46, fontSize: 12.5, fontFace: FONT, color: C.ink, align: "left", valign: "middle", margin: 0, wrap: true });
+  });
+}
+
+// ==========================================================
+// Slide 11 — Type A：同步注意 + 除錯
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Type A  ·  協作 Repo  —  02");
+  addTitle(s, "該注意什麼 + 怎麼除錯", "What to watch out for + common fixes");
+
+  // Watch out section
+  s.addText("該注意什麼", { x: 0.6, y: 2.05, w: 9, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  hLine(s, 2.4);
+
+  const warnings = [
+    { icon: "1", text: "Pull 前先 commit 或 stash — 否則本機改動可能跟遠端衝突", level: "warning" },
+    { icon: "2", text: "確認你在對的 branch — 不要在 main 上直接改", level: "warning" },
+    { icon: "3", text: "PR 開了之後若 main 繼續有改動，要 sync（GitHub 的「Update branch」）", level: "info" },
+  ];
+
+  warnings.forEach((w, i) => {
+    const y = 2.5 + i * 0.6;
+    box(s, 0.6, y + 0.04, 0.36, 0.36, w.level === "warning" ? C.warningBg : C.gitBg, w.level === "warning" ? "FCD34D" : C.primary);
+    s.addText(w.icon, { x: 0.6, y: y + 0.04, w: 0.36, h: 0.36, fontSize: 13, fontFace: FONT, bold: true, color: w.level === "warning" ? C.warningText : C.primary, align: "center", valign: "middle", margin: 0 });
+    s.addText(w.text, { x: 1.1, y, w: 8.4, h: 0.48, fontSize: 12.5, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0, wrap: true });
+    hLine(s, y + 0.54);
+  });
+
+  // Debug section
+  s.addText("怎麼除錯", { x: 0.6, y: 4.36, w: 9, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  hLine(s, 4.72);
+
+  const bugs = [
+    { err: "rejected (non-fast-forward)", fix: "先 pull，再 push" },
+    { err: "CONFLICT", fix: "手動解，或對 agent 說「幫我解這個 conflict」" },
+    { err: "不確定在哪個 branch", fix: "問 agent「我現在在哪個 branch？」或看 VS Code 左下角" },
+  ];
+
+  bugs.forEach((b, i) => {
+    const y = 4.82 + i * 0.5;
+    if (i % 2 === 1) box(s, 0.6, y - 0.04, 9, 0.5, C.rowAlt);
+    box(s, 0.65, y + 0.06, 3.3, 0.3, "FEE2E2", "FECACA");
+    s.addText(b.err, { x: 0.65, y: y + 0.06, w: 3.3, h: 0.3, fontSize: 10.5, fontFace: "Courier New", color: "DC2626", align: "center", valign: "middle", margin: 0 });
+    s.addText("→", { x: 4.05, y, w: 0.3, h: 0.48, fontSize: 13, color: C.muted, align: "center", valign: "middle", margin: 0 });
+    s.addText(b.fix, { x: 4.4, y, w: 5.1, h: 0.48, fontSize: 12, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0, wrap: true });
+    hLine(s, y + 0.44);
+  });
+}
+
+// ==========================================================
+// Slide 12 — Type B：你是「讀者」
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Type B  ·  引用 Repo  —  01");
+  addTitle(s, "你是「讀者」，不是「貢獻者」", "You consume this repo — rarely edit it");
+
+  // Role box
+  box(s, 0.6, 2.05, 9, 0.46, C.figmaBg);
+  s.addText("這個 repo 存在的目的：讓你的 Agent 知道規範是什麼，才能幫你設計出符合標準的東西", {
+    x: 0.6, y: 2.05, w: 9, h: 0.46,
+    fontSize: 12.5, fontFace: FONT, color: C.figmaText,
+    align: "center", valign: "middle", margin: 0,
+  });
+
+  // Two content types
+  hLine(s, 2.62);
+  s.addText("Type B 包含兩種內容，處理方式相同", {
+    x: 0.6, y: 2.68, w: 9, h: 0.28,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.ink,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  const types = [
+    {
+      label: "Design System", icon: "🎨",
+      items: ["設計 token（色票名稱、spacing、字型規格）", "元件使用規則（什麼時候用哪個 variant）", "Do's & Don'ts"],
+      bg: C.figmaBg, fg: C.figmaText,
+    },
+    {
+      label: "部門規範 / Conventions", icon: "📋",
+      items: ["Design conventions、決策記錄", "Template、toolkit 文件", "Brand voice、用字規範"],
+      bg: C.gitBg, fg: C.primary,
+    },
+  ];
+
+  types.forEach((t, i) => {
+    const x = 0.55 + i * 4.72;
+    const w = 4.45;
+    box(s, x, 3.08, w, 2.5, C.rowAlt, C.line);
+
+    s.addText(t.icon + "  " + t.label, {
+      x: x + 0.18, y: 3.16, w: w - 0.36, h: 0.38,
+      fontSize: 14, fontFace: FONT, bold: true, color: t.fg,
+      align: "left", valign: "middle", margin: 0,
+    });
+    hLine(s, 3.58, x + 0.18, w - 0.36);
+
+    t.items.forEach((item, ii) => {
+      s.addShape(pres.shapes.OVAL, { x: x + 0.22, y: 3.7 + ii * 0.5 + 0.12, w: 0.08, h: 0.08, fill: { color: t.fg }, line: { color: t.fg, width: 0 } });
+      s.addText(item, { x: x + 0.4, y: 3.7 + ii * 0.5, w: w - 0.58, h: 0.46, fontSize: 11.5, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0, wrap: true });
+    });
+  });
+
+  // Bottom note
+  box(s, 0.6, 5.7, 9, 0.46, C.rowAlt, C.line);
+  s.addText("Agent 讀這些內容 → 才能在幫你寫 code 或生成設計時，自動遵守你的 DS 規範與部門標準", {
+    x: 0.6, y: 5.7, w: 9, h: 0.46,
+    fontSize: 12, fontFace: FONT, color: C.text, italic: true,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 13 — Type B：Agent Hooks + Local Cache 機制
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Type B  ·  引用 Repo  —  02");
+  addTitle(s, "Agent 怎麼拿到這些內容？", "How does your agent access the reference repo?");
+
+  // Flow diagram
+  const flowItems = [
+    { label: "Department\nRepo", sub: "GitHub Remote", bg: C.figmaBg, fg: C.figmaText, x: 0.5 },
+    { label: "fetch &\ncron-job", sub: "Agent hooks\n自動定期執行", bg: C.gitBg, fg: C.primary, x: 3.3, isArrow: true },
+    { label: "Local Cache", sub: "TTL: weekly\n本機快取", bg: C.greenBg, fg: C.greenText, x: 6.1 },
+  ];
+
+  flowItems.forEach((f, i) => {
+    if (f.isArrow) {
+      // Arrow connector
+      s.addShape(pres.shapes.RECTANGLE, {
+        x: 2.9, y: 3.12, w: 0.5, h: 0.04,
+        fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+      });
+      box(s, f.x, 2.7, 2.5, 1.0, f.bg, C.primary);
+      s.addText(f.label, { x: f.x, y: 2.76, w: 2.5, h: 0.5, fontSize: 14, fontFace: FONT, bold: true, color: f.fg, align: "center", valign: "middle", margin: 0 });
+      s.addText(f.sub, { x: f.x, y: 3.26, w: 2.5, h: 0.38, fontSize: 10.5, fontFace: FONT, color: f.fg, align: "center", valign: "middle", margin: 0 });
+      s.addShape(pres.shapes.RECTANGLE, {
+        x: 5.8, y: 3.12, w: 0.5, h: 0.04,
+        fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+      });
+      // Arrow heads
+      s.addText("→", { x: 2.75, y: 2.98, w: 0.5, h: 0.3, fontSize: 16, color: C.primary, align: "center", valign: "middle", margin: 0 });
+      s.addText("→", { x: 5.75, y: 2.98, w: 0.5, h: 0.3, fontSize: 16, color: C.primary, align: "center", valign: "middle", margin: 0 });
+    } else {
+      box(s, f.x, 2.7, 2.5, 1.0, f.bg, C.line);
+      s.addText(f.label, { x: f.x, y: 2.76, w: 2.5, h: 0.5, fontSize: 14, fontFace: FONT, bold: true, color: f.fg, align: "center", valign: "middle", margin: 0 });
+      s.addText(f.sub, { x: f.x, y: 3.26, w: 2.5, h: 0.38, fontSize: 10, fontFace: FONT, color: C.muted, align: "center", valign: "middle", margin: 0 });
+    }
+  });
+
+  // Agent reads from cache
+  s.addText("↓", { x: 7.1, y: 3.72, w: 0.5, h: 0.3, fontSize: 16, color: C.muted, align: "center", valign: "middle", margin: 0 });
+  box(s, 5.8, 4.08, 2.9, 0.56, C.rowAlt, C.line);
+  s.addText("Agent 讀取 → 套用規範", { x: 5.8, y: 4.08, w: 2.9, h: 0.56, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "center", valign: "middle", margin: 0 });
+
+  // Key points
+  hLine(s, 4.78);
+  const keyPoints = [
+    { icon: "✅", text: "自動執行 — 平常你不需要做任何事" },
+    { icon: "📅", text: "TTL weekly — DS 改動慢，週更一次夠用" },
+    { icon: "⚙️", text: "設定一次（通常由 department 統一配置），之後 hooks 自動維護" },
+  ];
+  keyPoints.forEach((k, i) => {
+    s.addText(k.icon + "  " + k.text, {
+      x: 0.6, y: 4.9 + i * 0.42, w: 9, h: 0.38,
+      fontSize: 12.5, fontFace: FONT, color: C.text,
+      align: "left", valign: "middle", margin: 0,
+    });
+  });
+}
+
+// ==========================================================
+// Slide 14 — Type B：你的責任邊界
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Type B  ·  引用 Repo  —  03");
+  addTitle(s, "你需要做什麼？", "Your responsibilities with a reference repo");
 
   const rows = [
     {
-      label: "用途", labelEn: "Purpose",
-      cols: ["暫存，之後繼續改", "存檔點，代表「這個狀態是 OK 的」"],
+      when: "平常", whenEn: "Normal operation",
+      action: "什麼都不用做", detail: "Hooks 自動幫你維持 local cache 最新",
+      badge: "自動", bc: C.greenBg, bfg: C.greenText,
     },
     {
-      label: "可見性", labelEn: "Visibility",
-      cols: ["只有你，不會出現在 git log", "會出現在 git log，有紀錄"],
+      when: "發現規範過時", whenEn: "Cache looks stale",
+      action: "手動觸發一次 fetch", detail: "確認 cron-job 有在跑，或手動 pull Department repo",
+      badge: "偶爾", bc: C.warningBg, bfg: C.warningText,
     },
     {
-      label: "適合情境", labelEn: "Best for",
-      cols: ["改到一半要切換任務", "改好了，想留下正式紀錄"],
+      when: "要回饋修正", whenEn: "Want to fix or update the convention",
+      action: "切換成 Type A 流程", detail: "到 Department repo 開 branch → 改 → PR，不要改 local cache",
+      badge: "少見", bc: C.figmaBg, bfg: C.figmaText,
     },
   ];
 
-  addCompareTable(s, 2.0, cols, rows, 1.0);
+  hLine(s, 2.05);
+  rows.forEach((r, i) => {
+    const y = 2.16 + i * 1.18;
+    if (i % 2 === 1) box(s, 0.6, y - 0.06, 9, 1.18, C.rowAlt);
 
-  // Tip
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 5.4, w: 9, h: 0.44,
-    fill: { color: C.gitBg }, line: { color: C.gitBg, width: 0 },
-    rectRadius: 0.1,
+    pill(s, 0.65, y + 0.2, r.badge, r.bc, r.bfg, 0.88);
+    s.addText(r.when, { x: 1.65, y, w: 2.4, h: 0.34, fontSize: 14, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.whenEn, { x: 1.65, y: y + 0.34, w: 2.4, h: 0.24, fontSize: 10, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.action, { x: 4.2, y, w: 5.2, h: 0.34, fontSize: 14, fontFace: FONT, bold: true, color: C.primary, align: "left", valign: "middle", margin: 0 });
+    s.addText(r.detail, { x: 4.2, y: y + 0.36, w: 5.2, h: 0.54, fontSize: 11.5, fontFace: FONT, color: C.muted, align: "left", valign: "top", margin: 0, wrap: true });
+
+    hLine(s, y + 1.1);
   });
-  s.addText("💡  不確定要不要 commit？先 stash — 不影響 git log，保留彈性", {
-    x: 0.6, y: 5.4, w: 9, h: 0.44,
-    fontSize: 13, fontFace: FONT,
-    color: C.primary, align: "center", valign: "middle", margin: 0,
+
+  // Hard rule
+  box(s, 0.6, 5.7, 9, 0.46, "FEE2E2", "FECACA");
+  s.addText("🚫  不要直接改 local cache 裡的內容 — 下次 fetch 會被覆蓋，改了等於沒改", {
+    x: 0.6, y: 5.7, w: 9, h: 0.46,
+    fontSize: 12.5, fontFace: FONT, bold: true, color: "DC2626",
+    align: "center", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 15 — What's next + 什麼時候用 Stash
+// Slide 15 — Type C：個人 Repo
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bg };
-  addEyebrow(s, "Managing Changes — 03");
-  addTitle(s, "什麼時候用 Stash？", "When should you reach for stash?");
+  addEyebrow(s, "Type C  ·  個人 Repo");
+  addTitle(s, "完全自主 — 規則自己定", "Your repo, your rules");
 
-  hLine(s, 2.02);
+  // Left: setup + flow
+  s.addText("設置 & 日常流程", { x: 0.6, y: 2.05, w: 4.3, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  hLine(s, 2.4, 0.6, 4.3);
 
-  const scenarios = [
-    {
-      icon: "⚡",
-      zh: "改到一半，需要緊急切 branch",
-      en: "Mid-task and need to switch branch immediately",
-    },
-    {
-      icon: "🔀",
-      zh: "想試試看另一個做法，但當前的改動還想保留",
-      en: "Exploring an alternative approach — want to keep current work safe",
-    },
-    {
-      icon: "⬇️",
-      zh: "同事說「你先 pull 一下最新的」，但你有未 commit 的改動",
-      en: "Need to pull latest, but have local changes that aren't ready to commit",
-    },
+  const flowItems2 = [
+    { step: "1", text: "建 GitHub repo + .gitignore", sub: ".env / node_modules / .DS_Store" },
+    { step: "2", text: "Commit + Push（沒有 PR 壓力）", sub: "建議：每次工作結束 push 一次" },
+    { step: "3", text: "跨裝置：git pull 拿最新", sub: "換電腦後先 pull，再開始工作" },
   ];
-
-  scenarios.forEach((sc, i) => {
-    const y = 2.2 + i * 1.16;
-
-    s.addText(sc.icon, {
-      x: 0.6, y: y + 0.16, w: 0.7, h: 0.7,
-      fontSize: 28, align: "center", valign: "middle", margin: 0,
-    });
-
-    s.addText(sc.zh, {
-      x: 1.5, y: y + 0.02, w: 7.8, h: 0.4,
-      fontSize: 16, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(sc.en, {
-      x: 1.5, y: y + 0.44, w: 7.8, h: 0.28,
-      fontSize: 11.5, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 1.08);
+  flowItems2.forEach((f, i) => {
+    const y = 2.52 + i * 1.0;
+    box(s, 0.6, y, 0.44, 0.44, C.greenBg, C.greenText);
+    s.addText(f.step, { x: 0.6, y, w: 0.44, h: 0.44, fontSize: 16, fontFace: FONT, bold: true, color: C.greenText, align: "center", valign: "middle", margin: 0 });
+    s.addText(f.text, { x: 1.18, y, w: 3.72, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(f.sub, { x: 1.18, y: y + 0.3, w: 3.72, h: 0.26, fontSize: 10.5, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
   });
 
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-    x: 0.6, y: 5.6, w: 9, h: 0.4,
-    fill: { color: C.rowAlt }, line: { color: C.line, width: 1 },
-    rectRadius: 0.08,
+  // Vertical divider
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 5.08, y: 2.05, w: 0.004, h: 3.6,
+    fill: { color: C.line }, line: { color: C.line, width: 0 },
   });
-  s.addText("🧯  無論如何：不確定就先 stash，比 discard 安全，也比亂 commit 乾淨", {
-    x: 0.6, y: 5.6, w: 9, h: 0.4,
-    fontSize: 12, fontFace: FONT,
-    color: C.text, align: "center", valign: "middle", margin: 0,
+
+  // Right: watch out
+  s.addText("該注意什麼", { x: 5.3, y: 2.05, w: 4.3, h: 0.3, fontSize: 13, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  hLine(s, 2.4, 5.3, 4.3);
+
+  const watchouts = [
+    { icon: "🔐", text: "不要 commit .env（API key、密碼）", level: "danger" },
+    { icon: "👁️", text: "Public repo 特別小心，不要放任何內部資料", level: "danger" },
+    { icon: "📝", text: "Commit message 要讓三個月後的自己看得懂", level: "info" },
+  ];
+  watchouts.forEach((w, i) => {
+    const y = 2.52 + i * 0.96;
+    box(s, 5.3, y, 4.3, 0.82, w.level === "danger" ? "FEE2E2" : C.rowAlt, w.level === "danger" ? "FECACA" : C.line);
+    s.addText(w.icon, { x: 5.4, y: y + 0.06, w: 0.5, h: 0.7, fontSize: 20, align: "center", valign: "middle", margin: 0 });
+    s.addText(w.text, { x: 5.96, y: y + 0.06, w: 3.5, h: 0.7, fontSize: 12.5, fontFace: FONT, color: w.level === "danger" ? "DC2626" : C.ink, align: "left", valign: "middle", margin: 0, wrap: true });
+  });
+
+  // Bottom: rescue
+  box(s, 0.6, 5.7, 9, 0.46, C.warningBg, "FCD34D");
+  s.addText("發現 .env 已經 commit 了？→ 對 agent 說「幫我把 .env 從 git 記錄裡移除」", {
+    x: 0.6, y: 5.7, w: 9, h: 0.46,
+    fontSize: 12, fontFace: FONT, color: C.warningText,
+    align: "center", valign: "middle", margin: 0,
   });
 }
 
 // ==========================================================
-// Slide 16 — Key Takeaway
+// Slide 16 — 三種類型決策指南
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "三種 Working Repo  —  決策指南");
+  addTitle(s, "遇到一個 repo，你應該用哪種方式對待它？", "Which type applies to this repo?");
+
+  const questions = [
+    {
+      q: "這個 repo 我需要改東西、跟人協作？",
+      qEn: "Do I need to edit and collaborate?",
+      yes: "Type A  協作 repo",
+      hint: "Branch → PR → Merge",
+      bc: C.primary, bb: C.gitBg,
+    },
+    {
+      q: "這個 repo 我只是要讀它的規範或文件？",
+      qEn: "Do I just need to read it for reference?",
+      yes: "Type B  引用 repo",
+      hint: "Agent hooks + local cache",
+      bc: C.figmaText, bb: C.figmaBg,
+    },
+    {
+      q: "這個 repo 完全是我自己的、沒有協作壓力？",
+      qEn: "Is this purely mine — no team, no review?",
+      yes: "Type C  個人 repo",
+      hint: "Commit + Push，自己決定節奏",
+      bc: C.greenText, bb: C.greenBg,
+    },
+  ];
+
+  hLine(s, 2.05);
+  questions.forEach((q, i) => {
+    const y = 2.16 + i * 1.2;
+    if (i % 2 === 1) box(s, 0.6, y - 0.06, 9, 1.2, C.rowAlt);
+
+    // Question
+    s.addText(q.q, { x: 0.7, y, w: 5.4, h: 0.38, fontSize: 15, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+    s.addText(q.qEn, { x: 0.7, y: y + 0.38, w: 5.4, h: 0.24, fontSize: 10.5, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+    s.addText("→", { x: 6.2, y: y + 0.12, w: 0.3, h: 0.5, fontSize: 16, color: C.muted, align: "center", valign: "middle", margin: 0 });
+
+    // Answer card
+    box(s, 6.6, y + 0.05, 3.0, 0.9, q.bb, q.bc);
+    s.addText(q.yes, { x: 6.7, y: y + 0.1, w: 2.8, h: 0.38, fontSize: 13, fontFace: FONT, bold: true, color: q.bc, align: "left", valign: "middle", margin: 0 });
+    s.addText(q.hint, { x: 6.7, y: y + 0.48, w: 2.8, h: 0.36, fontSize: 10.5, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+
+    hLine(s, y + 1.12);
+  });
+
+  // Note: one repo can be both
+  box(s, 0.6, 5.72, 9, 0.44, C.rowAlt, C.line);
+  s.addText("💡  同一個 repo 可能兩種都有 — 平常你是 Type B 讀者，偶爾有 feedback 時暫時切換成 Type A 貢獻者", {
+    x: 0.6, y: 5.72, w: 9, h: 0.44,
+    fontSize: 11.5, fontFace: FONT, color: C.text,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 17 — Key Takeaway
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1088,108 +1079,59 @@ function addCompareTable(slide, startY, colHeaders, rows, rowH = 0.9) {
   const points = [
     {
       n: "1",
-      zh: "Commit = 存檔　Push = 分享",
-      en: "Commit saves locally. Push shares with the team. You control the timing.",
+      zh: "Commit = 存檔；Push = 分享。Branch 在任務開始前開。",
+      en: "Commit saves locally. Push shares. Always branch before you start editing.",
     },
     {
       n: "2",
-      zh: "Branch 給有權限的人，Fork 給外部貢獻者",
-      en: "Branch = inside the repo. Fork = copy to your own account.",
+      zh: "三種 Repo，三種對待方式 — 你的角色決定你怎麼做",
+      en: "Collaboration = branch+PR  /  Reference = agent reads  /  Personal = just push",
     },
     {
       n: "3",
-      zh: "不確定要不要存？先 Stash，比 Discard 安全",
-      en: "Stash keeps changes; Discard loses them. When in doubt, stash.",
+      zh: "Type B 的 DS 與部門規範，靠 Agent hooks 自動同步 — 你不需要手動管",
+      en: "Reference repos are auto-synced via hooks. You only act when cache looks stale.",
     },
   ];
 
   points.forEach((p, i) => {
-    const y = 2.2 + i * 1.18;
-
-    // Number badge
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: 0.6, y: y + 0.16, w: 0.58, h: 0.58,
-      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-      rectRadius: 0.12,
-    });
-    s.addText(p.n, {
-      x: 0.6, y: y + 0.16, w: 0.58, h: 0.58,
-      fontSize: 20, fontFace: FONT, bold: true,
-      color: C.white, align: "center", valign: "middle", margin: 0,
-    });
-
-    s.addText(p.zh, {
-      x: 1.4, y: y + 0.04, w: 8.1, h: 0.4,
-      fontSize: 18, fontFace: FONT, bold: true,
-      color: C.ink, align: "left", valign: "middle", margin: 0,
-    });
-    s.addText(p.en, {
-      x: 1.4, y: y + 0.46, w: 8.1, h: 0.38,
-      fontSize: 12, fontFace: FONT,
-      color: C.muted, align: "left", valign: "middle", margin: 0,
-    });
-
-    hLine(s, y + 1.1);
+    const y = 2.2 + i * 1.2;
+    box(s, 0.6, y + 0.12, 0.6, 0.6, C.primary);
+    s.addText(p.n, { x: 0.6, y: y + 0.12, w: 0.6, h: 0.6, fontSize: 20, fontFace: FONT, bold: true, color: C.white, align: "center", valign: "middle", margin: 0 });
+    s.addText(p.zh, { x: 1.4, y, w: 8.1, h: 0.44, fontSize: 17, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0, wrap: true });
+    s.addText(p.en, { x: 1.4, y: y + 0.46, w: 8.1, h: 0.36, fontSize: 11.5, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0, wrap: true });
+    hLine(s, y + 1.12);
   });
 }
 
 // ==========================================================
-// Slide 17 — 下週預告
+// Slide 18 — 下週預告
 // ==========================================================
 {
   const s = pres.addSlide();
   s.background = { color: C.bgQuestion };
 
   addEyebrow(s, "Next Week");
-
-  s.addText("Week 4", {
-    x: 0.8, y: 1.0, w: 8.5, h: 0.45,
-    fontSize: 14, fontFace: FONT, bold: true,
-    color: C.primary, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("用 AI 操作 Git", {
-    x: 0.8, y: 1.45, w: 8.5, h: 0.85,
-    fontSize: 40, fontFace: FONT, bold: true,
-    color: C.ink, align: "left", valign: "middle", margin: 0,
-  });
-  s.addText("Using AI for Git Operations", {
-    x: 0.8, y: 2.3, w: 8.5, h: 0.45,
-    fontSize: 20, fontFace: FONT,
-    color: C.muted, align: "left", valign: "middle", margin: 0,
-  });
-
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 0.8, y: 2.9, w: 0.6, h: 0.04,
-    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-  });
+  s.addText("Week 4", { x: 0.8, y: 1.0, w: 8.5, h: 0.42, fontSize: 14, fontFace: FONT, bold: true, color: C.primary, align: "left", valign: "middle", margin: 0 });
+  s.addText("用 AI 操作 Git", { x: 0.8, y: 1.42, w: 8.5, h: 0.82, fontSize: 40, fontFace: FONT, bold: true, color: C.ink, align: "left", valign: "middle", margin: 0 });
+  s.addText("Using AI for Git Operations", { x: 0.8, y: 2.24, w: 8.5, h: 0.44, fontSize: 20, fontFace: FONT, color: C.muted, align: "left", valign: "middle", margin: 0 });
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.8, y: 2.84, w: 0.6, h: 0.04, fill: { color: C.primary }, line: { color: C.primary, width: 0 } });
 
   const previews = [
-    "Claude Code 操作示範 — 把中文說的動作變成 git 指令",
-    "什麼時候信任 AI？什麼時候要自己確認？",
+    "Claude Code 操作示範 — 把中文指令變成正確的 git 動作",
+    "什麼時候信任 Agent？什麼時候要自己確認？",
     "避免 push 錯路徑的防呆技巧",
   ];
-
   previews.forEach((p, i) => {
-    s.addShape(pres.shapes.OVAL, {
-      x: 0.84, y: 3.08 + i * 0.55 + 0.12, w: 0.08, h: 0.08,
-      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-    });
-    s.addText(p, {
-      x: 1.1, y: 3.08 + i * 0.55, w: 8.3, h: 0.46,
-      fontSize: 14, fontFace: FONT,
-      color: C.text, align: "left", valign: "middle", margin: 0,
-    });
+    s.addShape(pres.shapes.OVAL, { x: 0.84, y: 3.04 + i * 0.54 + 0.13, w: 0.08, h: 0.08, fill: { color: C.primary }, line: { color: C.primary, width: 0 } });
+    s.addText(p, { x: 1.1, y: 3.04 + i * 0.54, w: 8.3, h: 0.46, fontSize: 14, fontFace: FONT, color: C.text, align: "left", valign: "middle", margin: 0 });
   });
 
-  // Footer
-  s.addShape(pres.shapes.RECTANGLE, {
-    x: 0, y: 5.8, w: 10, h: 0.45,
-    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
-  });
+  s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.8, w: 10, h: 0.45, fill: { color: C.primary }, line: { color: C.primary, width: 0 } });
   s.addText("GitHub for UI Designers  ·  Week 3 / 6  ·  Karen Shen", {
     x: 0, y: 5.8, w: 10, h: 0.45,
-    fontSize: 11, fontFace: FONT,
-    color: C.white, align: "center", valign: "middle", margin: 0,
+    fontSize: 11, fontFace: FONT, color: C.white,
+    align: "center", valign: "middle", margin: 0,
   });
 }
 
@@ -1197,5 +1139,5 @@ function addCompareTable(slide, startY, colHeaders, rows, rowH = 0.9) {
 // Output
 // ==========================================================
 pres.writeFile({ fileName: "week3-git-vocabulary.pptx" })
-  .then(() => console.log("✅  week3-git-vocabulary.pptx written"))
+  .then(() => console.log("✅  week3-git-vocabulary.pptx written (19 slides)"))
   .catch(err => console.error("❌ ", err));
