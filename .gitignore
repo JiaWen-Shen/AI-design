@@ -13,6 +13,9 @@ sharing/claude-design/claude-design-sharing.v1.pptx
 # macOS
 .DS_Store
 
+# PowerPoint lock files
+~$*.pptx
+
 # Loose image assets
 assets/*.png
 assets/*.jpg
