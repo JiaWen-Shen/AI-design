@@ -9,28 +9,31 @@ pres.layout = "LAYOUT_16x10";
 pres.author = "Karen Shen";
 pres.title = "Git 常見名詞解惑 — Week 3";
 
-// ---------- Palette ----------
+// ---------- Palette (TLDS-aligned, from trendlife-general/vxd-skill tokens/colors.md) ----------
 const C = {
-  bg: "F8FAFC",
-  bgSection: "1A66FF",
-  bgQuestion: "EAF2FF",
+  bg: "F6EFE8",          // brand/cream — page bg (warm alt to white)
+  bgSection: "153242",   // brand/charcoal — section divider bg
+  bgQuestion: "AFE0EF",  // brand/sky — info card bg (paler than primary)
   bgWarning: "FFF7ED",
-  primary: "1A66FF",
-  ink: "111827",
-  text: "374151",
-  muted: "6B7280",
-  subtle: "9CA3AF",
-  line: "E5E7EB",
-  rowAlt: "F3F4F6",
-  figmaBg: "F3E8FF",
-  figmaText: "8B5CF6",
-  gitBg: "DBEAFE",
-  gitText: "1A66FF",
-  warningBg: "FEF3C7",
-  warningText: "D97706",
-  greenBg: "DCFCE7",
-  greenText: "16A34A",
+  primary: "D71920",     // brand/trend-red — one prominent brand moment per view
+  accent: "0690A7",      // brand/light-teal — interactive / secondary
+  ink: "222222",         // gray90 — primary text
+  text: "555555",        // gray60 — secondary text
+  muted: "8E8E8E",       // gray50 — tertiary
+  subtle: "ADADAD",      // gray40
+  line: "E5E0D8",        // cream-tinted line
+  rowAlt: "F0E8DC",
+  figmaBg: "E7E5FE",     // lilac-adjacent tint for "Figma" callouts
+  figmaText: "5B5BD6",
+  gitBg: "FFE5E6",       // soft red tint for Git callouts
+  gitText: "D71920",
+  warningBg: "FEB912",   // brand/yellow
+  warningText: "8A6510",
+  greenBg: "CDE9DC",
+  greenText: "0F7A4F",
   white: "FFFFFF",
+  burgundy: "450105",    // brand/burgundy — premium / dark hero
+  skyDeep: "0690A7",     // alias for clarity
 };
 
 const FONT = "Calibri";
@@ -144,7 +147,7 @@ function box(slide, x, y, w, h, bg, border) {
     {
       label: "B", color: "16A34A", bg: C.greenBg,
       zh: "Changes 管理", en: "Managing Changes — Quick Review",
-      items: ["Staged / Unstaged / Discard", "Stash"],
+      items: ["Staged / Unstaged / Discard / Stash", "Agent Session 保存", "PR Review 流程 + 原則"],
     },
     {
       label: "C", color: C.primary, bg: C.primary,
@@ -578,7 +581,327 @@ function box(slide, x, y, w, h, bg, border) {
 }
 
 // ==========================================================
-// Slide 9 — Section Divider C
+// Slide 9 — Subtitle / Section transition（Part B）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bgSection };
+
+  addEyebrow(s, "Part B  ·  Changes 管理  —  04", C.white);
+
+  s.addText("回到 main", {
+    x: 0.8, y: 1.5, w: 8.5, h: 1.0,
+    fontSize: 46, fontFace: FONT, bold: true, color: C.white,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Sharing your work — Pull Request review", {
+    x: 0.8, y: 2.5, w: 8.5, h: 0.48,
+    fontSize: 22, fontFace: FONT, color: "AFE0EF",
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 0.8, y: 3.15, w: 1.0, h: 0.04,
+    fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+  });
+  s.addText("個人 commit 完，怎麼把改動交給別人看、討論、合進 main", {
+    x: 0.8, y: 3.28, w: 8.5, h: 0.3,
+    fontSize: 13, fontFace: FONT, color: "B8D4DE",
+    align: "left", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 10 — PR Review 流程（橫向流程 + 角色職責）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Part B  ·  Changes 管理  —  05");
+  addTitle(s, "PR Review 流程", "Open PR → Review → Merge");
+
+  s.addText("從個人分支進到團隊 main，中間是一段協作儀式 — 兩個角色都會碰到。", {
+    x: 0.6, y: 1.86, w: 9.2, h: 0.28,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  // ── Horizontal flow（5 steps, 較緊湊）──
+  const flow = [
+    { zh: "Branch + Commit", en: "個人分支" },
+    { zh: "Open PR", en: "開 PR" },
+    { zh: "Review", en: "Reviewer 審查" },
+    { zh: "Iterate", en: "回應 / 修改" },
+    { zh: "Merge", en: "合進 main" },
+  ];
+
+  const flowY = 2.28;
+  const stepW = 1.55;
+  const arrowW = 0.3;
+  const totalW = 5 * stepW + 4 * arrowW;
+  const flowStartX = (10.0 - totalW) / 2;
+
+  flow.forEach((step, i) => {
+    const x = flowStartX + i * (stepW + arrowW);
+    const isLast = i === flow.length - 1;
+    const bg = isLast ? C.primary : (i === 2 ? C.skyDeep : C.white);
+    const fg = (isLast || i === 2) ? C.white : C.ink;
+    const border = (isLast || i === 2) ? bg : C.line;
+
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x, y: flowY, w: stepW, h: 0.7,
+      fill: { color: bg },
+      line: { color: border, width: 1 },
+      rectRadius: 0.08,
+    });
+    s.addText(step.zh, {
+      x, y: flowY + 0.06, w: stepW, h: 0.3,
+      fontSize: 12.5, fontFace: FONT, bold: true, color: fg,
+      align: "center", valign: "middle", margin: 0,
+    });
+    s.addText(step.en, {
+      x, y: flowY + 0.36, w: stepW, h: 0.28,
+      fontSize: 10, fontFace: FONT,
+      color: (isLast || i === 2) ? "DCEEF3" : C.muted,
+      align: "center", valign: "middle", margin: 0,
+    });
+
+    if (i < flow.length - 1) {
+      const ax = x + stepW + 0.04;
+      s.addShape(pres.shapes.RIGHT_TRIANGLE, {
+        x: ax, y: flowY + 0.26, w: 0.22, h: 0.18,
+        fill: { color: C.muted }, line: { color: C.muted, width: 0 },
+        rotate: 90,
+      });
+    }
+  });
+
+  hLine(s, 3.12);
+
+  // ── Bottom: Full checklists (moved from old slide 11) ──
+  const colY = 3.24;
+  const colH = 3.36;
+
+  // Requester column
+  box(s, 0.6, colY, 4.3, colH, C.gitBg, C.gitText);
+  s.addText("📤  Requester 的功課", {
+    x: 0.78, y: colY + 0.12, w: 4.0, h: 0.32,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.gitText,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("讓 reviewer 用最少力氣看懂", {
+    x: 0.78, y: colY + 0.44, w: 4.0, h: 0.22,
+    fontSize: 10.5, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, colY + 0.7, 0.78, 4.0);
+  [
+    "PR 範圍小 — 一個 PR 只解一件事",
+    "Description 三段：what / why / how to test",
+    "貼 before/after 截圖或預覽連結",
+    "Tag 對的 reviewer，不亂撒網",
+    "回應每條 comment（修了 / 不同意 / 之後）",
+    "改完 push 再 ping，不要邊改邊催",
+  ].forEach((t, i) => {
+    s.addText("☐  " + t, {
+      x: 0.78, y: colY + 0.82 + i * 0.4, w: 4.0, h: 0.38,
+      fontSize: 11, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // Reviewer column
+  box(s, 5.1, colY, 4.3, colH, "DCEEF3", C.skyDeep);
+  s.addText("📥  Reviewer 的功課", {
+    x: 5.28, y: colY + 0.12, w: 4.0, h: 0.32,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.skyDeep,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("提問為主，幫作者把盲點找出來", {
+    x: 5.28, y: colY + 0.44, w: 4.0, h: 0.22,
+    fontSize: 10.5, fontFace: FONT, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, colY + 0.7, 5.28, 4.0);
+  [
+    "先讀 description，掃 PR scope",
+    "只 review 改動的範圍，不順手碰整檔",
+    "對照 before/after — 視覺差異 vs 預期",
+    "提問優先於下決定（「這是 DS 嗎？」）",
+    "區分 violation（必修）vs 偏好（討論）",
+    "Tone 友善、指出位置 + 建議方向",
+  ].forEach((t, i) => {
+    s.addText("☐  " + t, {
+      x: 5.28, y: colY + 0.82 + i * 0.4, w: 4.0, h: 0.38,
+      fontSize: 11, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // Takeaway
+  hLine(s, 6.7);
+  s.addText("把對方需要的資訊準備好，review 才不會變成猜謎或拉鋸戰", {
+    x: 0.6, y: 6.78, w: 8.8, h: 0.3,
+    fontSize: 11.5, fontFace: FONT, bold: true, italic: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 11 — Merge Conflict 怎麼發生、怎麼處理（Part B）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Part B  ·  Changes 管理  —  06");
+  addTitle(s, "Merge Conflict — 怎麼發生、怎麼處理", "Why conflicts happen & how to handle them");
+
+  s.addText("Git 沒法自動合併兩條 branch 對同一段 code 的不同改動 — 需要人來判斷。", {
+    x: 0.6, y: 1.86, w: 9.2, h: 0.28,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  hLine(s, 2.22);
+
+  // ── Left: 為什麼會發生（3 個常見原因）──
+  box(s, 0.6, 2.38, 4.3, 4.0, C.warningBg, C.warningText);
+  s.addText("⚠️  為什麼會發生", {
+    x: 0.78, y: 2.52, w: 4.0, h: 0.34,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.warningText,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Common causes", {
+    x: 0.78, y: 2.86, w: 4.0, h: 0.22,
+    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, 3.12, 0.78, 4.0);
+
+  const causes = [
+    { t: "Branch 開太久沒同步 main", d: "main 已經往前走、你的 branch 還停在分岔點" },
+    { t: "兩條 branch 改到同一段 code", d: "你跟同事改了同一個 component / 同一行 css" },
+    { t: "同檔多人同時編輯", d: "多個設計師動同一個 mockup html" },
+  ];
+  causes.forEach((c, i) => {
+    const y = 3.26 + i * 1.0;
+    s.addText((i + 1) + ".  " + c.t, {
+      x: 0.78, y, w: 4.0, h: 0.34,
+      fontSize: 12, fontFace: FONT, bold: true, color: C.ink,
+      align: "left", valign: "middle", margin: 0,
+    });
+    s.addText(c.d, {
+      x: 1.0, y: y + 0.36, w: 3.8, h: 0.5,
+      fontSize: 10.5, fontFace: FONT, color: C.text,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // ── Right: 處理原則 ──
+  box(s, 5.1, 2.38, 4.3, 4.0, "DCEEF3", C.skyDeep);
+  s.addText("🧭  原則上怎麼處理", {
+    x: 5.28, y: 2.52, w: 4.0, h: 0.34,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.skyDeep,
+    align: "left", valign: "middle", margin: 0,
+  });
+  s.addText("Handling principles", {
+    x: 5.28, y: 2.86, w: 4.0, h: 0.22,
+    fontSize: 10, fontFace: FONT, italic: true, color: C.muted,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, 3.12, 5.28, 4.0);
+
+  const handle = [
+    "開 PR 前先 git pull main + rebase（或 merge）",
+    "Conflict 出現先看清楚兩邊內容、不要憑感覺挑",
+    "不確定該保哪邊 → 找另一位 author 一起確認",
+    "解完跑一次 build / 預覽 → 確認沒漏改",
+    "衝突太大就 retreat — 把 PR 拆小再來",
+  ];
+  handle.forEach((t, i) => {
+    s.addText("•  " + t, {
+      x: 5.28, y: 3.22 + i * 0.6, w: 4.0, h: 0.56,
+      fontSize: 11, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // Takeaway
+  hLine(s, 6.5);
+  s.addText("衝突不是錯誤，是 git 把判斷權交還給人 — 慢慢來、別硬接", {
+    x: 0.6, y: 6.6, w: 8.8, h: 0.34,
+    fontSize: 12, fontFace: FONT, bold: true, italic: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 12 — design-pr-review skill（Part B）
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Part B  ·  Changes 管理  —  07");
+  addTitle(s, "我寫了個 skill 來自動化這件事", "design-pr-review — a Claude Code skill");
+
+  s.addText("checklist 太多項記不住？我寫了個 skill 把這些步驟跑起來，連最後一條多人改的衝突點也會自動掃。", {
+    x: 0.6, y: 1.86, w: 9.2, h: 0.28,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  hLine(s, 2.22);
+
+  // ── Left: 功能列表 ──
+  box(s, 0.6, 2.38, 4.1, 3.4, C.figmaBg, C.figmaText);
+  s.addText("🤖  Skill 做這些事", {
+    x: 0.78, y: 2.52, w: 3.7, h: 0.34,
+    fontSize: 13, fontFace: FONT, bold: true, color: C.figmaText,
+    align: "left", valign: "middle", margin: 0,
+  });
+  hLine(s, 2.92, 0.78, 3.7);
+  [
+    "自動 scope PR\n（只看改動的檔案）",
+    "Before / After side-by-side\n（mockup 視覺差異）",
+    "Design-system violation\n以「提問」方式 flag 出來",
+    "多人改的衝突檔案掃描\n（同檔多 author → 標出來）",
+    "Draft 友善 tone 的留言\n交給 pr-comment 發佈",
+  ].forEach((t, i) => {
+    s.addText("•  " + t, {
+      x: 0.78, y: 3.02 + i * 0.55, w: 3.7, h: 0.5,
+      fontSize: 11, fontFace: FONT, color: C.ink,
+      align: "left", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // ── Right: Screenshot placeholder ──
+  s.addShape(pres.shapes.RECTANGLE, {
+    x: 5.0, y: 2.38, w: 4.4, h: 3.4,
+    fill: { color: C.white },
+    line: { color: C.subtle, width: 1, dashType: "dash" },
+  });
+  s.addText("📸  截圖位置（手動插入）", {
+    x: 5.0, y: 3.7, w: 4.4, h: 0.4,
+    fontSize: 14, fontFace: FONT, bold: true, color: C.muted,
+    align: "center", valign: "middle", margin: 0,
+  });
+  s.addText("PR #259 mixed bottom-sheet\nside-by-side + selector group", {
+    x: 5.0, y: 4.1, w: 4.4, h: 0.5,
+    fontSize: 10.5, fontFace: FONT, color: C.subtle,
+    align: "center", valign: "middle", margin: 0,
+  });
+
+  // ── Bottom: trigger 詞 ──
+  hLine(s, 5.92);
+  box(s, 0.6, 6.02, 8.8, 0.44, C.bgQuestion, C.primary);
+  s.addText("Trigger：「review this design PR」 / 「設計 PR review」 / /design-pr-review", {
+    x: 0.6, y: 6.02, w: 8.8, h: 0.44,
+    fontSize: 12, fontFace: FONT, bold: true, color: C.primary,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
+// Slide 13 — Section Divider C
 // ==========================================================
 {
   const s = pres.addSlide();
@@ -1136,8 +1459,92 @@ function box(slide, x, y, w, h, bg, border) {
 }
 
 // ==========================================================
+// Slide 19 — Additional Discussion · Vibe Coding 像自動駕駛
+// ==========================================================
+{
+  const s = pres.addSlide();
+  s.background = { color: C.bg };
+  addEyebrow(s, "Additional Discussion  ·  個人心得");
+  addTitle(s, "Vibe Coding ≠ 全自動駕駛", "Stay in the driver's seat, even with an AI co-pilot");
+
+  s.addText("把 agent 當副駕，不是把方向盤整個丟過去 — 你還是駕駛，要看路、確認方向、必要時接管。", {
+    x: 0.6, y: 1.86, w: 9.2, h: 0.36,
+    fontSize: 13, fontFace: FONT, color: C.text,
+    align: "left", valign: "middle", margin: 0,
+  });
+
+  hLine(s, 2.3);
+
+  // ── 3-cell analogy ──
+  const cells = [
+    { emoji: "🤖", zh: "Agent 可以幫", en: "It can help", detail: "寫 code、跑步驟、改錯字、查文件" },
+    { emoji: "👁️", zh: "你要看路", en: "Stay watching", detail: "方向對不對、有沒有偏掉、要不要踩煞車" },
+    { emoji: "🧭", zh: "方向你決定", en: "You steer", detail: "終點是什麼、為什麼這樣做、責任是你的" },
+  ];
+
+  const cellY = 2.5;
+  const cellH = 2.8;
+  cells.forEach((c, i) => {
+    const x = 0.6 + i * 3.08;
+    box(s, x, cellY, 2.84, cellH, C.white, C.line);
+
+    // Emoji (big)
+    s.addText(c.emoji, {
+      x, y: cellY + 0.2, w: 2.84, h: 0.95,
+      fontSize: 54, fontFace: FONT,
+      align: "center", valign: "middle", margin: 0,
+    });
+
+    // Divider under emoji
+    s.addShape(pres.shapes.RECTANGLE, {
+      x: x + 1.17, y: cellY + 1.22, w: 0.5, h: 0.025,
+      fill: { color: C.primary }, line: { color: C.primary, width: 0 },
+    });
+
+    // zh title
+    s.addText(c.zh, {
+      x, y: cellY + 1.32, w: 2.84, h: 0.34,
+      fontSize: 16, fontFace: FONT, bold: true, color: C.ink,
+      align: "center", valign: "middle", margin: 0,
+    });
+    // en
+    s.addText(c.en, {
+      x, y: cellY + 1.68, w: 2.84, h: 0.26,
+      fontSize: 11, fontFace: FONT, italic: true, color: C.muted,
+      align: "center", valign: "middle", margin: 0,
+    });
+    // detail
+    s.addText(c.detail, {
+      x: x + 0.2, y: cellY + 2.02, w: 2.44, h: 0.7,
+      fontSize: 11, fontFace: FONT, color: C.text,
+      align: "center", valign: "top", margin: 0, wrap: true,
+    });
+  });
+
+  // ── Bottom takeaway band ──
+  hLine(s, 5.5);
+  box(s, 0.6, 5.65, 8.8, 1.3, C.bgQuestion, C.skyDeep);
+
+  s.addText("把 agent 用在「加速執行」上，不是「代你判斷」上", {
+    x: 0.6, y: 5.78, w: 8.8, h: 0.46,
+    fontSize: 17, fontFace: FONT, bold: true, color: C.skyDeep,
+    align: "center", valign: "middle", margin: 0,
+  });
+  s.addText("Hands on the wheel  ·  Eyes on the road  ·  Mind on the destination", {
+    x: 0.6, y: 6.28, w: 8.8, h: 0.3,
+    fontSize: 11.5, fontFace: FONT, italic: true, color: C.skyDeep,
+    align: "center", valign: "middle", margin: 0,
+  });
+  s.addText("— Karen's personal note from vibe coding the past 6 months", {
+    x: 0.6, y: 6.62, w: 8.8, h: 0.26,
+    fontSize: 10, fontFace: FONT, color: C.muted,
+    align: "center", valign: "middle", margin: 0,
+  });
+}
+
+// ==========================================================
 // Output
 // ==========================================================
 pres.writeFile({ fileName: "week3-git-vocabulary.pptx" })
-  .then(() => console.log("✅  week3-git-vocabulary.pptx written (19 slides)"))
+  .then(() => console.log("✅  week3-git-vocabulary.pptx written (24 slides)"))
   .catch(err => console.error("❌ ", err));
