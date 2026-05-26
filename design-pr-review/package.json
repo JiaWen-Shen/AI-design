@@ -1,0 +1,13 @@
+{
+  "name": "design-pr-review-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "bash scripts/run-smoke.sh \"${SMOKE_WORKSPACE:-/tmp/design-review-282}\" \"${SMOKE_CLUSTER:-sso-views-mixed}\"",
+    "test:raw": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

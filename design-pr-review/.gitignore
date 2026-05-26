@@ -1,0 +1,4 @@
+node_modules/
+test-results/
+playwright-report/
+.claude_review_state.json
