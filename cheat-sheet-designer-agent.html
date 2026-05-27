@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>Designer × AI Agent · Git Cheat Sheet</title>
+<style>
+  @page {
+    size: A4 landscape;
+    margin: 12mm 14mm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
+    color: #111827;
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+  .page {
+    page-break-after: always;
+    padding: 0;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1.5px solid #2563eb;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-size: 18pt;
+    margin: 0;
+    font-weight: 700;
+    color: #111827;
+  }
+  .page-header h1 .en {
+    font-size: 11pt;
+    color: #6b7280;
+    font-weight: 500;
+    margin-left: 10px;
+  }
+  .page-header .meta {
+    font-size: 9pt;
+    color: #6b7280;
+  }
+
+  /* Section heading */
+  h2 {
+    font-size: 13pt;
+    margin: 0 0 4px 0;
+    color: #111827;
+    font-weight: 700;
+  }
+  h2 .en {
+    font-size: 10pt;
+    color: #6b7280;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  .section-intro {
+    font-size: 9.5pt;
+    color: #4b5563;
+    margin-bottom: 10px;
+  }
+  .section-intro .en {
+    color: #9ca3af;
+    font-style: italic;
+    display: block;
+    font-size: 9pt;
+    margin-top: 1px;
+  }
+
+  /* Two-column layout for content + screenshot */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .row.wide-left { grid-template-columns: 1.4fr 1fr; }
+  .row.wide-right { grid-template-columns: 1fr 1.4fr; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+  th {
+    background: #f3f4f6;
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1.5px solid #d1d5db;
+    font-weight: 700;
+    font-size: 9pt;
+  }
+  th .en { color: #6b7280; font-weight: 500; font-size: 8pt; display: block; }
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  td .en {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 8.5pt;
+    display: block;
+    margin-top: 1px;
+  }
+  td.prompt { color: #1e40af; font-weight: 500; }
+  td.prompt .en { color: #6b7280; font-style: italic; font-weight: 400; }
+  tr.alt td { background: #fafafa; }
+
+  /* States cards */
+  .state-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .state-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: #fff;
+  }
+  .state-card .tag {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    font-weight: 700;
+    font-size: 9pt;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+  .state-card .title {
+    font-size: 10pt;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .state-card .en {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 8.5pt;
+    margin-bottom: 6px;
+  }
+  .state-card .visibility {
+    font-size: 8.5pt;
+    color: #4b5563;
+    padding-top: 4px;
+    border-top: 1px dashed #e5e7eb;
+  }
+  .state-card .visibility.yes { color: #059669; font-weight: 600; }
+  .state-card .visibility.no { color: #b91c1c; font-weight: 600; }
+
+  /* VS Code mockup */
+  .vscode {
+    background: #1e1e1e;
+    border-radius: 6px;
+    padding: 0;
+    color: #d4d4d4;
+    font-family: "SF Mono", "Monaco", "Menlo", monospace;
+    font-size: 8.5pt;
+    overflow: hidden;
+    border: 1px solid #2d2d2d;
+  }
+  .vscode .titlebar {
+    background: #323233;
+    padding: 4px 10px;
+    font-size: 8pt;
+    color: #cccccc;
+    border-bottom: 1px solid #2d2d2d;
+  }
+  .vscode .sidebar-header {
+    background: #252526;
+    padding: 4px 10px;
+    font-size: 8pt;
+    color: #cccccc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #2d2d2d;
+  }
+  .vscode .body {
+    padding: 8px 10px;
+  }
+  .vscode .commit-input {
+    background: #3c3c3c;
+    border: 1px solid #555;
+    padding: 4px 6px;
+    color: #9ca3af;
+    font-size: 8.5pt;
+    margin-bottom: 8px;
+    border-radius: 2px;
+  }
+  .vscode .group-header {
+    color: #cccccc;
+    font-size: 8pt;
+    margin: 4px 0;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .vscode .file {
+    padding: 2px 0 2px 14px;
+    color: #d4d4d4;
+    position: relative;
+  }
+  .vscode .file .badge {
+    position: absolute;
+    right: 4px;
+    color: #e2c08d;
+    font-weight: 700;
+  }
+  .vscode .file.modified .badge { color: #e2c08d; }
+  .vscode .file.added .badge { color: #81b88b; }
+  .vscode .statusbar {
+    background: #007acc;
+    color: white;
+    padding: 3px 10px;
+    font-size: 8pt;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .vscode .statusbar .branch::before {
+    content: "⎇ ";
+  }
+  .vscode .statusbar .sync {
+    background: rgba(255,255,255,0.15);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  .vscode .terminal {
+    background: #0c0c0c;
+    padding: 8px 10px;
+    font-family: "SF Mono", monospace;
+    font-size: 8pt;
+  }
+  .vscode .terminal .prompt { color: #9ca3af; }
+  .vscode .terminal .err { color: #fca5a5; font-weight: 700; }
+  .vscode .terminal .hint { color: #d1d5db; }
+
+  /* Callout annotation */
+  .callout {
+    position: relative;
+    margin-top: 6px;
+    font-size: 8.5pt;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+  .callout::before {
+    content: "← ";
+  }
+  .callout .en {
+    color: #6b7280;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 8pt;
+    display: block;
+    margin-left: 14px;
+  }
+
+  /* Don't-say table */
+  .dont-say td.bad { color: #b91c1c; text-decoration: line-through; font-weight: 600; }
+  .dont-say td.good { color: #059669; font-weight: 600; }
+  .dont-say td.bad .en { color: #ef9a9a; text-decoration: line-through; font-style: italic; font-weight: 400; }
+  .dont-say td.good .en { color: #6ee7b7; font-style: italic; font-weight: 400; text-decoration: none; }
+
+  /* Glossary card grid */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .glossary .term {
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-size: 9pt;
+  }
+  .glossary .term .word {
+    font-family: "SF Mono", monospace;
+    font-weight: 700;
+    color: #1e40af;
+    font-size: 9.5pt;
+  }
+  .glossary .term .zh { font-weight: 600; margin-top: 2px; }
+  .glossary .term .en { color: #6b7280; font-style: italic; font-size: 8pt; margin-top: 1px; }
+
+  /* Repo cards */
+  .repo-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .repo-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .repo-card .icon { font-size: 16pt; }
+  .repo-card .title { font-weight: 700; font-size: 11pt; margin: 4px 0 1px 0; }
+  .repo-card .en { color: #6b7280; font-style: italic; font-size: 8.5pt; margin-bottom: 6px; }
+  .repo-card .desc { font-size: 9pt; }
+  .repo-card .desc .en { color: #6b7280; font-style: italic; font-size: 8pt; display: block; margin-top: 1px; }
+
+  /* Prompt template */
+  .prompt-template {
+    background: #1e3a8a;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 10pt;
+    line-height: 1.7;
+  }
+  .prompt-template .label {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin: 0 2px;
+  }
+  .prompt-example {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: #f3f4f6;
+    border-left: 3px solid #2563eb;
+    font-size: 9.5pt;
+    color: #374151;
+  }
+  .prompt-example .en {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 8.5pt;
+    display: block;
+    margin-top: 3px;
+  }
+
+  /* Footer */
+  .page-footer {
+    position: absolute;
+    bottom: -6mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 7.5pt;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1: Title + Three States ============ -->
+<div class="page">
+  <div class="page-header">
+    <h1>設計師 × AI Agent · Git Cheat Sheet<span class="en">Designer's quick reference for talking to AI about Git</span></h1>
+    <div class="meta">Based on「GitHub for UI Designers」W1–W3 · 2026</div>
+  </div>
+
+  <h2>① 三個狀態，先學會看<span class="en">The Three States — learn to spot which one you're in</span></h2>
+  <p class="section-intro">
+    卡關時，先問 Agent：「我現在處於 A / B / C 哪個狀態？」
+    <span class="en">When stuck, first ask the agent: "Am I in state A, B or C right now?"</span>
+  </p>
+
+  <div class="state-cards">
+    <div class="state-card">
+      <span class="tag">A</span>
+      <div class="title">改了，還沒 commit</div>
+      <div class="en">Edited, not committed</div>
+      <div>檔案在你電腦的工作區，VS Code 檔名右側出現 <b>M</b>（modified）。</div>
+      <div class="en">Files sit in your working directory. VS Code shows an <b>M</b> badge next to filename.</div>
+      <div class="visibility no">同事看得到嗎？❌ 看不到 / Teammates can see? No</div>
+    </div>
+    <div class="state-card">
+      <span class="tag">B</span>
+      <div class="title">commit 了，還沒 push</div>
+      <div class="en">Committed, not pushed</div>
+      <div>已存進本機歷史。VS Code 左下角狀態列出現 <b>↑1</b>（要上傳的 commit 數）。</div>
+      <div class="en">Stored in local history. The status bar shows <b>↑1</b> — commits waiting to push.</div>
+      <div class="visibility no">同事看得到嗎？❌ 看不到 / Teammates can see? No</div>
+    </div>
+    <div class="state-card">
+      <span class="tag">C</span>
+      <div class="title">push 了</div>
+      <div class="en">Pushed</div>
+      <div>已上 GitHub。狀態列只剩 branch 名稱，沒有上下箭頭。</div>
+      <div class="en">Synced to GitHub. The status bar shows only the branch name — no arrows.</div>
+      <div class="visibility yes">同事看得到嗎？✅ 看得到 / Teammates can see? Yes</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <h2 style="font-size:11pt;margin-top:6px;">VS Code 哪裡看？<span class="en">Where to look in VS Code</span></h2>
+      <table>
+        <tr>
+          <td style="width:60px;font-weight:700;">A</td>
+          <td>
+            左側 <b>Source Control 面板（⎇ 圖示）</b>展開「Changes」，列出所有未 commit 的檔案。
+            <span class="en">Open Source Control panel (⎇ icon) → expand "Changes" to see uncommitted files.</span>
+          </td>
+        </tr>
+        <tr class="alt">
+          <td style="font-weight:700;">B</td>
+          <td>
+            檔案不在 Changes 區了，但<b>左下角狀態列</b>出現 <code>↑1</code> 之類的數字。
+            <span class="en">Files leave the Changes area, but the <b>status bar (bottom-left)</b> shows <code>↑1</code>.</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">C</td>
+          <td>
+            狀態列只剩 <code>⎇ branch-name</code>，沒有 ↑ 或 ↓。
+            <span class="en">Status bar shows only <code>⎇ branch-name</code> — no ↑ or ↓ arrows.</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <div class="vscode">
+        <div class="titlebar">VS Code — Source Control</div>
+        <div class="sidebar-header">SOURCE CONTROL</div>
+        <div class="body">
+          <div class="commit-input">Message (press Ctrl+Enter to commit)</div>
+          <div class="group-header">▼ Changes &nbsp;<span style="color:#e2c08d;">3</span></div>
+          <div class="file modified">Header.tsx <span class="badge">M</span></div>
+          <div class="file modified">Button.tsx <span class="badge">M</span></div>
+          <div class="file added">DarkMode.tsx <span class="badge">U</span></div>
+        </div>
+        <div class="statusbar">
+          <span class="branch">karen/feature/header-redesign</span>
+          <span class="sync">↑1</span>
+          <span style="margin-left:auto;color:rgba(255,255,255,0.7);">UTF-8</span>
+        </div>
+      </div>
+      <div class="callout">
+        紅框看 Changes 列表（狀態 A）+ 狀態列 ↑1（狀態 B）+ branch 名稱
+        <span class="en">Watch the Changes list (state A), the ↑1 in status bar (state B), and the branch name</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">設計師 × AI Agent · Git Cheat Sheet — Page 1 / 4</div>
+</div>
+
+<!-- ============ PAGE 2: Scenarios — Start & Experiment ============ -->
+<div class="page">
+  <div class="page-header">
+    <h1>② 場景對照表 · 開始工作 + 想實驗<span class="en">Scenario Table — Start work & Experiment safely</span></h1>
+    <div class="meta">Page 2 / 4</div>
+  </div>
+
+  <div class="row wide-left">
+    <div>
+      <h2 style="font-size:11pt;">開始工作<span class="en">Starting work</span></h2>
+      <table>
+        <tr>
+          <th style="width:38%;">你想做的事<span class="en">What you want</span></th>
+          <th>該對 Agent 說<span class="en">What to say</span></th>
+        </tr>
+        <tr>
+          <td>開新的工作分支<span class="en">Open a new working branch</span></td>
+          <td class="prompt">「開一條 branch 叫 <code>karen/feature/header-redesign</code>」<span class="en">"Open branch karen/feature/header-redesign"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>確認自己在哪<span class="en">Check current branch</span></td>
+          <td class="prompt">「我現在在哪個 branch？」<span class="en">"Which branch am I on?"</span></td>
+        </tr>
+        <tr>
+          <td>切換到別條 branch<span class="en">Switch branches</span></td>
+          <td class="prompt">「切到 main」<span class="en">"Switch to main"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>把遠端最新的拉下來<span class="en">Get latest from remote</span></td>
+          <td class="prompt">「先 pull 一下再開始」<span class="en">"Pull the latest before I start"</span></td>
+        </tr>
+      </table>
+
+      <h2 style="font-size:11pt;margin-top:14px;">想實驗，不影響別人<span class="en">Experiment without affecting others</span></h2>
+      <table>
+        <tr>
+          <th style="width:38%;">你想做的事<span class="en">What you want</span></th>
+          <th>該對 Agent 說<span class="en">What to say</span></th>
+        </tr>
+        <tr>
+          <td>試新方向<span class="en">Try a new direction</span></td>
+          <td class="prompt">「開一條實驗 branch 叫 <code>karen/exp/dark-mode</code>，我想試 dark mode」<span class="en">"Open an experiment branch karen/exp/dark-mode for dark mode"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>試完不要了<span class="en">Discard the experiment</span></td>
+          <td class="prompt">「這條 branch 不要了，幫我刪掉」<span class="en">"Delete this branch, I'm done with it"</span></td>
+        </tr>
+        <tr>
+          <td>試到一半要先處理別的事<span class="en">Pause work, switch context</span></td>
+          <td class="prompt">「先把現在的工作 stash 起來，等等再回來」<span class="en">"Stash current work, I'll come back later"</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h2 style="font-size:11pt;">VS Code 哪裡操作？<span class="en">Where in VS Code</span></h2>
+      <div class="vscode">
+        <div class="titlebar">VS Code — 左下角狀態列 / Status Bar (bottom-left)</div>
+        <div style="background:#1e1e1e;padding:30px 16px;text-align:center;color:#888;font-size:8pt;">
+          (Editor area)
+        </div>
+        <div class="statusbar">
+          <span class="branch" style="background:rgba(255,255,255,0.15);padding:1px 8px;border-radius:2px;font-weight:600;">karen/feature/header-redesign</span>
+          <span class="sync">↑1 ↓0</span>
+          <span style="margin-left:auto;color:rgba(255,255,255,0.7);">main · UTF-8</span>
+        </div>
+      </div>
+      <div class="callout">
+        點 branch 名稱 → 跳出 branch 切換選單（建議仍用對話請 Agent 處理）
+        <span class="en">Click the branch name → pops up branch picker (still preferred to ask the agent)</span>
+      </div>
+
+      <div class="vscode" style="margin-top:14px;">
+        <div class="titlebar">VS Code — Source Control · 寫 commit message / Compose commit</div>
+        <div class="sidebar-header">SOURCE CONTROL</div>
+        <div class="body">
+          <div class="commit-input" style="color:#fff;border-color:#007acc;">feat: redesign header layout</div>
+          <div style="text-align:right;">
+            <span style="background:#0e639c;color:white;padding:2px 8px;font-size:8pt;border-radius:2px;">✓ Commit</span>
+          </div>
+          <div class="group-header" style="margin-top:8px;">▼ Staged Changes &nbsp;<span style="color:#81b88b;">1</span></div>
+          <div class="file modified">Header.tsx <span class="badge" style="color:#81b88b;">M</span></div>
+        </div>
+      </div>
+      <div class="callout">
+        Commit 訊息輸入框在 Source Control 面板頂端 / Commit message box at the top of Source Control
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">設計師 × AI Agent · Git Cheat Sheet — Page 2 / 4</div>
+</div>
+
+<!-- ============ PAGE 3: Scenarios — Handoff & Recovery ============ -->
+<div class="page">
+  <div class="page-header">
+    <h1>③ 場景對照表 · 改完了 + 出狀況<span class="en">Scenario Table — Hand-off & Recovery</span></h1>
+    <div class="meta">Page 3 / 4</div>
+  </div>
+
+  <div class="row wide-left">
+    <div>
+      <h2 style="font-size:11pt;">改完了，要交出去<span class="en">Hand off your changes</span></h2>
+      <table>
+        <tr>
+          <th style="width:38%;">你想做的事<span class="en">What you want</span></th>
+          <th>該對 Agent 說<span class="en">What to say</span></th>
+        </tr>
+        <tr>
+          <td>存檔 + 寫紀錄<span class="en">Save with a message</span></td>
+          <td class="prompt">「commit 一下，訊息寫 <code>feat: redesign header layout</code>」<span class="en">"Commit with message: feat: redesign header layout"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>上傳到 GitHub<span class="en">Upload to GitHub</span></td>
+          <td class="prompt">「push 上去」<span class="en">"Push it up"</span></td>
+        </tr>
+        <tr>
+          <td>請工程師 review<span class="en">Ask engineer to review</span></td>
+          <td class="prompt">「開 Pull Request 合併到 main，標題寫 …」<span class="en">"Open a PR to main, title …"</span></td>
+        </tr>
+      </table>
+
+      <h2 style="font-size:11pt;margin-top:14px;">出狀況<span class="en">When things go wrong</span></h2>
+      <table>
+        <tr>
+          <th style="width:38%;">症狀<span class="en">Symptom</span></th>
+          <th>該對 Agent 說<span class="en">What to say</span></th>
+        </tr>
+        <tr>
+          <td>push 被擋（rejected / non-fast-forward）<span class="en">Push rejected (non-fast-forward)</span></td>
+          <td class="prompt">「push 被擋了，幫我處理」<span class="en">"Push was rejected, please handle it"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>不知道哪裡壞了<span class="en">No idea what broke</span></td>
+          <td class="prompt">「告訴我為什麼被擋」<span class="en">"Tell me why it was rejected"</span></td>
+        </tr>
+        <tr>
+          <td>改錯檔案想退回<span class="en">Made wrong edit, want to undo</span></td>
+          <td class="prompt">「把 <code>Header.tsx</code> 還沒 commit 的改動丟掉」<span class="en">"Discard uncommitted changes in Header.tsx"</span></td>
+        </tr>
+        <tr class="alt">
+          <td>同事改壞了想回到舊版<span class="en">A teammate broke something, roll back</span></td>
+          <td class="prompt">「找到上一次正常的 commit，revert 回那個版本」<span class="en">"Find the last working commit, revert to it"</span></td>
+        </tr>
+        <tr>
+          <td>切 branch 但工作做一半<span class="en">Switch branch but work unfinished</span></td>
+          <td class="prompt">「先 stash，切到 main，等等回來」<span class="en">"Stash first, switch to main, I'll come back"</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h2 style="font-size:11pt;">VS Code 哪裡操作？<span class="en">Where in VS Code</span></h2>
+      <div class="vscode">
+        <div class="titlebar">VS Code — Sync Changes 按鈕 / Sync button</div>
+        <div class="sidebar-header">SOURCE CONTROL</div>
+        <div class="body">
+          <div style="background:#0e639c;color:white;padding:6px 10px;font-size:9pt;border-radius:2px;text-align:center;">
+            ↑↓ Sync Changes 1 ↑
+          </div>
+          <div style="color:#9ca3af;font-size:8pt;margin-top:4px;text-align:center;">
+            (push 你的 commit + pull 別人的更新)
+          </div>
+        </div>
+      </div>
+      <div class="callout">
+        Source Control 面板會出現 Sync Changes 按鈕；對 Agent 說「push 上去」最不會出錯
+        <span class="en">"Sync Changes" button appears in Source Control; saying "push it up" to the agent is safest</span>
+      </div>
+
+      <div class="vscode" style="margin-top:14px;">
+        <div class="titlebar">VS Code — Terminal (push 被擋的長相)</div>
+        <div class="terminal">
+          <div><span class="prompt">$</span> git push</div>
+          <div class="err">! [rejected]    main → main (non-fast-forward)</div>
+          <div class="hint">hint: Updates were rejected because the remote contains</div>
+          <div class="hint">      work that you do not have locally.</div>
+        </div>
+      </div>
+      <div class="callout">
+        看到 <code>[rejected]</code> 或 <code>non-fast-forward</code> 別緊張，這是保護機制
+        <span class="en">Seeing <code>[rejected]</code> or <code>non-fast-forward</code> is normal — it's a safety net</span>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">設計師 × AI Agent · Git Cheat Sheet — Page 3 / 4</div>
+</div>
+
+<!-- ============ PAGE 4: Don't Say + Glossary + Repo + Prompt ============ -->
+<div class="page">
+  <div class="page-header">
+    <h1>④ 不要說的話 + 基本操作建議用語<span class="en">Phrases to avoid + recommended base terms</span></h1>
+    <div class="meta">Page 4 / 4</div>
+  </div>
+
+  <div class="row">
+    <div>
+      <h2 style="font-size:11pt;">❌ 不要說的話<span class="en">Phrases to avoid</span></h2>
+      <p class="section-intro">
+        這些字會讓 Agent 觸發<b>破壞性指令</b>，或語意模糊讓 Agent 猜錯動作。
+        <span class="en">These trigger destructive commands or are too vague — the agent may guess wrong.</span>
+      </p>
+      <table class="dont-say">
+        <tr>
+          <th style="width:32%;">不要說<span class="en">Avoid</span></th>
+          <th style="width:32%;">為什麼<span class="en">Why</span></th>
+          <th>改說<span class="en">Say instead</span></th>
+        </tr>
+        <tr>
+          <td class="bad">「強推」「force」「硬上」<span class="en">"force", "push hard"</span></td>
+          <td>觸發 <code>--force</code>，會蓋掉遠端別人的工作<span class="en">Triggers --force, overwrites teammates' work</span></td>
+          <td class="good">「push 被擋了，幫我處理」<span class="en">"Push rejected, please handle it"</span></td>
+        </tr>
+        <tr class="alt">
+          <td class="bad">「蓋過去」「直接覆蓋」<span class="en">"overwrite it", "just replace"</span></td>
+          <td>同上，可能 silent overwrite<span class="en">May silently overwrite remote</span></td>
+          <td class="good">「整合進去」「合併」<span class="en">"integrate it", "merge it"</span></td>
+        </tr>
+        <tr>
+          <td class="bad">「全部清掉」「重置」<span class="en">"clear everything", "reset"</span></td>
+          <td>觸發 <code>reset --hard</code>，本機未 commit 改動會消失<span class="en">Triggers reset --hard, uncommitted edits lost</span></td>
+          <td class="good">「丟掉 X 檔的改動」（指定範圍）<span class="en">"Discard changes in X file" (specify scope)</span></td>
+        </tr>
+        <tr class="alt">
+          <td class="bad">「拉下來」<span class="en">"pull it down" (vague)</span></td>
+          <td>分不清 pull / fetch / clone / checkout，Agent 可能猜錯<span class="en">Ambiguous between pull / fetch / clone / checkout</span></td>
+          <td class="good">「pull 遠端最新的」或「clone 這個 repo」<span class="en">"Pull latest from remote" or "Clone this repo"</span></td>
+        </tr>
+        <tr>
+          <td class="bad">「推上去」<span class="en">"push it up" (vague)</span></td>
+          <td>分不清 push / force push / merge / PR<span class="en">Ambiguous between push / force / merge / PR</span></td>
+          <td class="good">「push 到目前 branch」或「開 PR 合到 main」<span class="en">"Push to current branch" or "Open PR to main"</span></td>
+        </tr>
+        <tr class="alt">
+          <td class="bad">「連結」「接起來」<span class="en">"link it", "connect them"</span></td>
+          <td>分不清 merge / rebase / submodule / remote add<span class="en">Ambiguous between merge / rebase / submodule / remote</span></td>
+          <td class="good">「把 X branch merge 到 Y」<span class="en">"Merge branch X into Y"</span></td>
+        </tr>
+        <tr>
+          <td class="bad">「不管衝突直接合」<span class="en">"just merge, ignore conflicts"</span></td>
+          <td>可能 silent overwrite，丟失改動<span class="en">May overwrite silently, losing changes</span></td>
+          <td class="good">「把衝突列出來給我看」<span class="en">"Show me the conflicts"</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h2 style="font-size:11pt;">📘 基本操作建議用語<span class="en">Recommended base vocabulary</span></h2>
+      <p class="section-intro">
+        固定用這些字，Agent 就不會誤解。
+        <span class="en">Use these consistently and the agent won't misread you.</span>
+      </p>
+      <div class="glossary">
+        <div class="term">
+          <div class="word">clone</div>
+          <div class="zh">第一次複製整個 repo</div>
+          <div class="en">First-time copy a repo</div>
+        </div>
+        <div class="term">
+          <div class="word">pull</div>
+          <div class="zh">把遠端更新拉進本機</div>
+          <div class="en">Bring remote updates local</div>
+        </div>
+        <div class="term">
+          <div class="word">push</div>
+          <div class="zh">把本機 commit 推到遠端</div>
+          <div class="en">Send local commits to remote</div>
+        </div>
+        <div class="term">
+          <div class="word">commit</div>
+          <div class="zh">在本機建一個版本紀錄</div>
+          <div class="en">Record a local version</div>
+        </div>
+        <div class="term">
+          <div class="word">branch</div>
+          <div class="zh">開一條平行工作線</div>
+          <div class="en">Open a parallel work line</div>
+        </div>
+        <div class="term">
+          <div class="word">switch / checkout</div>
+          <div class="zh">切到別條 branch</div>
+          <div class="en">Switch to another branch</div>
+        </div>
+        <div class="term">
+          <div class="word">merge</div>
+          <div class="zh">把兩條 branch 合起來</div>
+          <div class="en">Combine two branches</div>
+        </div>
+        <div class="term">
+          <div class="word">PR (Pull Request)</div>
+          <div class="zh">請別人 review 並合併</div>
+          <div class="en">Ask for review &amp; merge</div>
+        </div>
+        <div class="term">
+          <div class="word">stash</div>
+          <div class="zh">暫存未 commit 的改動</div>
+          <div class="en">Park uncommitted edits</div>
+        </div>
+        <div class="term">
+          <div class="word">revert</div>
+          <div class="zh">用新 commit 取消舊 commit</div>
+          <div class="en">Undo a commit with a new commit</div>
+        </div>
+        <div class="term">
+          <div class="word">discard</div>
+          <div class="zh">丟掉還沒 commit 的改動</div>
+          <div class="en">Drop uncommitted changes</div>
+        </div>
+        <div class="term">
+          <div class="word">conflict</div>
+          <div class="zh">同檔同行兩邊都改了</div>
+          <div class="en">Same line edited on both sides</div>
+        </div>
+      </div>
+
+      <h2 style="font-size:11pt;margin-top:12px;">救援三步驟<span class="en">When in doubt — three questions</span></h2>
+      <table>
+        <tr>
+          <td style="width:30px;font-weight:700;color:#1e40af;">1</td>
+          <td>「<b>我現在的狀態是什麼？</b>」 — 確認在哪條 branch、有沒有未存的改動<span class="en">"What state am I in?" — current branch, unsaved edits</span></td>
+        </tr>
+        <tr class="alt">
+          <td style="font-weight:700;color:#1e40af;">2</td>
+          <td>「<b>這個操作會影響到誰？</b>」 — 只動本機，還是會推到遠端<span class="en">"Who does this affect?" — local only, or pushed to remote</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#1e40af;">3</td>
+          <td>「<b>有沒有更安全的做法？</b>」 — 永遠先問再做<span class="en">"Is there a safer way?" — ask before acting</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <h2 style="font-size:11pt;margin-top:14px;">📦 Repo 三種關係 + 通用 Prompt 模板<span class="en">Three repo relationships + universal prompt template</span></h2>
+
+  <div class="row wide-left">
+    <div class="repo-cards">
+      <div class="repo-card" style="border-color:#86efac;background:#f0fdf4;">
+        <div class="icon">🟢</div>
+        <div class="title">貢獻者<span class="en"> · Contributor</span></div>
+        <div class="desc">
+          團隊 repo，你有 write 權限。<span class="en">Team repo, you have write access.</span>
+          走完整流程：branch → commit → push → PR。
+          <span class="en">Full flow: branch → commit → push → PR.</span>
+        </div>
+      </div>
+      <div class="repo-card" style="border-color:#fcd34d;background:#fffbeb;">
+        <div class="icon">📘</div>
+        <div class="title">讀者<span class="en"> · Reader</span></div>
+        <div class="desc">
+          Reference repo（如 Design System），你幾乎不改。<span class="en">Reference repo (e.g. Design System), rarely edit.</span>
+          動之前先問 Agent「這 repo 我有權限動嗎？」<span class="en">Ask the agent "Do I have write access here?" first.</span>
+        </div>
+      </div>
+      <div class="repo-card" style="border-color:#93c5fd;background:#eff6ff;">
+        <div class="icon">🏠</div>
+        <div class="title">自己的 Repo<span class="en"> · Your Own</span></div>
+        <div class="desc">
+          規則自己定。<span class="en">Your repo, your rules.</span>
+          仍建議走 branch + PR，養肌肉記憶。<span class="en">Still use branch + PR — build the muscle memory.</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="prompt-template">
+        我想 <span class="label">[做什麼]</span>，<br>
+        目前在 <span class="label">[哪條 branch]</span>，<br>
+        請告訴我接下來的步驟，並在動 remote 之前先讓我確認。
+      </div>
+      <div class="prompt-example">
+        <b>範例：</b>我想把 Header.tsx 改成新的 layout，目前在 main，請告訴我接下來的步驟，並在動 remote 之前先讓我確認。
+        <span class="en"><b>Example:</b> I want to redesign Header.tsx layout, currently on main. Tell me the next steps and confirm with me before touching remote.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">設計師 × AI Agent · Git Cheat Sheet — Page 4 / 4 · Based on「GitHub for UI Designers」W1–W3</div>
+</div>
+
+</body>
+</html>
