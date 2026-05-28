@@ -1,0 +1,71 @@
+# design-context sources config
+# Lives at ~/.config/design-context/sources.yaml after init.sh
+# Edit to add/remove sources; re-run scripts/render-manifest.sh after editing.
+
+sources:
+  # -----------------------------------------------------------
+  # L1 — Department rules / Design System (global, cross-project)
+  # Cache lives in ~/.cache/design-context/<id>/ (shared across projects)
+  # -----------------------------------------------------------
+  - id: vxd-skill
+    tier: L1
+    repo: git@github.com:trendlife-general/vxd-skill.git
+    cache: ~/.cache/design-context/vxd-skill
+    ttl: weekly
+    # Files agent reads on skill activation. Manifest renderer picks these up.
+    read:
+      - SKILL.md
+      - tlds/tokens/foundation.md
+      - tlds/tokens/colors.md
+      - tlds/tokens/spacing.md
+      - tlds/tokens/typography.md
+      - tlds/tokens/motion.md
+      - tlds/tokens/grid.md
+      - tlds/brand/color.md
+      - tlds/brand/typography.md
+      - tlds/brand/logo.md
+    notify_on_update:
+      digest: true
+      desktop: true
+      threshold:
+        files_changed: 1   # 部門規範變動較少，門檻低一點
+        lines_changed: 20
+
+  # -----------------------------------------------------------
+  # L2 — Project PM specs (per-project, lives in working dir)
+  # Cache: <cwd>/.design-context/<id>/
+  # -----------------------------------------------------------
+  - id: rei-pm-specs
+    tier: L2
+    repo: git@github.com:trendlife-general/REI-Project.git
+    cache: .design-context/rei-project
+    ttl: session+30min   # 每 session start + cron 每 30 分鐘
+    sparse_paths:
+      - docs/requirements
+      - docs/project
+      - docs/design
+      - docs/ui
+      - teams/PM
+    # Agent 從這個檔開始讀（index → 自己 follow 連結）
+    read_index: docs/requirements/REQUIREMENTS-INDEX.md
+    # 若 cwd 偵測到是 source repo 本身，直接指本地不重複 clone
+    local_passthrough:
+      cwd_matches: REI-Project
+      direct_path: ./docs
+    notify_on_update:
+      digest: true
+      desktop: true
+      threshold:
+        files_changed: 2
+        lines_changed: 50
+
+  # -----------------------------------------------------------
+  # Example: private fork — `karen-shen_tmemu/uxr-skill` 等
+  # -----------------------------------------------------------
+  # - id: uxr-skill
+  #   tier: L1
+  #   repo: git@github.com:karen-shen_tmemu/uxr-skill.git
+  #   cache: ~/.cache/design-context/uxr-skill
+  #   ttl: weekly
+  #   read:
+  #     - SKILL.md
