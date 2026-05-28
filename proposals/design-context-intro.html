@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Design Response to Requirements — design-context proposal</title>
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --ink: #2A1D15;          /* ref/brand/charcoal */
+      --text: #3D2B20;
+      --muted: #6B5447;
+      --subtle: #A89888;
+      --line: #E1D2C4;         /* ref/brand/border/warm-dark */
+      --card: #FFFFFF;
+      --cream: #F6EFE8;        /* ref/brand/cream */
+      --ai: #6A4CFF;           /* indigo/60 — AI identity */
+      --ai-soft: #B1B7FE;      /* ref/brand/lilac */
+      --ai-bg: #F0EEFF;        /* indigo/10 */
+      --warm: #FF7708;         /* orange/40 — designer accent */
+      --warm-bg: #FFE8CC;
+      --coral: #FF3B42;        /* ref/brand/coral */
+      --coral-bg: #FFE5E6;
+      --ok: #00A91D;
+      --ok-bg: #D9FFDF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      overflow: hidden;
+    }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide {
+      width: 100vw; height: 100vh;
+      padding: 4vh 6vw 7vh;
+      position: absolute;
+      top: 0; left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ai);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 52px;
+      color: var(--ink);
+      font-weight: 800;
+      margin-bottom: 18px;
+      line-height: 1.08;
+      letter-spacing: -1px;
+    }
+    h2 {
+      font-size: 34px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.18;
+      letter-spacing: -0.5px;
+    }
+    h3 {
+      font-size: 18px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.1px;
+    }
+    .lede { font-size: 18px; color: var(--muted); margin-bottom: 28px; max-width: 920px; line-height: 1.55; }
+    .body-text { font-size: 15px; color: var(--text); }
+
+    .footer {
+      position: fixed;
+      bottom: 18px; right: 24px;
+      display: flex; gap: 16px;
+      font-size: 11px; color: var(--subtle);
+      letter-spacing: 0.05em;
+      z-index: 100;
+    }
+    .counter { font-variant-numeric: tabular-nums; }
+    .nav-hint {
+      position: fixed;
+      bottom: 18px; left: 24px;
+      font-size: 11px;
+      color: var(--subtle);
+      letter-spacing: 0.05em;
+    }
+    .nav-hint kbd {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 10px;
+    }
+
+    /* Cover */
+    .cover { justify-content: center; align-items: flex-start; background: linear-gradient(140deg, var(--cream) 0%, var(--bg) 60%); }
+    .cover .meta { color: var(--muted); font-size: 14px; margin-top: 32px; line-height: 1.7; }
+    .cover-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ai-bg); color: var(--ai);
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+      margin-bottom: 24px;
+    }
+    .cover-badge::before { content: "✱"; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card.accent-ai { border-top: 3px solid var(--ai); }
+    .card.accent-warm { border-top: 3px solid var(--warm); }
+    .card.accent-coral { border-top: 3px solid var(--coral); }
+    .card.accent-ok { border-top: 3px solid var(--ok); }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .pill.ai { background: var(--ai-bg); color: var(--ai); }
+    .pill.warm { background: var(--warm-bg); color: var(--warm); }
+    .pill.coral { background: var(--coral-bg); color: var(--coral); }
+    .pill.ok { background: var(--ok-bg); color: var(--ok); }
+    .pill.muted { background: var(--cream); color: var(--muted); }
+
+    /* Layouts */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1; min-height: 0; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    ul.bullets, ul.check, ul.cross {
+      list-style: none;
+      font-size: 14.5px;
+      line-height: 1.7;
+    }
+    ul.bullets li { padding-left: 18px; position: relative; }
+    ul.bullets li:before { content: "•"; position: absolute; left: 4px; color: var(--ai); font-weight: bold; }
+    ul.check li { padding-left: 22px; position: relative; }
+    ul.check li:before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: bold; }
+    ul.cross li { padding-left: 22px; position: relative; }
+    ul.cross li:before { content: "✗"; position: absolute; left: 0; color: var(--coral); font-weight: bold; }
+
+    code, .mono {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      font-size: 13px;
+      background: var(--cream);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--ink);
+    }
+
+    /* Flow diagram */
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin: 18px 0;
+    }
+    .flow-node {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 14px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .flow-node strong { display: block; color: var(--ink); margin-bottom: 4px; font-size: 14px; }
+    .flow-node.start { background: var(--ai-bg); border-color: var(--ai-soft); color: var(--ai); }
+    .flow-node.end { background: var(--ok-bg); border-color: rgba(0, 169, 29, 0.3); color: #007814; }
+    .flow-arrow { color: var(--subtle); font-size: 20px; }
+
+    /* Big numbered list */
+    .numbered { counter-reset: n; display: flex; flex-direction: column; gap: 14px; }
+    .num-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .num-item::before {
+      counter-increment: n; content: counter(n);
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--ai);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
+    }
+    .num-item-body { flex: 1; }
+    .num-item-body h3 { margin-bottom: 4px; }
+    .num-item-body p { font-size: 14px; color: var(--text); line-height: 1.55; }
+
+    /* Link cards */
+    a.link-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.15s;
+      margin-bottom: 10px;
+    }
+    a.link-card:hover { border-color: var(--ai); background: var(--ai-bg); transform: translateY(-1px); }
+    a.link-card .lc-icon { font-size: 22px; flex-shrink: 0; }
+    a.link-card .lc-body { flex: 1; min-width: 0; }
+    a.link-card .lc-title { font-weight: 700; color: var(--ink); margin-bottom: 4px; font-size: 15px; }
+    a.link-card .lc-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    a.link-card .lc-path { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--subtle); margin-top: 4px; }
+
+    /* Q&A list */
+    .qa-list { display: flex; flex-direction: column; gap: 12px; }
+    .qa-item {
+      background: var(--card);
+      border-left: 3px solid var(--warm);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+    .qa-q { font-weight: 700; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+    .qa-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .footnote { font-size: 12px; color: var(--subtle); line-height: 1.5; margin-top: 12px; }
+
+    .slide.cover { padding-top: 12vh; }
+
+    /* Tooltips for technical terms */
+    .tip {
+      border-bottom: 1.5px dashed var(--ai);
+      cursor: help;
+      position: relative;
+      color: var(--ai);
+      font-weight: 600;
+    }
+    .tip-content {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translate(-50%, 4px);
+      width: 340px;
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 200;
+    }
+    .tip-content::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--ink);
+    }
+    .tip:hover .tip-content {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+    .tip-content strong { color: var(--ai-soft); font-weight: 700; }
+    .tip-eg {
+      display: block;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.18);
+      color: var(--ai-soft);
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck" id="deck">
+
+    <!-- ════════════════════════════════════════
+         Slide 1 — Cover
+         ════════════════════════════════════════ -->
+    <section class="slide cover active">
+      <span class="cover-badge">HIE design tooling workshop · 2026-05-28</span>
+      <h1>Design Skills<br>Support Discussion.</h1>
+      <p class="lede" style="font-size: 19px; max-width: 760px;">
+        One already shipped, one proposed. We'll walk both, then open the floor —
+        skill usage feedback, reviewer rotation, what's missing.
+      </p>
+      <div class="meta">
+        Karen Shen · HIE · 2026-05-28<br>
+        Decks &amp; sources: <span class="mono">AI-design/</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 2 — Part 1: design-pr-review + discussion topics
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--ai);">Today's agenda · Part 1</div>
+      <h2>Review the deployed skill — <code style="font-size: 26px; background: var(--ai-bg); color: var(--ai); padding: 2px 10px;">design-pr-review</code></h2>
+      <p class="lede">
+        Already shipped to <code>hie-rei/.claude/skills/</code>. We'll walk a real PR end-to-end and use it to ground the discussion topics below.
+      </p>
+
+      <div class="card accent-ai" style="margin-top: 8px;">
+        <h3>Demo on PR #357 — mei-hung_tmemu's IAP Members + Recurly embed</h3>
+        <p class="body-text" style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+          7 HTML · 164 findings · 5 IAP variants for cluster walkthrough
+        </p>
+        <ul class="bullets" style="font-size: 13.5px;">
+          <li>
+            <a href="file:///tmp/design-review-357/SKILL-WALKTHROUGH.md" target="_blank" style="color: var(--ai);">
+              Stage-by-stage walkthrough markdown
+            </a>
+          </li>
+          <li>
+            <a href="http://127.0.0.1:8766/compare-cluster-iap-upgrade.html" target="_blank" style="color: var(--ai);">
+              Live before/after compare view
+            </a>
+            <span style="color: var(--muted); font-size: 12.5px;"> · localhost:8766</span>
+          </li>
+          <li>
+            Skill source · <code>AI-design/design-pr-review/</code>
+          </li>
+        </ul>
+      </div>
+
+      <h3 style="margin-top: 22px; margin-bottom: 8px;">Discussion topics <span style="font-size: 13px; color: var(--muted); font-weight: 500;">(cover both skills)</span></h3>
+      <div class="qa-list">
+        <div class="qa-item">
+          <div class="qa-q">1. Skill usage feedback</div>
+          <div class="qa-sub">
+            How do these skills fit your daily flow — where do they save time, where do they get in the way? Are the trigger phrases and rubric prompts natural, or do we need to retune the wording?
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">2. Reviewer rotation pattern</div>
+          <div class="qa-sub">
+            With design-pr-review now reliable, do we want a formal review rotation — primary reviewer assigned by week / by area? Or stay author-pulls-reviewer ad hoc?
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-q">3. Follow-up needs</div>
+          <div class="qa-sub">
+            What's missing? Wrapper-UI inline comments · auto-merge on approval · cross-PR design-system drift checks · severity-tag presets per file type · something else you keep hitting?
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 3 — Part 2 hero: design-context proposal
+         ════════════════════════════════════════ -->
+    <section class="slide cover" style="background: linear-gradient(140deg, var(--cream) 0%, var(--bg) 60%);">
+      <span class="cover-badge" style="background: var(--warm-bg); color: var(--warm);">
+        Part 2 · A new skill proposal · v0.1
+      </span>
+      <h1>Design Response<br>to Requirements.</h1>
+      <p class="lede" style="font-size: 19px; max-width: 760px;">
+        <code style="background: var(--warm-bg); color: var(--warm); font-size: 18px; padding: 2px 10px;">design-context</code>
+        — a Claude Code skill that loads department rules and project specs into your AI context,
+        so your designs respond to what's actually written, and judgement stays in your hands.
+      </p>
+      <p class="body-text" style="font-size: 14px; color: var(--muted); margin-top: 16px; max-width: 760px;">
+        The rest of the deck walks the proposal:
+        Problem → Solution → How it works → Worked example (Q1-1 Teen Onboarding, v1 vs v2 mockups) → Designer judgement → Setup → Tactical feedback.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 4 — Problem
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow">Problem</div>
+      <h2>Two friction points in every design session</h2>
+      <p class="lede">It's not that design is hard. It's that context is hard to retrieve.</p>
+
+      <div class="two-col" style="margin-top: 12px;">
+        <div class="card accent-coral">
+          <span class="pill coral">Pain 1</span>
+          <h3>The design system isn't where your AI looks</h3>
+          <p class="body-text">
+            TLDS tokens, brand voice, and component specs all live in
+            <code>trendlife-general/vxd-skill</code>. Your agent doesn't read them automatically.
+            Every session, you re-paste the rules or re-explain the tokens.
+          </p>
+          <ul class="cross" style="margin-top: 8px;">
+            <li>The agent invents hex values and spacing on the fly</li>
+            <li>Rule updates never reach designers in time</li>
+            <li>"Follow TLDS" turns into a slogan instead of a check</li>
+          </ul>
+        </div>
+
+        <div class="card accent-coral">
+          <span class="pill coral">Pain 2</span>
+          <h3>PM specs move faster than you can track</h3>
+          <p class="body-text">
+            <code>REI-Project/docs/requirements/</code> gets several commits a day.
+            In the past week alone, Catherine and Heather pushed dozens of edits.
+            You may be designing against a spec that quietly changed an hour ago.
+          </p>
+          <ul class="cross" style="margin-top: 8px;">
+            <li>The agent reasons from yesterday's spec</li>
+            <li>Designs finish after requirements have moved on</li>
+            <li>Cross-timezone gaps make this worse</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="footnote">
+        Today's workaround: paste the spec at the start of each session, remind the agent about
+        tokens, hope nothing was missed. Repetitive, error-prone — and the agent still improvises.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 3 — What it does
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow">Solution</div>
+      <h2>What <code>design-context</code> does — three things</h2>
+
+      <div class="numbered" style="margin-top: 18px;">
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>Auto-sync <span class="pill ai">L1 — department rules</span> and <span class="pill warm">L2 — project specs</span></h3>
+            <p>
+              A background cron pulls every 30 minutes, with a SessionStart hook as a backup.
+              L1 is machine-global (<code>~/.cache/</code>), L2 is per-project
+              (<code>.design-context/</code>, gitignored — never leaks into your repo).
+            </p>
+          </div>
+        </div>
+
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>Force the agent to read the right files on activation</h3>
+            <p>
+              SKILL.md uses an <strong>On Activation</strong> pattern — when you say
+              "follow TLDS" or "design from Q1-1", the skill triggers and the agent
+              <strong>must</strong> read the listed tokens and spec before responding.
+              No reading, no answer.
+            </p>
+          </div>
+        </div>
+
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>Surface spec changes proactively</h3>
+            <p>
+              When a sync catches changes above threshold (&gt; 2 files or &gt; 50 lines),
+              macOS notifies you in real time. An <strong>update digest</strong> (diff +
+              author + commit message) is written to the cache; the next time you trigger
+              the skill, the agent reads it and tells you
+              <em>"Q15 changed three times since your last session — likely affects this flow."</em>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p class="footnote">
+        Zero designer overhead — run <code>init.sh</code> once, then forget the skill is there.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 4 — How it works
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow">Under the hood</div>
+      <h2>How it works</h2>
+
+      <div class="flow" style="margin-top: 30px;">
+        <div class="flow-node start">
+          <strong>GitHub remote</strong>
+          vxd-skill (L1)<br>
+          REI-Project (L2)
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <strong>cron + hook</strong>
+          every 30 min<br>
+          + SessionStart
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <strong>local cache</strong>
+          L1: ~/.cache/<br>
+          L2: ./.design-context/
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node end">
+          <strong>agent</strong>
+          must-read<br>
+          on activation
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top: 12px;">
+        <div class="card accent-ai">
+          <span class="pill ai">L1 — department</span>
+          <h3>vxd-skill</h3>
+          <p class="body-text">
+            <span class="tip">Plain shallow clone<span class="tip-content">
+              <strong>What it means:</strong> Clone only the latest version — skip every past commit's history.<br><br>
+              <strong>Why:</strong> Designers need the current token values, not a record of how they were 6 months ago. Smaller download, fast.
+              <span class="tip-eg">vxd-skill: 27 MB full → 3.5 MB shallow</span>
+            </span></span>
+            into <code>~/.cache/design-context/vxd-skill/</code>.
+            <strong>3.5 MB</strong>, shared across every project. TTL: weekly.
+          </p>
+          <p class="footnote">Contents: TLDS tokens, brand, motion specs, component specs.</p>
+        </div>
+        <div class="card accent-warm">
+          <span class="pill warm">L2 — project</span>
+          <h3>REI-Project specs</h3>
+          <p class="body-text">
+            <span class="tip">Sparse-checkout<span class="tip-content">
+              <strong>What it means:</strong> Download the repo's full structure, but only write the folders you ask for to disk.<br><br>
+              <strong>Why:</strong> REI-Project carries RD source code, infra configs, and other team assets that designers never look at. Sparse skips them entirely.
+              <span class="tip-eg">REI-Project: 171 MB full → 25 MB sparse<br>(docs/ + teams/PM only)</span>
+            </span></span>
+            into <code>&lt;cwd&gt;/.design-context/</code>.
+            <strong>25 MB</strong> total — avoiding the full 171 MB repo.
+            TTL: SessionStart + every 30 min.
+          </p>
+          <p class="footnote">Contents: docs/requirements, docs/project, docs/design, docs/ui, teams/PM.</p>
+        </div>
+      </div>
+
+      <p class="footnote">
+        <strong>Want to edit a rule?</strong> Don't touch the cache.
+        Open a branch and PR in the source repo (Type A workflow).
+        The cache is a read-only copy — it gets overwritten on every sync.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 5 — Worked example
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--warm);">Worked example</div>
+      <h2>Same requirement, two design responses</h2>
+      <p class="lede">
+        Using <strong>Q1-1 Teen Onboarding</strong> as a real spec — the agent loaded the manifest
+        (TLDS tokens + Q1-1 spec) and produced two takes for comparison.
+      </p>
+
+      <div class="row" style="flex-direction: column; gap: 10px; margin-top: 10px;">
+        <a class="link-card" href="../../hie-rei/.design-context/rei-project/docs/requirements/Q1-1-Teen-Onboarding.md" target="_blank">
+          <div class="lc-icon">📄</div>
+          <div class="lc-body">
+            <div class="lc-title">PM spec — Q1-1 Teen Onboarding</div>
+            <div class="lc-sub">The original requirement. The agent reads it directly from the L2 cache (pulled from REI-Project/docs/requirements/).</div>
+            <div class="lc-path">REI-Project/docs/requirements/Q1-1-Teen-Onboarding.md · v2.0</div>
+          </div>
+        </a>
+
+        <a class="link-card" href="../../hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v1.html" target="_blank">
+          <div class="lc-icon">📱</div>
+          <div class="lc-body">
+            <div class="lc-title">v1 — faithful transcription of the spec</div>
+            <div class="lc-sub">Four capability bullets, four option buttons, full privacy paragraph, primary CTA — exactly what the spec describes.</div>
+            <div class="lc-path">hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v1.html</div>
+          </div>
+        </a>
+
+        <a class="link-card" href="../../hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v2.html" target="_blank">
+          <div class="lc-icon" style="color: var(--ai);">✱</div>
+          <div class="lc-body">
+            <div class="lc-title">v2 — designer response (with judgement) <span class="pill ai" style="font-size: 9.5px;">inline design notes</span></div>
+            <div class="lc-sub">Pushes back on four contradictions inside the spec; restructures around "One Question, Maximum Personalisation". Toggle <em>Show design notes</em> in the top-left to see inline annotations on every decision.</div>
+            <div class="lc-path">hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v2.html</div>
+          </div>
+        </a>
+
+        <a class="link-card" href="../../hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v2-notes.md" target="_blank">
+          <div class="lc-icon">📝</div>
+          <div class="lc-body">
+            <div class="lc-title">v2 — design rationale (handoff doc)</div>
+            <div class="lc-sub">Every deviation from the spec is annotated with <strong>why / trade-off / open question for PM</strong> — the evidence trail for why the designer didn't take the spec at face value.</div>
+            <div class="lc-path">hie-rei/REI/concept/concept-karen/mockup-teen-onboarding-v2-notes.md</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 6 — Designer judgement stays
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow">Important</div>
+      <h2>The skill doesn't replace design judgement</h2>
+      <p class="lede">
+        It brings the rules and the spec to the table. <strong>You still decide what to do with them.</strong>
+      </p>
+
+      <div class="two-col" style="margin-top: 16px;">
+        <div class="card accent-ok">
+          <span class="pill ok">What the skill does</span>
+          <ul class="check" style="margin-top: 8px;">
+            <li>Surfaces the raw spec and tokens into the agent's context</li>
+            <li>Reminds you that "Q15 changed three times since last session"</li>
+            <li>Stops the agent from inventing colors and spacing</li>
+            <li>Makes the agent cite token names instead of hex values</li>
+          </ul>
+        </div>
+        <div class="card accent-warm">
+          <span class="pill warm">What you still do</span>
+          <ul class="check" style="margin-top: 8px;">
+            <li>Read the spec and ask "is this actually right?"</li>
+            <li>Spot contradictions within the spec itself</li>
+            <li>Use design knowledge to restructure the proposal</li>
+            <li>Push back to PM — with the trade-offs on record</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px; background: var(--ai-bg); border-color: var(--ai-soft);">
+        <h3 style="color: var(--ai);">v2 is the concrete proof of this principle</h3>
+        <p class="body-text">
+          Q1-1's spec contradicts itself in four places (its own design principles versus its option list).
+          The designer chose to push back — citing the spec text and HIE's internal design doc as evidence for every cut.
+          The skill doesn't make that judgement <strong>for</strong> you — but because both the spec and the doc are loaded into context,
+          <strong>the judgement is cheaper to make</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 7 — Setup
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow">Setup</div>
+      <h2>Set up once. Forget it exists.</h2>
+
+      <div class="numbered" style="margin-top: 18px;">
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>First time: run <code>init.sh</code></h3>
+            <p>
+              <code>bash ~/Jottacloud/vibe/AI-design/design-context/scripts/init.sh</code><br>
+              Interactive setup — pick the sources to track (defaults: vxd-skill + REI PM specs),
+              install the launchd cron job, and register the SessionStart hook into your project's
+              <code>.claude/settings.json</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>Day to day: just use a trigger phrase</h3>
+            <p>
+              <strong>English:</strong> <code>design from Q1-1</code> · <code>design status</code> · <code>design refresh</code> · <code>follow TLDS</code><br>
+              <strong>Chinese:</strong> 「請根據 Q1-1 做設計」·「用部門規範」·「依照 TLDS」·「context 還新嗎」<br>
+              Natural-language matching is handled by SKILL.md — you don't memorise commands.
+            </p>
+          </div>
+        </div>
+
+        <div class="num-item">
+          <div class="num-item-body">
+            <h3>When specs change — the notification finds you</h3>
+            <p>
+              No manual refresh. When the cron picks up changes above threshold, macOS notifies you;
+              the next time you talk to the agent, a diff summary is included inline so you immediately know what moved.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px;">
+        <h3>Distribution path</h3>
+        <p class="body-text">
+          Currently lives in <code>AI-design/design-context/</code> as personal development.
+          After this feedback round and iteration, it ships to
+          <code>REI-Project/.claude/skills/design-context/</code> via a normal PR review —
+          and the whole design team picks it up automatically.
+        </p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         Slide 8 — Feedback
+         ════════════════════════════════════════ -->
+    <section class="slide">
+      <div class="eyebrow" style="color: var(--warm);">Feedback</div>
+      <h2>Four questions for you</h2>
+      <p class="lede">This is v0.1. Your reactions decide where it goes next.</p>
+
+      <div class="qa-list" style="margin-top: 12px;">
+        <div class="qa-item">
+          <div class="qa-q">1. Do the trigger phrases feel natural?</div>
+          <div class="qa-sub">
+            "design from Q1-1" / "follow TLDS" / "請根據 Q1-1 做設計" — would you actually say these in a session?
+            If a different phrasing feels more intuitive, we can add it as an alias.
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q">2. Are the notifications going to be too noisy?</div>
+          <div class="qa-sub">
+            Current threshold: more than 2 files or 50 lines triggers a macOS notification.
+            PMs may push multiple times a day. Would you prefer instant alerts, a once-a-day digest,
+            or notifications only when you're actively working on the spec that changed?
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q">3. Which folders should L2 pull in?</div>
+          <div class="qa-sub">
+            Currently sparse-checked-out: <code>docs/requirements/</code>, <code>docs/project/</code>,
+            <code>docs/design/</code>, <code>docs/ui/</code>, <code>teams/PM/</code>.
+            Anything to add or drop? Should <code>resources/design/</code> (Figma sources) be in scope?
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q">4. Is the v2-notes "design rationale" format useful?</div>
+          <div class="qa-sub">
+            Each deviation from the spec carries <strong>why / trade-off / open question for PM</strong>.
+            Is this format helpful for PM review — or too verbose? Should we turn it into a template?
+          </div>
+        </div>
+      </div>
+
+      <p class="footnote" style="margin-top: 20px;">
+        Other thoughts → message Karen, or file an issue on <code>AI-design/design-context/</code>.
+      </p>
+    </section>
+
+  </div>
+
+  <div class="nav-hint">
+    <kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>F</kbd> fullscreen
+  </div>
+  <div class="footer">
+    <span>design-context · intro</span>
+    <span class="counter"><span id="now">1</span> / <span id="total">8</span></span>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('now');
+    const total = document.getElementById('total');
+    let i = 0;
+    total.textContent = slides.length;
+    function go(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+      counter.textContent = String(i + 1);
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { go(i + 1); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { go(i - 1); e.preventDefault(); }
+      else if (e.key.toLowerCase() === 'f') {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+      } else if (e.key === 'Home') go(0);
+      else if (e.key === 'End') go(slides.length - 1);
+    });
+    document.addEventListener('click', e => {
+      if (e.target.closest('a,button,.qa-item')) return;
+      if (e.clientX < window.innerWidth / 3) go(i - 1);
+      else if (e.clientX > window.innerWidth * 2 / 3) go(i + 1);
+    });
+  </script>
+</body>
+</html>
