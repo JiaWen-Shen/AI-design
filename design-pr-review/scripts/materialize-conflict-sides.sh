@@ -71,10 +71,12 @@ fi
 # --- 2. Overlay conflict sides + build files.json ---
 FILE_OUT="$WORKSPACE/files.json"
 echo "[]" > "$FILE_OUT"
+declare -a MATERIALIZED=()   # design-surface files actually rendered (drives compare-meta below)
 
 for file in "${FILES[@]}"; do
   kind=$(classify "$file")
   case "$kind" in html|md|css|svg|img) :;; *) continue;; esac   # design surface only
+  MATERIALIZED+=("$file")
 
   mkdir -p "$WORKSPACE/before/$(dirname "$file")" "$WORKSPACE/after/$(dirname "$file")"
   # :2: = ours (before-pane), :3: = theirs (after-pane). For modify/delete or add/delete
@@ -101,12 +103,13 @@ done
 
 # --- 3. compare-meta.json: pane labels + per-file author tags + conflict banner ---
 # Derive from attribution.json (if attribute-conflict.sh ran first); else generic.
-# Author tags + banner use the FIRST materialized file's attribution — exact for the
-# /merge 2b path (one --file at a time); approximate if several files share a wrapper.
+# Author tags + banner use the first ACTUALLY-MATERIALIZED design file's attribution (not
+# the raw FILES[0], which may be a skipped .js/.json conflict) — exact for the /merge 2b
+# path (one --file at a time); approximate if several design files share a wrapper.
 LEFT="Side A"; RIGHT="Side B"
 LEFT_AUTHOR=""; RIGHT_AUTHOR=""; CHANGE_TYPE=""; INVOLVES_OTHER="false"; OTHER_AUTHOR=""; BANNER=""
 ATTR="$WORKSPACE/attribution.json"
-FIRST="${FILES[0]:-}"
+FIRST="${MATERIALIZED[0]:-}"
 if [ -f "$ATTR" ]; then
   OURS_IS_YOU=$(jq -r '.ours_is_you' "$ATTR" 2>/dev/null || echo "true")
   if [ "$OURS_IS_YOU" = "false" ]; then

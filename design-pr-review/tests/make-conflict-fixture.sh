@@ -102,6 +102,24 @@ if [ "$MODE" = "rebase-multi" ]; then
   echo "$DIR"; exit 0
 fi
 
+if [ "$MODE" = "mixed-skip" ]; then
+  # A NON-design conflict (app.js) sorts BEFORE the design conflict (mockup-login.html).
+  # Guards that compare-meta's author/banner come from the materialized design file,
+  # not the skipped first unmerged path.
+  printf 'const c="#111";\n' > "$DIR/app.js"; g add app.js
+  commit_as "Base Bot" "base@example.com" "base: app.js"
+  BASE2=$(g rev-parse HEAD)
+  g checkout -q -b main-tmp
+  mockup "#333333"; printf 'const c="#333";\n' > "$DIR/app.js"; g add mockup-login.html app.js
+  commit_as "Stanley Tung" "stanley@example.com" "stanley: edit both"
+  g checkout -q main; g merge -q --ff-only main-tmp; g branch -q -d main-tmp
+  g checkout -q -b mei/visual/login-accent "$BASE2"
+  mockup "#222222"; printf 'const c="#222";\n' > "$DIR/app.js"; g add mockup-login.html app.js
+  commit_as "Mei Hung" "mei@example.com" "mei: edit both"
+  g rebase main >/dev/null 2>&1 || true
+  echo "$DIR"; exit 0
+fi
+
 # --- The "main side" change lands first ---
 # self mode: Mei is the main-side author too (her own earlier work) → involves_other=false.
 # default:   Stanley is the main-side author → involves_other=true.

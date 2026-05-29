@@ -126,10 +126,12 @@ dominant_author() {
 # rebase (HEAD = main + already-replayed local commits), so we judge on the full author SET.
 author_set() {
   local ref="$1" file="$2"
+  # Use name+email as a stable identity — `%an` alone collapses distinct people who share
+  # a display name (or a spoofed name), which would wrongly auto-pass a cross-author conflict.
   if [ -n "$MB" ]; then
-    GIT log --no-merges --format='%an' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u
+    GIT log --no-merges --format='%an <%ae>' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u
   else
-    GIT log -1 --format='%an' "$ref" -- "$file" 2>/dev/null | sed '/^$/d'
+    GIT log -1 --format='%an <%ae>' "$ref" -- "$file" 2>/dev/null | sed '/^$/d'
   fi
 }
 
@@ -197,17 +199,21 @@ for file in "${FILES[@]}"; do
   # sides (since the merge base) is by one and the same person. Anything else — multiple
   # authors on either side, or we can't determine — surfaces (true), so we never silently
   # auto-pass a conflict that actually carries someone else's change.
-  ours_authors="$(author_set "$OURS_REF" "$file")"
-  theirs_authors="$(author_set "$THEIRS_REF" "$file")"
-  n_distinct="$(printf '%s\n%s\n' "$ours_authors" "$theirs_authors" | sed '/^$/d' | sort -u | wc -l | tr -d ' ')"
+  # Identity sets (name+email) per side, judged on merge-base..ref ranges.
+  if [ "$OURS_IS_YOU" = "false" ]; then DESIGNER_REF="$THEIRS_REF"; OTHER_REF="$OURS_REF"
+  else                                  DESIGNER_REF="$OURS_REF";   OTHER_REF="$THEIRS_REF"; fi
+  designer_ids="$(author_set "$DESIGNER_REF" "$file")"
+  other_ids="$(author_set "$OTHER_REF" "$file")"
+  n_distinct="$(printf '%s\n%s\n' "$designer_ids" "$other_ids" | sed '/^$/d' | sort -u | wc -l | tr -d ' ')"
   if [ "$n_distinct" = "1" ]; then
     involves_other="false"
   else
-    involves_other="true"   # 0 = unknown → fail closed; >1 = another author present
+    involves_other="true"   # 0 = unknown → fail closed; >1 = another identity present
   fi
-  # Name the other side's author for the banner: someone on the OTHER side who isn't the designer.
-  if [ "$OURS_IS_YOU" = "false" ]; then other_set="$ours_authors"; else other_set="$theirs_authors"; fi
-  other_named="$(printf '%s\n' "$other_set" | sed '/^$/d' | { [ -n "$designer_author" ] && grep -vxF "$designer_author" || cat; } | head -1 || true)"
+  # Name an other-side author for the banner: an identity on the OTHER side absent from the
+  # designer side; strip the <email> for a friendly display name.
+  other_id="$(printf '%s\n' "$other_ids" | sed '/^$/d' | grep -vxF -f <(printf '%s\n' "$designer_ids") - 2>/dev/null | head -1 || true)"
+  other_named="${other_id%% <*}"
   [ -n "$other_named" ] && other_author="$other_named"
 
   entry=$(jq -n \

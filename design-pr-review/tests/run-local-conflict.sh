@@ -90,8 +90,15 @@ WRM="/tmp/test-conflict-rm-$$"; rm -rf "$WRM"; mkdir -p "$WRM"
 bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FRM" --workspace "$WRM" >/dev/null 2>&1
 if [ "$(jqv '.files[0].involves_other_author' "$WRM/attribution.json")" = "true" ]; then ok "multi-commit rebase: involves_other=true (Stanley still surfaced)"; else bad "involves_other regression" "got $(jqv '.files[0].involves_other_author' "$WRM/attribution.json")"; fi
 
+echo "== 8. mixed-skip fixture: banner survives a non-design conflict sorted first =="
+FMX=$(bash "$HERE/make-conflict-fixture.sh" --mode mixed-skip | tail -1)
+WMX="/tmp/test-conflict-mx-$$"; rm -rf "$WMX"; mkdir -p "$WMX"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FMX" --workspace "$WMX" >/dev/null 2>&1
+bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FMX" --workspace "$WMX" >/dev/null 2>&1
+if [ "$(jqv '.banner' "$WMX/compare-meta.json")" != "null" ] && [ "$(jqv '.left_author' "$WMX/compare-meta.json")" != "null" ]; then ok "mixed-skip: compare-meta author+banner from materialized design file (not skipped .js)"; else bad "mixed-skip" "banner/author blank (FIRST took the skipped file?)"; fi
+
 echo
 echo "RESULT: $PASS passed, $FAIL failed"
 # cleanup fixtures + workspaces
-rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" 2>/dev/null || true
+rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$WMX" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" "$FMX" 2>/dev/null || true
 [ "$FAIL" -eq 0 ]
