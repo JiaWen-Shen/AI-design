@@ -74,14 +74,21 @@ if [ "$MODE" = "binary" ]; then
   echo "$DIR"; exit 0
 fi
 
-# --- Stanley's change lands on main first ---
-g checkout -q -b stanley-tmp
+# --- The "main side" change lands first ---
+# self mode: Mei is the main-side author too (her own earlier work) → involves_other=false.
+# default:   Stanley is the main-side author → involves_other=true.
+if [ "$MODE" = "self" ]; then
+  MAIN_NAME="Mei Hung"; MAIN_EMAIL="mei@example.com"
+else
+  MAIN_NAME="Stanley Tung"; MAIN_EMAIL="stanley@example.com"
+fi
+g checkout -q -b main-tmp
 mockup "#333333"
 g add mockup-login.html
-commit_as "Stanley Tung" "stanley@example.com" "stanley: darker login accent"
+commit_as "$MAIN_NAME" "$MAIN_EMAIL" "main-side: darker login accent"
 g checkout -q main
-g merge -q --ff-only stanley-tmp
-g branch -q -d stanley-tmp
+g merge -q --ff-only main-tmp
+g branch -q -d main-tmp
 
 # --- Mei's branch off base, same line changed ---
 g checkout -q -b mei/visual/login-accent "$(g rev-list --max-parents=0 HEAD | tail -1)"

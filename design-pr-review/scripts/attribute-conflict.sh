@@ -172,16 +172,35 @@ for file in "${FILES[@]}"; do
   IFS=$'\t' read -r ours_author ours_conf < <(dominant_author "$OURS_REF" "$file") || true
   IFS=$'\t' read -r theirs_author theirs_conf < <(dominant_author "$THEIRS_REF" "$file") || true
 
+  # Who is "you" (the designer's branch) vs the "other" side:
+  #   rebase (ours_is_you=false): your side = theirs(:3:), other side = ours(:2:, main)
+  #   merge  (ours_is_you=true):  your side = ours(:2:),   other side = theirs(:3:, incoming)
+  if [ "$OURS_IS_YOU" = "false" ]; then
+    designer_author="$theirs_author"; other_author="$ours_author"
+  else
+    designer_author="$ours_author";   other_author="$theirs_author"
+  fi
+  # The conflict "involves another person" iff the two sides were authored by DIFFERENT
+  # people. Same author on both sides = your own earlier-vs-later work → auto-pass candidate.
+  involves_other="false"
+  if [ -n "$designer_author" ] && [ -n "$other_author" ] && [ "$designer_author" != "$other_author" ]; then
+    involves_other="true"
+  fi
+
   entry=$(jq -n \
     --arg path "$file" --arg binary "$binary" --arg ct "$change_type" \
     --arg oa "$ours_author" --arg oc "$ours_conf" \
     --arg ta "$theirs_author" --arg tc "$theirs_conf" \
+    --arg da "$designer_author" --arg ota "$other_author" --arg io "$involves_other" \
     '{
        path: $path,
        binary: ($binary == "true"),
        change_type: $ct,
        ours:   { author: (if $oa == "" then null else $oa end), confidence: $oc },
        theirs: { author: (if $ta == "" then null else $ta end), confidence: $tc },
+       designer_author: (if $da == "" then null else $da end),
+       other_author: (if $ota == "" then null else $ota end),
+       involves_other_author: ($io == "true"),
        proposed_side: null,
        rule_matched: null
      }')

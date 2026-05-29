@@ -91,24 +91,42 @@ for file in "${FILES[@]}"; do
      "$FILE_OUT" > "$tmp" && mv "$tmp" "$FILE_OUT"
 done
 
-# --- 3. compare-meta.json pane labels ---
+# --- 3. compare-meta.json: pane labels + per-file author tags + conflict banner ---
 # Derive from attribution.json (if attribute-conflict.sh ran first); else generic.
+# Author tags + banner use the FIRST materialized file's attribution — exact for the
+# /merge 2b path (one --file at a time); approximate if several files share a wrapper.
 LEFT="Side A"; RIGHT="Side B"
+LEFT_AUTHOR=""; RIGHT_AUTHOR=""; CHANGE_TYPE=""; INVOLVES_OTHER="false"; OTHER_AUTHOR=""; BANNER=""
 ATTR="$WORKSPACE/attribution.json"
+FIRST="${FILES[0]:-}"
 if [ -f "$ATTR" ]; then
   OURS_IS_YOU=$(jq -r '.ours_is_you' "$ATTR" 2>/dev/null || echo "true")
   if [ "$OURS_IS_YOU" = "false" ]; then
-    # rebase: ours(:2:,before)=main side, theirs(:3:,after)=your branch
-    LEFT="On main"; RIGHT="Your branch"
+    LEFT="On main"; RIGHT="Your branch"   # rebase: before(:2:)=main, after(:3:)=your branch
   else
-    # merge: ours(:2:,before)=your branch, theirs(:3:,after)=incoming (main)
-    LEFT="Your branch"; RIGHT="Incoming (main)"
+    LEFT="Your branch"; RIGHT="Incoming (main)"  # merge: before(:2:)=your branch, after(:3:)=incoming
+  fi
+  # before-pane = ours(:2:), after-pane = theirs(:3:)
+  LEFT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.ours.author) // ""' "$ATTR" 2>/dev/null)
+  RIGHT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.theirs.author) // ""' "$ATTR" 2>/dev/null)
+  CHANGE_TYPE=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.change_type) // ""' "$ATTR" 2>/dev/null)
+  INVOLVES_OTHER=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.involves_other_author) // false' "$ATTR" 2>/dev/null)
+  OTHER_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.other_author) // ""' "$ATTR" 2>/dev/null)
+  if [ "$INVOLVES_OTHER" = "true" ] && [ -n "$OTHER_AUTHOR" ]; then
+    BANNER="⚠ 此檔牽涉 ${OTHER_AUTHOR} 在 main 上的修改（${CHANGE_TYPE:-change}）— 下方 highlight 標出兩邊差異，紅=移除/綠=新增，請對照確認衝突處"
   fi
 fi
 jq -n --arg l "$LEFT" --arg r "$RIGHT" \
-  '{ left_label: $l, right_label: $r, mode: "local-conflict" }' \
+  --arg la "$LEFT_AUTHOR" --arg ra "$RIGHT_AUTHOR" --arg ct "$CHANGE_TYPE" \
+  --arg io "$INVOLVES_OTHER" --arg banner "$BANNER" \
+  '{ left_label: $l, right_label: $r, mode: "local-conflict",
+     left_author:  (if $la == "" then null else $la end),
+     right_author: (if $ra == "" then null else $ra end),
+     change_type:  (if $ct == "" then null else $ct end),
+     involves_other: ($io == "true"),
+     banner: (if $banner == "" then null else $banner end) }' \
   > "$WORKSPACE/compare-meta.json"
 
 echo "Materialized ${#FILES[@]} conflicted file(s) into $WORKSPACE/{before,after}" >&2
-echo "  left='$LEFT'  right='$RIGHT'" >&2
+echo "  left='$LEFT'($LEFT_AUTHOR)  right='$RIGHT'($RIGHT_AUTHOR)  banner=$([ -n "$BANNER" ] && echo yes || echo no)" >&2
 cat "$FILE_OUT"

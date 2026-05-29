@@ -1367,9 +1367,10 @@ function main() {
     ${prMeta && prMeta.title ? `<span class="pr-title-meta" title="${escapeHtml(prMeta.title)}">${escapeHtml(prMeta.title.length > 60 ? prMeta.title.slice(0, 58) + "…" : prMeta.title)}</span>` : ""}
     <button class="icon-btn" id="feedback-btn" title="這裡奇怪？複製當下 state（active file / 最後互動 / console errors）給 Claude 回報" aria-label="Copy session state">📋</button>
   </header>
+  ${compareMeta.banner ? `<div class="conflict-banner" style="padding:9px 16px;background:#3a2f12;color:#ffd479;font:600 13px/1.5 -apple-system,system-ui,sans-serif;border-bottom:1px solid #5a4a1a">${escapeHtml(compareMeta.banner)}</div>` : ""}
   <div class="app-body">
-    <div class="pane-label">${escapeHtml(compareMeta.left_label || "BEFORE")}</div>
-    <div class="pane-label">${escapeHtml(compareMeta.right_label || "AFTER")}</div>
+    <div class="pane-label">${escapeHtml(compareMeta.left_label || "BEFORE")}${compareMeta.left_author ? ` · <span style="opacity:.85;font-weight:600">${escapeHtml(compareMeta.left_author)}</span>` : ""}</div>
+    <div class="pane-label">${escapeHtml(compareMeta.right_label || "AFTER")}${compareMeta.right_author ? ` · <span style="opacity:.85;font-weight:600">${escapeHtml(compareMeta.right_author)}</span>` : ""}</div>
     <div class="pane-label">Anchors</div>
     <iframe id="left" src=""></iframe>
     <iframe id="right" src=""></iframe>

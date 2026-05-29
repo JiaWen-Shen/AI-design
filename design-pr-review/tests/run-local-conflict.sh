@@ -25,6 +25,9 @@ A="$WS/attribution.json"
 [ "$(jqv '.files[0].theirs.author' "$A")" = "Mei Hung" ] && ok "theirs.author=Mei (branch)" || bad "theirs.author" "got $(jqv '.files[0].theirs.author' "$A")"
 [ "$(jqv '.files[0].change_type' "$A")" = "css-property" ] && ok "change_type=css-property" || bad "change_type" "got $(jqv '.files[0].change_type' "$A")"
 [ "$(jqv '.files[0].proposed_side' "$A")" = "null" ] && ok "proposed_side=null (no rules in MVP)" || bad "proposed_side" "expected null"
+[ "$(jqv '.files[0].involves_other_author' "$A")" = "true" ] && ok "involves_other_author=true (Stanley≠Mei)" || bad "involves_other_author" "got $(jqv '.files[0].involves_other_author' "$A")"
+[ "$(jqv '.files[0].other_author' "$A")" = "Stanley Tung" ] && ok "other_author=Stanley (main side)" || bad "other_author" "got $(jqv '.files[0].other_author' "$A")"
+[ "$(jqv '.files[0].designer_author' "$A")" = "Mei Hung" ] && ok "designer_author=Mei (your branch)" || bad "designer_author" "got $(jqv '.files[0].designer_author' "$A")"
 
 echo "== 2. materialize + compare chain =="
 bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FX" --workspace "$WS" >/dev/null 2>&1
@@ -34,14 +37,20 @@ grep -q '#333333' "$WS/before/mockup-login.html" && ok "before = main side (#333
 grep -q '#222222' "$WS/after/mockup-login.html" && ok "after = branch side (#222222)" || bad "after content" "expected #222222"
 [ "$(jqv '.left_label' "$WS/compare-meta.json")" = "On main" ] && ok "left_label='On main'" || bad "left_label" "got $(jqv '.left_label' "$WS/compare-meta.json")"
 [ "$(jqv '.right_label' "$WS/compare-meta.json")" = "Your branch" ] && ok "right_label='Your branch'" || bad "right_label" "got $(jqv '.right_label' "$WS/compare-meta.json")"
+[ "$(jqv '.left_author' "$WS/compare-meta.json")" = "Stanley Tung" ] && ok "compare-meta left_author=Stanley" || bad "left_author" "got $(jqv '.left_author' "$WS/compare-meta.json")"
+[ "$(jqv '.right_author' "$WS/compare-meta.json")" = "Mei Hung" ] && ok "compare-meta right_author=Mei" || bad "right_author" "got $(jqv '.right_author' "$WS/compare-meta.json")"
+[ "$(jqv '.involves_other' "$WS/compare-meta.json")" = "true" ] && ok "compare-meta involves_other=true" || bad "compare-meta involves_other" "got $(jqv '.involves_other' "$WS/compare-meta.json")"
+[ "$(jqv '.banner' "$WS/compare-meta.json")" != "null" ] && ok "compare-meta banner present" || bad "banner" "missing"
 
 node "$SCRIPTS/compute-html-diff.js" --workspace "$WS" >/dev/null 2>&1 && ok "compute-html-diff ran" || bad "compute-html-diff" "errored"
 node "$SCRIPTS/summarise-css-diff.js" --workspace "$WS" >/dev/null 2>&1 && ok "summarise-css-diff ran" || bad "summarise-css-diff" "errored"
 node "$SCRIPTS/make-compare-wrapper.js" --workspace "$WS" --cluster conflict --files "mockup-login.html" >/dev/null 2>&1 && ok "make-compare-wrapper ran" || bad "make-compare-wrapper" "errored"
 W="$WS/compare-conflict.html"
 [ -f "$W" ] && ok "compare-conflict.html produced" || bad "wrapper html" "missing"
-grep -q '>On main<' "$W" && ok "wrapper shows 'On main' pane label" || bad "pane label" "On main not rendered"
-grep -q '>Your branch<' "$W" && ok "wrapper shows 'Your branch' pane label" || bad "pane label" "Your branch not rendered"
+grep -q 'On main' "$W" && ok "wrapper shows 'On main' pane label" || bad "pane label" "On main not rendered"
+grep -q 'Your branch' "$W" && ok "wrapper shows 'Your branch' pane label" || bad "pane label" "Your branch not rendered"
+grep -q 'Stanley Tung' "$W" && ok "wrapper shows other-author tag (Stanley) in-view" || bad "author tag" "Stanley not in wrapper"
+grep -q 'conflict-banner' "$W" && ok "wrapper renders conflict banner" || bad "banner" "conflict-banner not in wrapper"
 bash "$SCRIPTS/verify-wrapper.sh" --workspace "$WS" --cluster conflict >/dev/null 2>&1 && ok "verify-wrapper exit 0" || bad "verify-wrapper" "non-zero exit"
 
 echo "== 3. merge fixture: orientation flips =="
@@ -51,7 +60,13 @@ bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FM" --workspace "$WM" >/dev/
 [ "$(jqv '.op' "$WM/attribution.json")" = "merge" ] && ok "op=merge" || bad "op" "got $(jqv '.op' "$WM/attribution.json")"
 [ "$(jqv '.ours_is_you' "$WM/attribution.json")" = "true" ] && ok "ours_is_you=true (merge)" || bad "ours_is_you" "got $(jqv '.ours_is_you' "$WM/attribution.json")"
 
-echo "== 4. binary fixture =="
+echo "== 4. self fixture: both sides same author → auto-pass path =="
+FS=$(bash "$HERE/make-conflict-fixture.sh" --mode self | tail -1)
+WSF="/tmp/test-conflict-self-$$"; rm -rf "$WSF"; mkdir -p "$WSF"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FS" --workspace "$WSF" >/dev/null 2>&1
+[ "$(jqv '.files[0].involves_other_author' "$WSF/attribution.json")" = "false" ] && ok "involves_other_author=false (Mei vs Mei → auto-pass)" || bad "involves_other_author" "got $(jqv '.files[0].involves_other_author' "$WSF/attribution.json")"
+
+echo "== 5. binary fixture =="
 FB=$(bash "$HERE/make-conflict-fixture.sh" --mode binary | tail -1)
 WB="/tmp/test-conflict-binary-$$"; rm -rf "$WB"; mkdir -p "$WB"
 bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FB" --workspace "$WB" >/dev/null 2>&1
@@ -60,5 +75,5 @@ bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FB" --workspace "$WB" >/dev/
 echo
 echo "RESULT: $PASS passed, $FAIL failed"
 # cleanup fixtures + workspaces
-rm -rf "$WS" "$WM" "$WB" "$FX" "$FM" "$FB" 2>/dev/null || true
+rm -rf "$WS" "$WM" "$WB" "$WSF" "$FX" "$FM" "$FB" "$FS" 2>/dev/null || true
 [ "$FAIL" -eq 0 ]
