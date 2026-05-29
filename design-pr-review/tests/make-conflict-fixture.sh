@@ -120,6 +120,22 @@ if [ "$MODE" = "mixed-skip" ]; then
   echo "$DIR"; exit 0
 fi
 
+if [ "$MODE" = "multi-design" ]; then
+  # TWO design (html) files both conflict → wrapper is multi-file → NO global banner.
+  home() { printf '<!doctype html><html><head><style>.home{color:%s}</style></head><body>home</body></html>\n' "$1" > "$DIR/mockup-home.html"; }
+  home "#111111"; g add mockup-home.html; commit_as "Base Bot" "base@example.com" "base: home"
+  BASE2=$(g rev-parse HEAD)
+  g checkout -q -b main-tmp
+  mockup "#333333"; home "#333333"; g add mockup-login.html mockup-home.html
+  commit_as "Stanley Tung" "stanley@example.com" "stanley: edit both designs"
+  g checkout -q main; g merge -q --ff-only main-tmp; g branch -q -d main-tmp
+  g checkout -q -b mei/visual/designs "$BASE2"
+  mockup "#222222"; home "#222222"; g add mockup-login.html mockup-home.html
+  commit_as "Mei Hung" "mei@example.com" "mei: edit both designs"
+  g rebase main >/dev/null 2>&1 || true
+  echo "$DIR"; exit 0
+fi
+
 # --- The "main side" change lands first ---
 # self mode: Mei is the main-side author too (her own earlier work) → involves_other=false.
 # default:   Stanley is the main-side author → involves_other=true.

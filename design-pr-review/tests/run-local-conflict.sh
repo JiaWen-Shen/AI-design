@@ -97,8 +97,15 @@ bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FMX" --workspace "$WMX" >/de
 bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FMX" --workspace "$WMX" >/dev/null 2>&1
 if [ "$(jqv '.banner' "$WMX/compare-meta.json")" != "null" ] && [ "$(jqv '.left_author' "$WMX/compare-meta.json")" != "null" ]; then ok "mixed-skip: compare-meta author+banner from materialized design file (not skipped .js)"; else bad "mixed-skip" "banner/author blank (FIRST took the skipped file?)"; fi
 
+echo "== 9. multi design-file conflict: no misleading global banner =="
+FM2=$(bash "$HERE/make-conflict-fixture.sh" --mode multi-design | tail -1)
+WM2="/tmp/test-conflict-m2-$$"; rm -rf "$WM2"; mkdir -p "$WM2"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FM2" --workspace "$WM2" >/dev/null 2>&1
+bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FM2" --workspace "$WM2" >/dev/null 2>&1
+if [ "$(jqv '.multi_file' "$WM2/compare-meta.json")" = "true" ] && [ "$(jqv '.banner' "$WM2/compare-meta.json")" = "null" ]; then ok "multi design-file: multi_file=true, banner suppressed (no misleading global banner)"; else bad "multi-design banner" "multi_file=$(jqv '.multi_file' "$WM2/compare-meta.json") banner=$(jqv '.banner' "$WM2/compare-meta.json")"; fi
+
 echo
 echo "RESULT: $PASS passed, $FAIL failed"
 # cleanup fixtures + workspaces
-rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$WMX" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" "$FMX" 2>/dev/null || true
+rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$WMX" "$WM2" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" "$FMX" "$FM2" 2>/dev/null || true
 [ "$FAIL" -eq 0 ]

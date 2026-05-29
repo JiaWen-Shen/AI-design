@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # materialize-conflict-sides.sh — feed local merge-conflict sides into the existing
-# compare-wrapper contract (before/ = ours/:2:, after/ = theirs/:3:).
+# compare-wrapper contract (before/ = ours side, after/ = theirs side).
 #
 # Reuses the same workspace layout fetch-pr.sh produces, so the unchanged Stage 3a
 # chain (compute-html-diff.js → summarise-css-diff.js → make-compare-wrapper.js →
 # verify-wrapper.sh → serve-compare.sh) renders the two conflict sides side by side.
 #
-# Strategy:
-#   1. git archive HEAD into BOTH before/ and after/ → shared dependency tree
-#      (CSS/JS/images resolve identically in both iframes).
-#   2. Overlay the conflicted files: `git show :2:` into before/, `git show :3:` into after/
-#      → only the conflicted files differ between the two sides.
-#   3. files.json = conflicted design-surface files.
-#   4. compare-meta.json = pane labels derived from attribution.json's ours_is_you.
+# Strategy (faithful per-side trees — NOT HEAD for both):
+#   1. git archive the OURS side's complete tree into before/, the THEIRS side's into
+#      after/. Each pane then carries that side's own CSS/JS/assets, so a conflicted
+#      HTML renders against the right dependencies (no cross-side bleed).
+#   2. files.json = conflicted design-surface files, base_ok/head_ok per side from
+#      whether the file exists in that side's tree (modify/delete → that side absent).
+#   3. compare-meta.json = pane labels (+ author tags + conflict banner ONLY when a
+#      single design file is materialized — a global banner can't honestly describe a
+#      multi-file wrapper; the /merge 2b path always renders one --file at a time).
 #
 # Usage:
 #   materialize-conflict-sides.sh [--repo-root <path>] [--workspace <path>]
@@ -64,36 +66,59 @@ else
 fi
 [ "${#FILES[@]}" -eq 0 ] && { echo "ERROR: no conflicted files" >&2; exit 1; }
 
-# --- 1. Shared dependency tree: archive HEAD into both sides ---
-( cd "$WORKSPACE/before" && rm -rf -- * 2>/dev/null || true; GIT archive HEAD | tar -x -C "$WORKSPACE/before" )
-( cd "$WORKSPACE/after"  && rm -rf -- * 2>/dev/null || true; GIT archive HEAD | tar -x -C "$WORKSPACE/after" )
+# --- Resolve per-side refs (prefer attribution.json; else detect) ---
+ATTR="$WORKSPACE/attribution.json"
+OURS_REF="HEAD"; THEIRS_REF=""; OURS_IS_YOU="true"
+if [ -f "$ATTR" ]; then
+  OURS_REF="$(jq -r '.ours_ref // "HEAD"' "$ATTR" 2>/dev/null)"
+  THEIRS_REF="$(jq -r '.theirs_ref // ""' "$ATTR" 2>/dev/null)"
+  # NB: jq's `//` treats `false` as empty, so `.ours_is_you // true` would wrongly yield
+  # true for a rebase. Read raw and default only on null/missing.
+  OURS_IS_YOU="$(jq -r '.ours_is_you' "$ATTR" 2>/dev/null)"
+  case "$OURS_IS_YOU" in true|false) :;; *) OURS_IS_YOU="true";; esac
+fi
+[ "$THEIRS_REF" = "(unknown)" ] && THEIRS_REF=""
+if [ -z "$THEIRS_REF" ]; then
+  GITDIR="$(GIT rev-parse --git-dir 2>/dev/null)"; case "$GITDIR" in /*) :;; *) GITDIR="$REPO_ROOT/$GITDIR";; esac
+  if [ -f "$GITDIR/MERGE_HEAD" ]; then THEIRS_REF="MERGE_HEAD"
+  elif GIT rev-parse -q --verify REBASE_HEAD >/dev/null 2>&1; then THEIRS_REF="REBASE_HEAD"; fi
+fi
+THEIRS_OK="false"
+if [ -n "$THEIRS_REF" ] && GIT rev-parse -q --verify "${THEIRS_REF}^{commit}" >/dev/null 2>&1; then THEIRS_OK="true"; fi
 
-# --- 2. Overlay conflict sides + build files.json ---
+# --- 1. Faithful per-side trees ---
+( cd "$WORKSPACE/before" && rm -rf -- * 2>/dev/null || true; GIT archive "$OURS_REF" | tar -x -C "$WORKSPACE/before" )
+( cd "$WORKSPACE/after"  && rm -rf -- * 2>/dev/null || true
+  if [ "$THEIRS_OK" = "true" ]; then GIT archive "$THEIRS_REF" | tar -x -C "$WORKSPACE/after"
+  else GIT archive HEAD | tar -x -C "$WORKSPACE/after"; fi )
+
+# --- 2. files.json (conflicted design-surface files; presence per side from its tree) ---
 FILE_OUT="$WORKSPACE/files.json"
 echo "[]" > "$FILE_OUT"
-declare -a MATERIALIZED=()   # design-surface files actually rendered (drives compare-meta below)
+declare -a MATERIALIZED=()
 
 for file in "${FILES[@]}"; do
   kind=$(classify "$file")
   case "$kind" in html|md|css|svg|img) :;; *) continue;; esac   # design surface only
   MATERIALIZED+=("$file")
 
-  mkdir -p "$WORKSPACE/before/$(dirname "$file")" "$WORKSPACE/after/$(dirname "$file")"
-  # :2: = ours (before-pane), :3: = theirs (after-pane). For modify/delete or add/delete
-  # conflicts one stage is ABSENT. Write via a temp file and only move on success; if the
-  # stage is missing, REMOVE the destination (incl. the archived HEAD copy placed earlier)
-  # so the wrapper renders that side as genuinely missing/deleted — never a fake 0-byte file.
-  tmpb=$(mktemp); tmpt=$(mktemp)
-  if GIT show ":2:$file" > "$tmpb" 2>/dev/null; then
-    mv "$tmpb" "$WORKSPACE/before/$file"; base_ok=true
+  base_ok=false; head_ok=false
+  GIT cat-file -e "${OURS_REF}:$file" 2>/dev/null && base_ok=true
+  # ours side absent (ours deleted it) → archive didn't include it; make sure it's gone
+  [ "$base_ok" = "false" ] && rm -f "$WORKSPACE/before/$file"
+
+  if [ "$THEIRS_OK" = "true" ]; then
+    GIT cat-file -e "${THEIRS_REF}:$file" 2>/dev/null && head_ok=true
+    [ "$head_ok" = "false" ] && rm -f "$WORKSPACE/after/$file"
   else
-    rm -f "$tmpb" "$WORKSPACE/before/$file"; base_ok=false
+    # Degraded fallback (theirs ref unresolvable): overlay the :3: stage blob onto the
+    # HEAD-based after/ tree so at least the conflicted file shows the theirs content.
+    mkdir -p "$WORKSPACE/after/$(dirname "$file")"
+    tmpt=$(mktemp)
+    if GIT show ":3:$file" > "$tmpt" 2>/dev/null; then mv "$tmpt" "$WORKSPACE/after/$file"; head_ok=true
+    else rm -f "$tmpt" "$WORKSPACE/after/$file"; head_ok=false; fi
   fi
-  if GIT show ":3:$file" > "$tmpt" 2>/dev/null; then
-    mv "$tmpt" "$WORKSPACE/after/$file"; head_ok=true
-  else
-    rm -f "$tmpt" "$WORKSPACE/after/$file"; head_ok=false
-  fi
+
   tmp=$(mktemp)
   jq --arg path "$file" --arg kind "$kind" \
      --argjson base_ok "$base_ok" --argjson head_ok "$head_ok" \
@@ -101,36 +126,35 @@ for file in "${FILES[@]}"; do
      "$FILE_OUT" > "$tmp" && mv "$tmp" "$FILE_OUT"
 done
 
-# --- 3. compare-meta.json: pane labels + per-file author tags + conflict banner ---
-# Derive from attribution.json (if attribute-conflict.sh ran first); else generic.
-# Author tags + banner use the first ACTUALLY-MATERIALIZED design file's attribution (not
-# the raw FILES[0], which may be a skipped .js/.json conflict) — exact for the /merge 2b
-# path (one --file at a time); approximate if several design files share a wrapper.
+# --- 3. compare-meta.json: pane labels (+ author/banner only for a single design file) ---
 LEFT="Side A"; RIGHT="Side B"
 LEFT_AUTHOR=""; RIGHT_AUTHOR=""; CHANGE_TYPE=""; INVOLVES_OTHER="false"; OTHER_AUTHOR=""; BANNER=""
-ATTR="$WORKSPACE/attribution.json"
-FIRST="${MATERIALIZED[0]:-}"
 if [ -f "$ATTR" ]; then
-  OURS_IS_YOU=$(jq -r '.ours_is_you' "$ATTR" 2>/dev/null || echo "true")
   if [ "$OURS_IS_YOU" = "false" ]; then
-    LEFT="On main"; RIGHT="Your branch"   # rebase: before(:2:)=main, after(:3:)=your branch
+    LEFT="On main"; RIGHT="Your branch"          # rebase: before=main, after=your branch
   else
-    LEFT="Your branch"; RIGHT="Incoming (main)"  # merge: before(:2:)=your branch, after(:3:)=incoming
+    LEFT="Your branch"; RIGHT="Incoming (main)"  # merge: before=your branch, after=incoming
   fi
-  # before-pane = ours(:2:), after-pane = theirs(:3:)
-  LEFT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.ours.author) // ""' "$ATTR" 2>/dev/null)
-  RIGHT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.theirs.author) // ""' "$ATTR" 2>/dev/null)
-  CHANGE_TYPE=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.change_type) // ""' "$ATTR" 2>/dev/null)
-  INVOLVES_OTHER=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.involves_other_author) // false' "$ATTR" 2>/dev/null)
-  OTHER_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.other_author) // ""' "$ATTR" 2>/dev/null)
-  if [ "$INVOLVES_OTHER" = "true" ] && [ -n "$OTHER_AUTHOR" ]; then
-    BANNER="⚠ 此檔牽涉 ${OTHER_AUTHOR} 在 main 上的修改（${CHANGE_TYPE:-change}）— 下方 highlight 標出兩邊差異，紅=移除/綠=新增，請對照確認衝突處"
+  # Author tags + banner ONLY when exactly one design file is rendered — a single global
+  # banner cannot honestly describe a multi-file wrapper (a later file may have a different
+  # author). The /merge 2b flow always passes one --file, so it gets the banner.
+  if [ "${#MATERIALIZED[@]}" -eq 1 ]; then
+    FIRST="${MATERIALIZED[0]}"
+    LEFT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.ours.author) // ""' "$ATTR" 2>/dev/null)
+    RIGHT_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.theirs.author) // ""' "$ATTR" 2>/dev/null)
+    CHANGE_TYPE=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.change_type) // ""' "$ATTR" 2>/dev/null)
+    INVOLVES_OTHER=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.involves_other_author) // false' "$ATTR" 2>/dev/null)
+    OTHER_AUTHOR=$(jq -r --arg p "$FIRST" '(.files[]|select(.path==$p)|.other_author) // ""' "$ATTR" 2>/dev/null)
+    if [ "$INVOLVES_OTHER" = "true" ] && [ -n "$OTHER_AUTHOR" ]; then
+      BANNER="⚠ 此檔牽涉 ${OTHER_AUTHOR} 在 main 上的修改（${CHANGE_TYPE:-change}）— 下方 highlight 標出兩邊差異，紅=移除/綠=新增，請對照確認衝突處"
+    fi
   fi
 fi
 jq -n --arg l "$LEFT" --arg r "$RIGHT" \
   --arg la "$LEFT_AUTHOR" --arg ra "$RIGHT_AUTHOR" --arg ct "$CHANGE_TYPE" \
   --arg io "$INVOLVES_OTHER" --arg banner "$BANNER" \
-  '{ left_label: $l, right_label: $r, mode: "local-conflict",
+  --argjson multi "$( [ "${#MATERIALIZED[@]}" -gt 1 ] && echo true || echo false )" \
+  '{ left_label: $l, right_label: $r, mode: "local-conflict", multi_file: $multi,
      left_author:  (if $la == "" then null else $la end),
      right_author: (if $ra == "" then null else $ra end),
      change_type:  (if $ct == "" then null else $ct end),
@@ -138,6 +162,6 @@ jq -n --arg l "$LEFT" --arg r "$RIGHT" \
      banner: (if $banner == "" then null else $banner end) }' \
   > "$WORKSPACE/compare-meta.json"
 
-echo "Materialized ${#FILES[@]} conflicted file(s) into $WORKSPACE/{before,after}" >&2
+echo "Materialized ${#MATERIALIZED[@]} design file(s); ours=$OURS_REF theirs=$THEIRS_REF (ok=$THEIRS_OK)" >&2
 echo "  left='$LEFT'($LEFT_AUTHOR)  right='$RIGHT'($RIGHT_AUTHOR)  banner=$([ -n "$BANNER" ] && echo yes || echo no)" >&2
 cat "$FILE_OUT"
