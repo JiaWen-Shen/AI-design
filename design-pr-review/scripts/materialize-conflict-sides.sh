@@ -87,10 +87,14 @@ THEIRS_OK="false"
 if [ -n "$THEIRS_REF" ] && GIT rev-parse -q --verify "${THEIRS_REF}^{commit}" >/dev/null 2>&1; then THEIRS_OK="true"; fi
 
 # --- 1. Faithful per-side trees ---
-( cd "$WORKSPACE/before" && rm -rf -- * 2>/dev/null || true; GIT archive "$OURS_REF" | tar -x -C "$WORKSPACE/before" )
-( cd "$WORKSPACE/after"  && rm -rf -- * 2>/dev/null || true
-  if [ "$THEIRS_OK" = "true" ]; then GIT archive "$THEIRS_REF" | tar -x -C "$WORKSPACE/after"
-  else GIT archive HEAD | tar -x -C "$WORKSPACE/after"; fi )
+# Fully reset each side: `rm -rf -- *` skips dotfiles/dot-dirs, so a tracked hidden asset
+# from a previous run would survive in the basename-reused workspace and render as stale
+# current-side content. Remove and recreate the dirs so each tree contains only this side.
+rm -rf "$WORKSPACE/before" "$WORKSPACE/after"
+mkdir -p "$WORKSPACE/before" "$WORKSPACE/after"
+GIT archive "$OURS_REF" | tar -x -C "$WORKSPACE/before"
+if [ "$THEIRS_OK" = "true" ]; then GIT archive "$THEIRS_REF" | tar -x -C "$WORKSPACE/after"
+else GIT archive HEAD | tar -x -C "$WORKSPACE/after"; fi
 
 # --- 2. files.json (conflicted design-surface files; presence per side from its tree) ---
 FILE_OUT="$WORKSPACE/files.json"

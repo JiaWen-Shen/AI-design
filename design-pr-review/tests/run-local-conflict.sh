@@ -104,8 +104,24 @@ bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FM2" --workspace "$WM2" >/de
 bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FM2" --workspace "$WM2" >/dev/null 2>&1
 if [ "$(jqv '.multi_file' "$WM2/compare-meta.json")" = "true" ] && [ "$(jqv '.banner' "$WM2/compare-meta.json")" = "null" ]; then ok "multi design-file: multi_file=true, banner suppressed (no misleading global banner)"; else bad "multi-design banner" "multi_file=$(jqv '.multi_file' "$WM2/compare-meta.json") banner=$(jqv '.banner' "$WM2/compare-meta.json")"; fi
 
+echo "== 10. merge-commit-only author: other side surfaced despite empty no-merges range =="
+FMO=$(bash "$HERE/make-conflict-fixture.sh" --mode merge-only-author | tail -1)
+WMO="/tmp/test-conflict-mo-$$"; rm -rf "$WMO"; mkdir -p "$WMO"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FMO" --workspace "$WMO" >/dev/null 2>&1
+if [ "$(jqv '.files[0].involves_other_author' "$WMO/attribution.json")" = "true" ]; then ok "merge-only author: involves_other=true (Stanley's merge-commit edit not auto-passed)"; else bad "merge-only author" "got $(jqv '.files[0].involves_other_author' "$WMO/attribution.json") — empty no-merges range collapsed to one identity"; fi
+
+echo "== 11. stale dotfile: per-side tree fully reset (dotfiles + dot-dirs too) =="
+FSD=$(bash "$HERE/make-conflict-fixture.sh" --mode rebase | tail -1)
+WSD="/tmp/test-conflict-sd-$$"; rm -rf "$WSD"; mkdir -p "$WSD/before" "$WSD/after"
+# Simulate stale state left by a previous run in the basename-reused workspace.
+printf 'stale\n' > "$WSD/before/.stale-asset"; mkdir -p "$WSD/before/.stale-dir"; printf 'x\n' > "$WSD/before/.stale-dir/x"
+printf 'stale\n' > "$WSD/after/.stale-asset"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FSD" --workspace "$WSD" >/dev/null 2>&1
+bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FSD" --workspace "$WSD" >/dev/null 2>&1
+if [ ! -e "$WSD/before/.stale-asset" ] && [ ! -e "$WSD/before/.stale-dir" ] && [ ! -e "$WSD/after/.stale-asset" ]; then ok "stale dotfiles/dot-dirs removed from per-side trees"; else bad "stale dotfile" "survived reset (rm -rf -- * skips dotfiles)"; fi
+
 echo
 echo "RESULT: $PASS passed, $FAIL failed"
 # cleanup fixtures + workspaces
-rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$WMX" "$WM2" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" "$FMX" "$FM2" 2>/dev/null || true
+rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$WMX" "$WM2" "$WMO" "$WSD" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" "$FMX" "$FM2" "$FMO" "$FSD" 2>/dev/null || true
 [ "$FAIL" -eq 0 ]

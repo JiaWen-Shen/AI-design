@@ -125,11 +125,17 @@ dominant_author() {
 # Used for fail-closed involves_other: file-level "dominant author" is unreliable under
 # rebase (HEAD = main + already-replayed local commits), so we judge on the full author SET.
 author_set() {
-  local ref="$1" file="$2"
+  local ref="$1" file="$2" out=""
   # Use name+email as a stable identity — `%an` alone collapses distinct people who share
   # a display name (or a spoofed name), which would wrongly auto-pass a cross-author conflict.
   if [ -n "$MB" ]; then
-    GIT log --no-merges --format='%an <%ae>' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u
+    out=$(GIT log --no-merges --format='%an <%ae>' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u)
+    # Fail-closed: if the no-merges range is empty (e.g. the other side's conflicted content
+    # was introduced only by a merge commit), don't let an empty set collapse to one identity
+    # and auto-pass. Retry including merges, then fall back to the last commit on the ref.
+    [ -z "$out" ] && out=$(GIT log --format='%an <%ae>' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u)
+    [ -z "$out" ] && out=$(GIT log -1 --format='%an <%ae>' "$ref" -- "$file" 2>/dev/null | sed '/^$/d')
+    printf '%s\n' "$out" | sed '/^$/d'
   else
     GIT log -1 --format='%an <%ae>' "$ref" -- "$file" 2>/dev/null | sed '/^$/d'
   fi

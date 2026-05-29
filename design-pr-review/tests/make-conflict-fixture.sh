@@ -136,6 +136,32 @@ if [ "$MODE" = "multi-design" ]; then
   echo "$DIR"; exit 0
 fi
 
+if [ "$MODE" = "merge-only-author" ]; then
+  # The OTHER side's conflicting content is introduced ONLY by a merge commit (an "evil
+  # merge" that retouches the file during conflict resolution). `git log --no-merges MB..ref`
+  # is then EMPTY for that side. Guards that an empty no-merges author set doesn't collapse
+  # to one identity and silently auto-pass a genuine cross-author conflict.
+  BASE0=$(g rev-parse HEAD)                    # Base Bot: mockup #111
+  # side branch + main both advance WITHOUT touching the design file
+  g checkout -q -b side "$BASE0"
+  printf 'side\n' > "$DIR/side.txt"; g add side.txt
+  commit_as "Side Dev" "side@example.com" "side: unrelated file"
+  g checkout -q main
+  printf 'mainline\n' > "$DIR/main.txt"; g add main.txt
+  commit_as "Base Bot" "base@example.com" "main: unrelated file"
+  # evil merge: resolve by re-theming the design file IN the merge commit (Stanley)
+  g merge --no-commit --no-ff side >/dev/null 2>&1 || true
+  mockup "#555555"; g add mockup-login.html
+  commit_as "Stanley Tung" "stanley@example.com" "merge: side + retheme login (evil merge)"
+  # designer branches from BASE0, edits same line, rebases onto main → conflict.
+  # main side's only commit touching the file is the (excluded) merge commit.
+  g checkout -q -b mei/visual/login-accent "$BASE0"
+  mockup "#222222"; g add mockup-login.html
+  commit_as "Mei Hung" "mei@example.com" "mei: brighter login accent"
+  g rebase main >/dev/null 2>&1 || true
+  echo "$DIR"; exit 0
+fi
+
 # --- The "main side" change lands first ---
 # self mode: Mei is the main-side author too (her own earlier work) → involves_other=false.
 # default:   Stanley is the main-side author → involves_other=true.
