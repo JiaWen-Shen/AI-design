@@ -121,6 +121,18 @@ dominant_author() {
   printf '\tunknown'
 }
 
+# author_set <ref> <file> — DISTINCT author names touching the file on MB..ref (newline list).
+# Used for fail-closed involves_other: file-level "dominant author" is unreliable under
+# rebase (HEAD = main + already-replayed local commits), so we judge on the full author SET.
+author_set() {
+  local ref="$1" file="$2"
+  if [ -n "$MB" ]; then
+    GIT log --no-merges --format='%an' "$MB..$ref" -- "$file" 2>/dev/null | sed '/^$/d' | sort -u
+  else
+    GIT log -1 --format='%an' "$ref" -- "$file" 2>/dev/null | sed '/^$/d'
+  fi
+}
+
 # conflict_region_text <file>
 #   Echo the combined text of all conflict hunks (between <<<<<<< and >>>>>>>) in the
 #   working-tree file. If no markers (e.g. ref-only remote use), diff the stage blobs.
@@ -180,12 +192,23 @@ for file in "${FILES[@]}"; do
   else
     designer_author="$ours_author";   other_author="$theirs_author"
   fi
-  # The conflict "involves another person" iff the two sides were authored by DIFFERENT
-  # people. Same author on both sides = your own earlier-vs-later work → auto-pass candidate.
-  involves_other="false"
-  if [ -n "$designer_author" ] && [ -n "$other_author" ] && [ "$designer_author" != "$other_author" ]; then
-    involves_other="true"
+  # involves_other_author — FAIL CLOSED. Auto-pass (false) ONLY when we're confident the
+  # conflict is purely the designer's own work: every commit touching this file on BOTH
+  # sides (since the merge base) is by one and the same person. Anything else — multiple
+  # authors on either side, or we can't determine — surfaces (true), so we never silently
+  # auto-pass a conflict that actually carries someone else's change.
+  ours_authors="$(author_set "$OURS_REF" "$file")"
+  theirs_authors="$(author_set "$THEIRS_REF" "$file")"
+  n_distinct="$(printf '%s\n%s\n' "$ours_authors" "$theirs_authors" | sed '/^$/d' | sort -u | wc -l | tr -d ' ')"
+  if [ "$n_distinct" = "1" ]; then
+    involves_other="false"
+  else
+    involves_other="true"   # 0 = unknown → fail closed; >1 = another author present
   fi
+  # Name the other side's author for the banner: someone on the OTHER side who isn't the designer.
+  if [ "$OURS_IS_YOU" = "false" ]; then other_set="$ours_authors"; else other_set="$theirs_authors"; fi
+  other_named="$(printf '%s\n' "$other_set" | sed '/^$/d' | { [ -n "$designer_author" ] && grep -vxF "$designer_author" || cat; } | head -1 || true)"
+  [ -n "$other_named" ] && other_author="$other_named"
 
   entry=$(jq -n \
     --arg path "$file" --arg binary "$binary" --arg ct "$change_type" \

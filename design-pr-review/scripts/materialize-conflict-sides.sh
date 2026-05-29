@@ -77,13 +77,21 @@ for file in "${FILES[@]}"; do
   case "$kind" in html|md|css|svg|img) :;; *) continue;; esac   # design surface only
 
   mkdir -p "$WORKSPACE/before/$(dirname "$file")" "$WORKSPACE/after/$(dirname "$file")"
-  # :2: = ours (before-pane), :3: = theirs (after-pane). Either may be absent
-  # (add/delete conflict) — leave the archived HEAD copy in that case.
-  GIT show ":2:$file" > "$WORKSPACE/before/$file" 2>/dev/null || true
-  GIT show ":3:$file" > "$WORKSPACE/after/$file"  2>/dev/null || true
-
-  base_ok=$( [ -s "$WORKSPACE/before/$file" ] && echo true || echo false )
-  head_ok=$( [ -s "$WORKSPACE/after/$file"  ] && echo true || echo false )
+  # :2: = ours (before-pane), :3: = theirs (after-pane). For modify/delete or add/delete
+  # conflicts one stage is ABSENT. Write via a temp file and only move on success; if the
+  # stage is missing, REMOVE the destination (incl. the archived HEAD copy placed earlier)
+  # so the wrapper renders that side as genuinely missing/deleted — never a fake 0-byte file.
+  tmpb=$(mktemp); tmpt=$(mktemp)
+  if GIT show ":2:$file" > "$tmpb" 2>/dev/null; then
+    mv "$tmpb" "$WORKSPACE/before/$file"; base_ok=true
+  else
+    rm -f "$tmpb" "$WORKSPACE/before/$file"; base_ok=false
+  fi
+  if GIT show ":3:$file" > "$tmpt" 2>/dev/null; then
+    mv "$tmpt" "$WORKSPACE/after/$file"; head_ok=true
+  else
+    rm -f "$tmpt" "$WORKSPACE/after/$file"; head_ok=false
+  fi
   tmp=$(mktemp)
   jq --arg path "$file" --arg kind "$kind" \
      --argjson base_ok "$base_ok" --argjson head_ok "$head_ok" \

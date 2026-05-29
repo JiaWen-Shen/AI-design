@@ -74,6 +74,34 @@ if [ "$MODE" = "binary" ]; then
   echo "$DIR"; exit 0
 fi
 
+if [ "$MODE" = "modify-delete" ]; then
+  # main DELETES the file (Stanley); Mei's branch MODIFIES it → modify/delete conflict.
+  # One stage (the deleted side) is absent → materialize must NOT leave a fake 0-byte file.
+  g checkout -q -b main-tmp
+  g rm -q mockup-login.html
+  commit_as "Stanley Tung" "stanley@example.com" "stanley: remove login mockup"
+  g checkout -q main; g merge -q --ff-only main-tmp; g branch -q -d main-tmp
+  g checkout -q -b mei/visual/login-accent "$(g rev-list --max-parents=0 HEAD | tail -1)"
+  mockup "#222222"; g add mockup-login.html
+  commit_as "Mei Hung" "mei@example.com" "mei: brighter login accent"
+  g rebase main >/dev/null 2>&1 || true
+  echo "$DIR"; exit 0
+fi
+
+if [ "$MODE" = "rebase-multi" ]; then
+  # main: Stanley edits the accent line. Branch: Mei makes TWO commits on the same file
+  # (so her side dominates file-level), then rebase onto main. Guards that multiple
+  # same-author commits don't flip involves_other to false when main carries Stanley's edit.
+  g checkout -q -b main-tmp; mockup "#333333"; g add mockup-login.html
+  commit_as "Stanley Tung" "stanley@example.com" "stanley: darker accent"
+  g checkout -q main; g merge -q --ff-only main-tmp; g branch -q -d main-tmp
+  g checkout -q -b mei/visual/login-accent "$(g rev-list --max-parents=0 HEAD | tail -1)"
+  mockup "#aaaaaa"; g add mockup-login.html; commit_as "Mei Hung" "mei@example.com" "mei: accent v1"
+  mockup "#222222"; g add mockup-login.html; commit_as "Mei Hung" "mei@example.com" "mei: accent v2"
+  g rebase main >/dev/null 2>&1 || true
+  echo "$DIR"; exit 0
+fi
+
 # --- The "main side" change lands first ---
 # self mode: Mei is the main-side author too (her own earlier work) → involves_other=false.
 # default:   Stanley is the main-side author → involves_other=true.

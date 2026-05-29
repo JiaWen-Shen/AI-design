@@ -72,8 +72,26 @@ WB="/tmp/test-conflict-binary-$$"; rm -rf "$WB"; mkdir -p "$WB"
 bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FB" --workspace "$WB" >/dev/null 2>&1
 [ "$(jqv '.files[0].binary' "$WB/attribution.json")" = "true" ] && ok "binary detected" || bad "binary" "got $(jqv '.files[0].binary' "$WB/attribution.json")"
 
+echo "== 6. modify/delete fixture: absent stage → no fake empty file =="
+FMD=$(bash "$HERE/make-conflict-fixture.sh" --mode modify-delete | tail -1)
+WMD="/tmp/test-conflict-md-$$"; rm -rf "$WMD"; mkdir -p "$WMD"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FMD" --workspace "$WMD" >/dev/null 2>&1
+bash "$SCRIPTS/materialize-conflict-sides.sh" --repo-root "$FMD" --workspace "$WMD" >/dev/null 2>&1
+md_base=$(jqv '.[0].base_ok' "$WMD/files.json"); md_head=$(jqv '.[0].head_ok' "$WMD/files.json")
+if [ "$md_base" = "false" ] || [ "$md_head" = "false" ]; then ok "modify/delete: one side flagged absent (base_ok=$md_base head_ok=$md_head)"; else bad "modify/delete absent" "both sides present (base_ok=$md_base head_ok=$md_head)"; fi
+absent_empty=0
+[ "$md_base" = "false" ] && [ -f "$WMD/before/mockup-login.html" ] && absent_empty=1
+[ "$md_head" = "false" ] && [ -f "$WMD/after/mockup-login.html" ] && absent_empty=1
+if [ "$absent_empty" = "0" ]; then ok "modify/delete: absent side truly missing (no 0-byte file)"; else bad "modify/delete" "left a fake empty file"; fi
+
+echo "== 7. multi-commit rebase: same-author commits don't hide the other author =="
+FRM=$(bash "$HERE/make-conflict-fixture.sh" --mode rebase-multi | tail -1)
+WRM="/tmp/test-conflict-rm-$$"; rm -rf "$WRM"; mkdir -p "$WRM"
+bash "$SCRIPTS/attribute-conflict.sh" --repo-root "$FRM" --workspace "$WRM" >/dev/null 2>&1
+if [ "$(jqv '.files[0].involves_other_author' "$WRM/attribution.json")" = "true" ]; then ok "multi-commit rebase: involves_other=true (Stanley still surfaced)"; else bad "involves_other regression" "got $(jqv '.files[0].involves_other_author' "$WRM/attribution.json")"; fi
+
 echo
 echo "RESULT: $PASS passed, $FAIL failed"
 # cleanup fixtures + workspaces
-rm -rf "$WS" "$WM" "$WB" "$WSF" "$FX" "$FM" "$FB" "$FS" 2>/dev/null || true
+rm -rf "$WS" "$WM" "$WB" "$WSF" "$WMD" "$WRM" "$FX" "$FM" "$FB" "$FS" "$FMD" "$FRM" 2>/dev/null || true
 [ "$FAIL" -eq 0 ]
