@@ -22,6 +22,11 @@
 
 set -euo pipefail
 
+# Shared change-type classification helpers (classify_inline_style lives here now).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/classify-change.sh
+. "$SCRIPT_DIR/lib/classify-change.sh"
+
 PR=""
 WORKSPACE=""
 REPO_ROOT=""
@@ -225,34 +230,7 @@ fi
 # inline SVG icons and is universally accepted in mockup repos. Flagging these wastes
 # the designer's attention — every icon would fire. Skip when the matched element is
 # an <svg> AND the style declarations are limited to width/height.
-classify_inline_style() {
-  # Args: style body (without style="..." wrapper)
-  # Echoes one of: hardcoded / tokenized / state
-  local body="$1"
-  local has_token has_state has_hardcoded_color has_hardcoded_px
-
-  has_token=$(echo "$body" | grep -cE 'var\(--' || true)
-  # State-only properties: display/visibility/opacity/pointer-events that resolve to
-  # "off" values. Mixed with anything else, fall through to hardcoded/tokenized.
-  has_state=$(echo "$body" | tr ';' '\n' | sed -E 's/^[[:space:]]+//' | grep -cE '^(display:[[:space:]]*none|visibility:[[:space:]]*hidden|opacity:[[:space:]]*0(\.0+)?|pointer-events:[[:space:]]*none)$' || true)
-  # Count of declarations (non-empty after split on ;)
-  local n_props
-  n_props=$(echo "$body" | tr ';' '\n' | sed -E 's/^[[:space:]]+//' | grep -cE '.+:.+' || true)
-  has_hardcoded_color=$(echo "$body" | grep -cE '(color|background)[^:]*:[[:space:]]*(#[0-9a-fA-F]{3,8}|rgb|hsl)' || true)
-  has_hardcoded_px=$(echo "$body" | grep -cE ':[[:space:]]*-?[0-9]+(\.[0-9]+)?(px|em|rem)' || true)
-
-  if [ "$has_state" -gt 0 ] && [ "$has_state" -eq "$n_props" ]; then
-    echo "state"
-  elif [ "$has_hardcoded_color" -gt 0 ] || [ "$has_hardcoded_px" -gt 0 ]; then
-    echo "hardcoded"
-  elif [ "$has_token" -gt 0 ]; then
-    echo "tokenized"
-  else
-    # No tokens, no obvious literals — could be a JS-driven calc, a value like flex-shrink:0,
-    # transform:rotate, etc. Treat as tokenized (low priority) since it's not violating tokens.
-    echo "tokenized"
-  fi
-}
+# (classify_inline_style is now sourced from lib/classify-change.sh — see top of file.)
 
 if [ "${#SCAN_HTML[@]}" -gt 0 ]; then
   grep -HnE ' style="[^"]+"' "${SCAN_HTML[@]}" 2>/dev/null | while IFS= read -r match; do

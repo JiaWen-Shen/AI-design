@@ -71,6 +71,10 @@ function main() {
   const cssDiff = loadJson(path.join(workspace, "css-diff.json"), { files: [] });
   // pr-meta.json carries PR number, title, author, url — surfaced in the header badge.
   const prMeta = loadJson(path.join(workspace, "pr-meta.json"), {});
+  // compare-meta.json (optional) — written by materialize-conflict-sides.sh for the
+  // local merge-conflict flow to relabel the panes (e.g. "On main" / "Your branch").
+  // Absent on the remote-PR path, so labels fall back to BEFORE/AFTER (no behaviour change).
+  const compareMeta = loadJson(path.join(workspace, "compare-meta.json"), {});
   // touches.json (from scan-conflicts.sh) — flat [{sha, login, path, msg}] of every
   // commit-touches-file pair. Group by path so each toc-card can show "ⓒ N commits".
   const touches = loadJson(path.join(workspace, "touches.json"), []);
@@ -1364,8 +1368,8 @@ function main() {
     <button class="icon-btn" id="feedback-btn" title="這裡奇怪？複製當下 state（active file / 最後互動 / console errors）給 Claude 回報" aria-label="Copy session state">📋</button>
   </header>
   <div class="app-body">
-    <div class="pane-label">BEFORE</div>
-    <div class="pane-label">AFTER</div>
+    <div class="pane-label">${escapeHtml(compareMeta.left_label || "BEFORE")}</div>
+    <div class="pane-label">${escapeHtml(compareMeta.right_label || "AFTER")}</div>
     <div class="pane-label">Anchors</div>
     <iframe id="left" src=""></iframe>
     <iframe id="right" src=""></iframe>
