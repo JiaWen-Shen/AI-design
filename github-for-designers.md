@@ -12,6 +12,9 @@
 | Week 4 | 用 AI 操作 Git Using AI for Git | Claude Code 操作示範（natural language → git commands）、使用時機、安全機制（safety mechanisms）、避免 push 錯路徑 |
 | Week 5 | Repo 怎麼分層管理？ Repo Taxonomy | CLAUDE.md、四層 repo 架構（company / department / project / personal）、Design System 歸屬 |
 | Week 6 | 多專案工作流 Multi-Repo Workflow | 一人多 repo 架構、每日流程（daily workflow）、Global CLAUDE.md 管理 |
+| Week 7 _(TODO)_ | Subagent & Agent 工作分派 Subagents & Agents | 哪些工作適合丟給 subagent / agent（適用 vs 不適用）、Opus 4.8 workflow（fast mode、1M context、何時用） |
+
+> **TODO（sharing topic）**：Week 7 — subagent & agent 適合的工作介紹（哪些該委派、哪些自己做），順便講 Opus 4.8 workflow。
 
 ---
 
