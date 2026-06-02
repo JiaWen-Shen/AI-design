@@ -1,9 +1,0 @@
-{
-  "name": "design-context",
-  "description": "Type-B reference sync for designers — pulls department rules (VXD/TLDS) + project PM specs into local cache, surfaces updates to Claude Code agent.",
-  "version": "0.1.0",
-  "author": {
-    "name": "Karen Shen",
-    "email": "karen_shen@trendmicro.com"
-  }
-}
