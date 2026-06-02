@@ -42,6 +42,7 @@ sources:
     ttl: session+30min   # 每 session start + cron 每 30 分鐘
     sparse_paths:
       - docs/requirements
+      - docs/meeting-notes   # 會議結論 = 一級 source（會議 §B.1）；路徑依 REI-Project 實際結構調整
       - docs/project
       - docs/design
       - docs/ui
@@ -58,6 +59,30 @@ sources:
       threshold:
         files_changed: 2
         lines_changed: 50
+
+  # -----------------------------------------------------------
+  # L2 — Teams 共識（type: teams，MSGRAPH 抓 tagged 訊息）會議 §B.5
+  # 需 MSGRAPH_ACCESS_TOKEN（run `load-msgraph-token`）。
+  # tags 留空 = 抓窗口內全部；團隊公告 tag convention 後填 #共識/#conclusion。
+  # -----------------------------------------------------------
+  - id: hie-teams-consensus
+    tier: L2
+    type: teams
+    cache: .design-context/hie-teams
+    ttl: session+30min
+    target:
+      chat_topic: "HIE Design"      # 或 chat_id: "19:xxx@thread.v2" / team_id+channel_id
+    tags:                           # 團隊 tag convention 上線前可留空（抓全部）
+      - "#共識"
+      - "#conclusion"
+      - "#decision"
+    lookback: 30d
+    notify_on_update:
+      digest: true
+      desktop: true
+      threshold:
+        files_changed: 1
+        lines_changed: 10
 
   # -----------------------------------------------------------
   # Example: private fork — `karen-shen_tmemu/uxr-skill` 等

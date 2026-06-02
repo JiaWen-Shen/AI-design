@@ -204,3 +204,104 @@ def test_add_source_preset_idempotent(tmp_path, monkeypatch):
     add_source.add_preset("vxd-skill")
     text = (tmp_path / "sources.yaml").read_text()
     assert text.count("id: vxd-skill") == 1
+
+
+# --- revision 2026-05-28: type/teams + freshness + tag filter ---
+
+def test_source_defaults_to_git_type():
+    import _lib
+    s = _lib.Source(id="x", tier="L1", repo="r", cache=Path("~/x"), ttl="weekly")
+    assert s.is_git is True and s.is_teams is False
+
+
+def test_source_teams_type_and_fields():
+    import _lib
+    s = _lib.Source(
+        id="t", tier="L2", cache=Path(".x"), ttl="daily", type="teams",
+        target={"chat_topic": "HIE Design"}, tags=["#共識"], lookback="14d",
+    )
+    assert s.is_teams is True and s.is_git is False
+    assert s.repo == ""               # repo optional for teams
+    assert s.target["chat_topic"] == "HIE Design"
+    assert s.lookback == "14d"
+
+
+def test_load_config_parses_teams_source(tmp_path):
+    import _lib
+    cfg = tmp_path / "sources.yaml"
+    cfg.write_text(
+        "sources:\n"
+        "  - id: hie\n"
+        "    tier: L2\n"
+        "    type: teams\n"
+        "    cache: .design-context/hie\n"
+        "    ttl: session+30min\n"
+        "    target: {chat_topic: HIE Design}\n"
+        "    tags: ['#共識', '#conclusion']\n"
+        "    lookback: 30d\n"
+    )
+    s = _lib.load_config(cfg)[0]
+    assert s.is_teams and s.type == "teams"
+    assert s.tags == ["#共識", "#conclusion"]
+    assert s.target["chat_topic"] == "HIE Design"
+
+
+def test_filter_messages_by_tags_keeps_matching():
+    import _lib
+    msgs = [
+        {"text": "這版就這樣辦 #共識"},
+        {"text": "隨便聊聊"},
+        {"text": "#CONCLUSION final call"},
+    ]
+    kept = _lib.filter_messages_by_tags(msgs, ["#共識", "#conclusion"])
+    assert len(kept) == 2  # case-insensitive on the tag
+
+
+def test_filter_messages_empty_tags_returns_all():
+    import _lib
+    msgs = [{"text": "a"}, {"text": "b"}]
+    assert _lib.filter_messages_by_tags(msgs, []) == msgs
+
+
+def test_file_last_updated_none_when_not_git(tmp_path):
+    import _lib
+    assert _lib.file_last_updated(tmp_path, "anything.md") is None
+
+
+def test_fetch_teams_parse_lookback_relative():
+    import fetch_teams
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    secs = (now - fetch_teams.parse_lookback("7d")).total_seconds()
+    assert abs(secs - 7 * 86400) < 5          # ~7 days within tolerance
+    assert fetch_teams.parse_lookback("garbage") < now  # falls back to ~30d
+
+
+def test_fetch_teams_normalize_filters_old_and_strips_html():
+    import fetch_teams
+    from datetime import datetime, timezone, timedelta
+    since = datetime.now(timezone.utc) - timedelta(days=7)
+    raw = [
+        {"id": "1", "createdDateTime": (datetime.now(timezone.utc)).isoformat().replace("+00:00", "Z"),
+         "from": {"user": {"displayName": "Mei"}},
+         "body": {"contentType": "html", "content": "<p>hi <b>#共識</b></p>"}},
+        {"id": "2", "createdDateTime": "2000-01-01T00:00:00Z",  # too old
+         "from": {"user": {"displayName": "Old"}},
+         "body": {"contentType": "text", "content": "ancient"}},
+    ]
+    out = fetch_teams.normalize(raw, since)
+    assert len(out) == 1
+    assert out[0]["author"] == "Mei"
+    assert "#共識" in out[0]["text"] and "<b>" not in out[0]["text"]
+
+
+def test_fetch_teams_render_markdown_has_caveat():
+    import fetch_teams
+    md = fetch_teams.render_markdown(
+        "hie", "HIE Design",
+        [{"author": "Mei", "timestamp": "2026-05-20T10:00", "text": "ok #共識", "url": ""}],
+        ["#共識"],
+    )
+    assert "Teams consensus" in md
+    assert "參考" in md  # honest-boundary caveat present
+    assert "Mei" in md

@@ -21,6 +21,55 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import _lib  # noqa: E402
+import fetch_teams  # noqa: E402
+
+
+def sync_teams(source: _lib.Source, cwd: Path) -> dict:
+    """Sync a type=teams source: fetch tagged messages → markdown cache.
+
+    'changed' = rendered markdown differs from the previous cache file.
+    Network/auth errors propagate to caller (sync_pass logs per-source).
+    """
+    cache_dir = source.resolved_cache(cwd)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out_file = cache_dir / f"{source.id}.consensus.md"
+
+    prev = out_file.read_text() if out_file.exists() else ""
+    msgs = fetch_teams.fetch(source.target or {}, source.tags, source.lookback)
+    md = fetch_teams.render_markdown(
+        source.id, fetch_teams._target_desc(source.target or {}), msgs, source.tags
+    )
+    # Ignore the timestamp header line when deciding if content changed.
+    def _strip_ts(t: str) -> str:
+        return "\n".join(ln for ln in t.splitlines() if not ln.startswith("# ") and "sync" not in ln[:40])
+    changed = _strip_ts(md) != _strip_ts(prev)
+    out_file.write_text(md)
+
+    lines_changed = abs(len(md.splitlines()) - len(prev.splitlines())) if changed else 0
+    diff = {
+        "prev_sha": "", "new_sha": "",
+        "files_changed": 1 if changed else 0,
+        "lines_changed": lines_changed,
+        "commits": [], "diff_summary": f"{len(msgs)} tagged messages",
+        "changed": changed, "msg_count": len(msgs),
+    }
+
+    _lib.write_state(_lib.state_file_for(source, cwd), {
+        "source_id": source.id, "last_fetch": _lib.now_iso(),
+        "type": "teams", "msg_count": len(msgs), "changed": changed,
+    })
+    if changed:
+        write_digest(source, cache_dir, diff, cwd)
+        if should_notify(source, diff):
+            _lib.osascript_notify(
+                title=f"design-context: {source.id}",
+                body=f"{len(msgs)} tagged messages updated", subtitle=source.tier,
+            )
+    return {
+        "id": source.id, "mode": "teams", "path": str(out_file),
+        "changed": changed, "files_changed": diff["files_changed"],
+        "lines_changed": lines_changed,
+    }
 
 
 def ensure_clone(source: _lib.Source, cwd: Path) -> Path:
@@ -178,6 +227,10 @@ def should_notify(source: _lib.Source, diff: dict) -> bool:
 
 def sync_one(source: _lib.Source, cwd: Path) -> dict:
     """Sync a single source. Returns summary dict for caller logging."""
+    # type=teams → MSGRAPH path, not git
+    if source.is_teams:
+        return sync_teams(source, cwd)
+
     # Local passthrough — skip sync if working dir is source repo itself
     passthrough = source.passthrough_path(cwd)
     if passthrough and passthrough.exists():

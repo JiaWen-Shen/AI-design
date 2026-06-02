@@ -8,12 +8,15 @@ Claude Code skill that pulls **Type-B reference content** (department rules + pr
 
 ## Why this exists
 
-Designers using Claude Code need two kinds of context to design correctly:
+Designers using Claude Code need several kinds of context to design correctly:
 
 1. **L1 — Department rules**: TLDS tokens, brand voice, motion specs, component conventions (lives in `trendlife-general/vxd-skill`)
-2. **L2 — Project PM specs**: requirements, decisions, meeting notes (lives in `trendlife-general/REI-Project/docs/`)
+2. **L2 — Project PM specs**: requirements, **meeting notes**, decisions (lives in `trendlife-general/REI-Project/docs/`)
+3. **L2 — Teams consensus** (`type: teams`): tagged (`#共識`/`#conclusion`) messages from a group chat / channel, pulled via Microsoft Graph
 
-Without this skill, your agent either ignores those rules (generates non-compliant designs) or you have to paste them in every session (tedious + error-prone). This skill keeps a fresh local copy and forces the agent to read it on activation.
+Core (per 2026-05-28 design meeting §B.1): keep **requirements + meeting notes + team consensus** continuously in sync. Without this skill, your agent either ignores those (generates non-compliant designs) or you paste them in every session (tedious + error-prone). This skill keeps a fresh local copy, forces the agent to read it on activation, **and flags a requirement that looks stale versus newer meeting/Teams activity — so it never silently follows an outdated spec** (§B.3).
+
+> **Honest boundary (§B.2/B.6):** a tool can't fix specs nobody writes back. design-context does "continuous sync + freshness flagging", not "guaranteed correctness". When sources conflict, it surfaces the gap for the designer to decide.
 
 ## How it works
 
@@ -94,7 +97,8 @@ Threshold per source (configurable in `sources.yaml`):
 | `.claude-plugin/plugin.json` | Plugin manifest |
 | `sources.example.yaml` | Config template |
 | `scripts/init.sh` | First-time bootstrap |
-| `scripts/sync.sh` | Pull all sources (cron + hook share this) |
+| `scripts/sync.py` | Pull all sources — git clone/sparse + `type: teams` MSGRAPH (cron + hook share this) |
+| `scripts/fetch_teams.py` | MSGRAPH adapter: fetch tagged Teams messages → markdown (stdlib only) |
 | `scripts/render-manifest.sh` | Generate `manifest.md` from `sources.yaml` |
 | `scripts/status.sh` | Show cache freshness + cron state |
 | `scripts/add-source.sh` | Add new source interactively |

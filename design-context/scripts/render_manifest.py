@@ -18,8 +18,18 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import _lib  # noqa: E402
 
 
-def _read_lines_for(source: _lib.Source, cwd: Path) -> list[str]:
-    """Return absolute paths agent should read for this source."""
+def _read_lines_for(source: _lib.Source, cwd: Path) -> list[tuple[str, str | None]]:
+    """Return (abs_path, last_updated_date) pairs agent should read.
+
+    The date (YYYY-MM-DD of last commit) lets the agent spot stale specs —
+    meeting feedback B.3: a silently-followed outdated requirement causes conflict.
+    """
+    # type=teams — single rendered consensus file
+    if source.is_teams:
+        base = source.resolved_cache(cwd)
+        f = base / f"{source.id}.consensus.md"
+        return [(str(f), None)] if f.exists() else []
+
     # Passthrough wins
     pt = source.passthrough_path(cwd)
     if pt and pt.exists():
@@ -27,30 +37,28 @@ def _read_lines_for(source: _lib.Source, cwd: Path) -> list[str]:
     else:
         base = source.resolved_cache(cwd)
 
-    paths: list[str] = []
+    pairs: list[tuple[str, str | None]] = []
 
-    # Explicit read list (L1 style)
-    for rel in source.read:
+    def add(rel: str) -> None:
         candidate = base / rel
         if candidate.exists():
-            paths.append(str(candidate))
+            pairs.append((str(candidate), _lib.file_last_updated(base, rel)))
 
-    # Read index (L2 style)
+    for rel in source.read:
+        add(rel)
     if source.read_index:
-        candidate = base / source.read_index
-        if candidate.exists():
-            paths.append(str(candidate))
+        add(source.read_index)
 
-    # If no explicit read list, fall back to listing top-level .md files of sparse paths
-    if not paths and source.sparse_paths:
+    # Fallback: top-level .md files of sparse paths
+    if not pairs and source.sparse_paths:
         for sp in source.sparse_paths:
             sp_path = base / sp
             if sp_path.is_dir():
-                # Add up to 5 representative .md files
-                mds = sorted(sp_path.glob("*.md"))[:5]
-                paths.extend(str(p) for p in mds)
+                for p in sorted(sp_path.glob("*.md"))[:5]:
+                    rel = str(p.relative_to(base))
+                    pairs.append((str(p), _lib.file_last_updated(base, rel)))
 
-    return paths
+    return pairs
 
 
 def _digest_path_for(source: _lib.Source, cwd: Path) -> Path | None:
@@ -69,8 +77,14 @@ def render_tier(sources: list[_lib.Source], tier: str, cwd: Path) -> str:
 
     out = []
     for src in relevant:
-        out.append(f"### {src.id} ({tier})")
-        out.append(f"- Repo: `{src.repo}`")
+        kind = "teams" if src.is_teams else "git"
+        out.append(f"### {src.id} ({tier} · {kind})")
+        if src.is_teams:
+            tgt = (src.target or {})
+            out.append(f"- Teams: `{tgt.get('chat_topic') or tgt.get('chat_id') or tgt.get('channel_id') or '?'}`")
+            out.append(f"- Tags: {', '.join(src.tags) if src.tags else '(all in window)'}")
+        else:
+            out.append(f"- Repo: `{src.repo}`")
 
         pt = src.passthrough_path(cwd)
         if pt and pt.exists():
@@ -80,11 +94,12 @@ def render_tier(sources: list[_lib.Source], tier: str, cwd: Path) -> str:
             cache = src.resolved_cache(cwd)
             out.append(f"- Cache: `{cache}`")
 
-        paths = _read_lines_for(src, cwd)
-        if paths:
+        pairs = _read_lines_for(src, cwd)
+        if pairs:
             out.append("- Read:")
-            for p in paths:
-                out.append(f"  - `{p}`")
+            for p, date in pairs:
+                stamp = f"  _(updated {date})_" if date else ""
+                out.append(f"  - `{p}`{stamp}")
         else:
             out.append("- _No readable files found — run `scripts/sync.py` to populate cache._")
 
@@ -123,6 +138,10 @@ def render_all(cwd: Path | None = None) -> tuple[Path | None, Path | None]:
         l2_path.write_text(
             "# design-context — L2 manifest (project specs)\n\n"
             f"Generated: {_lib.now_iso()}\nProject: `{cwd}`\n\n"
+            "> ⚠ **Freshness check (meeting 2026-05-28 §B.3):** each file below shows its "
+            "last-update date. A requirement is **intent, not ground truth** — if it is "
+            "older than recent meeting-notes / Teams-consensus activity, treat it as "
+            "possibly stale: surface the gap to the designer, don't silently follow it.\n\n"
             "## Read\n\n" + render_tier(sources, "L2", cwd)
         )
         # Add .gitignore so designer can't accidentally commit cache

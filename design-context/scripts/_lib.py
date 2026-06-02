@@ -34,13 +34,18 @@ PROJECT_CACHE_DIRNAME = ".design-context"
 class Source:
     id: str
     tier: str            # "L1" or "L2"
-    repo: str
     cache: Path
     ttl: str             # "weekly" | "daily" | "session+30min" | ...
+    type: str = "git"    # "git" (clone/sparse) | "teams" (MSGRAPH tagged messages)
+    repo: str = ""       # required for type=git; unused for type=teams
     read: list[str] = field(default_factory=list)
     sparse_paths: list[str] = field(default_factory=list)
     read_index: str | None = None
     local_passthrough: dict[str, Any] | None = None
+    # type=teams config
+    target: dict[str, Any] | None = None   # {chat_topic|chat_id|team+channel}
+    tags: list[str] = field(default_factory=list)   # ["#共識","#conclusion"]
+    lookback: str = "30d"
     notify_on_update: dict[str, Any] = field(default_factory=lambda: {
         "digest": True,
         "desktop": True,
@@ -54,6 +59,14 @@ class Source:
     @property
     def is_l2(self) -> bool:
         return self.tier.upper() == "L2"
+
+    @property
+    def is_teams(self) -> bool:
+        return self.type.lower() == "teams"
+
+    @property
+    def is_git(self) -> bool:
+        return self.type.lower() == "git"
 
     def resolved_cache(self, cwd: Path) -> Path:
         """Resolve cache path. L1 expands ~; L2 relative to cwd."""
@@ -93,13 +106,17 @@ def load_config(path: Path | None = None) -> list[Source]:
         sources.append(Source(
             id=raw["id"],
             tier=raw["tier"],
-            repo=raw["repo"],
+            type=raw.get("type", "git"),
+            repo=raw.get("repo", ""),
             cache=Path(raw["cache"]),
             ttl=raw.get("ttl", "weekly"),
             read=raw.get("read", []),
             sparse_paths=raw.get("sparse_paths", []),
             read_index=raw.get("read_index"),
             local_passthrough=raw.get("local_passthrough"),
+            target=raw.get("target"),
+            tags=raw.get("tags", []),
+            lookback=raw.get("lookback", "30d"),
             notify_on_update=raw.get("notify_on_update", {
                 "digest": True,
                 "desktop": True,
@@ -156,6 +173,40 @@ def run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subproce
 
 def git(args: list[str], cwd: Path, check: bool = True) -> subprocess.CompletedProcess:
     return run(["git", *args], cwd=cwd, check=check)
+
+
+def file_last_updated(cache: Path, rel: str) -> str | None:
+    """Return YYYY-MM-DD of the last commit that touched `rel` inside a git cache.
+
+    Used to surface requirement freshness so the agent can spot stale specs
+    (meeting feedback B.3: an outdated requirement silently followed = conflict).
+    Returns None if not a git repo or file untracked.
+    """
+    if not (cache / ".git").exists():
+        return None
+    res = run(
+        ["git", "log", "-1", "--format=%cs", "--", rel],
+        cwd=cache, check=False,
+    )
+    out = res.stdout.strip()
+    return out or None
+
+
+def filter_messages_by_tags(messages: list[dict[str, Any]], tags: list[str]) -> list[dict[str, Any]]:
+    """Keep only messages whose text contains at least one of `tags`.
+
+    Pure function (no I/O) so it is unit-testable. If `tags` is empty, returns
+    all messages unchanged (no tag convention yet = pull everything).
+    """
+    if not tags:
+        return list(messages)
+    lowered = [t.lower() for t in tags]
+    out = []
+    for m in messages:
+        text = (m.get("text") or "").lower()
+        if any(t in text for t in lowered):
+            out.append(m)
+    return out
 
 
 def osascript_notify(title: str, body: str, subtitle: str = "") -> None:
