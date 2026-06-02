@@ -10,7 +10,7 @@
 | Week 2 | Git 的基本架構 Git Architecture | Git vs GitHub、三個空間（working directory → staging → repository）、本機 vs 遠端（local vs remote） |
 | Week 3 | Git 常見名詞解惑 Git Vocabulary | Commit vs Push、Branch vs Fork、判斷時機（decision guide）、Figma 類比總整理 |
 | Week 4 | 用 AI 操作 Git Using AI for Git | Claude Code 操作示範（natural language → git commands）、使用時機、安全機制（safety mechanisms）、避免 push 錯路徑 |
-| Week 5 | Repo 怎麼分層管理？ Repo Taxonomy | CLAUDE.md、四層 repo 架構（company / department / project / personal）、Design System 歸屬 |
+| Week 5 | 讓 AI 讀對規範 Feeding the AI the right context | CLAUDE.md & memory（全域 vs 專案、優先順序、維護、強制力與限制）、design-context（持續同步規範 / 需求、inline design notes 標注） |
 | Week 6 | 多專案工作流 Multi-Repo Workflow | 一人多 repo 架構、每日流程（daily workflow）、Global CLAUDE.md 管理 |
 | Week 7 _(TODO)_ | Subagent & Agent 工作分派 Subagents & Agents | 哪些工作適合丟給 subagent / agent（適用 vs 不適用）、Opus 4.8 workflow（fast mode、1M context、何時用） |
 
