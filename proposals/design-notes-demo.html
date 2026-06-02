@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#F6EFE8; --ink:#222; --text:#555; --muted:#8E8E8E;
+    --ai:#5B5BD6; --ai-bg:#E7E5FE; --warm:#C2410C; --warmbg:#FFF1E8; --line:#E5E0D8;
+    --sans:"PingFang TC","Microsoft JhengHei",Calibri,sans-serif;
+  }
+  *{margin:0;box-sizing:border-box}
+  body{font-family:var(--sans);background:var(--bg)}
+  .stage{position:relative;width:1280px;height:1000px;overflow:hidden}
+  .shot{position:absolute;left:-130px;top:0;width:1100px;height:auto}   /* shift phone left, leave room for notes */
+  /* Show design notes toggle chip */
+  .toggle{position:absolute;left:40px;top:40px;display:flex;align-items:center;gap:8px;
+    background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);font-size:13px;font-weight:700;color:var(--ink);z-index:5}
+  .toggle .sw{width:30px;height:17px;border-radius:9px;background:var(--ai);position:relative}
+  .toggle .sw::after{content:"";position:absolute;right:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#fff}
+  /* numbered pins on the design */
+  .pin{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--ai);color:#fff;
+    font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 8px rgba(91,91,214,.5);border:2px solid #fff;z-index:6}
+  /* note cards */
+  .note{position:absolute;width:340px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--ai);
+    border-radius:10px;padding:12px 14px;box-shadow:0 4px 16px rgba(0,0,0,.10);z-index:6}
+  .note .n{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--ai);color:#fff;
+    font-size:12px;font-weight:800;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
+  .note .ttl{font-size:14px;font-weight:700;color:var(--ink)}
+  .note .row{font-size:12.5px;color:var(--text);margin-top:5px;line-height:1.45}
+  .note .k{font-weight:700;color:var(--warm)}
+  .note .q{font-weight:700;color:var(--ai)}
+  .lead{position:absolute;left:40px;top:84px;font-size:13px;color:var(--muted);z-index:5;width:380px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <img class="shot" src="screen-care-card.png" alt="care card">
+
+  <div class="toggle"><span class="sw"></span>Show design notes</div>
+  <div class="lead">familyGraph-member · 設計師在交付上標注每個偏離 spec 的判斷</div>
+
+  <!-- pins on the rendered design (coords over the shifted screenshot) -->
+  <div class="pin" style="left:382px;top:248px">1</div>   <!-- member tabs -->
+  <div class="pin" style="left:330px;top:330px">2</div>   <!-- care principles -->
+  <div class="pin" style="left:430px;top:632px">3</div>   <!-- manage CTA -->
+
+  <!-- note cards on the right -->
+  <div class="note" style="left:560px;top:190px">
+    <div class="ttl"><span class="n">1</span>每位家人獨立 care 設定，預設選 Grandma</div>
+    <div class="row"><span class="k">why</span>：照顧需求最高者先呈現，減少切換。</div>
+    <div class="row"><span class="q">open Q</span>：分頁順序依風險還是年齡？要請 PM 定。</div>
+  </div>
+
+  <div class="note" style="left:560px;top:330px">
+    <div class="ttl"><span class="n">2</span>care values 拆成三原則敘事</div>
+    <div class="row"><span class="k">why</span>：Show Respect / Stay Safe / Choose Freely 比抽象條款好懂。</div>
+    <div class="row"><span class="k">trade-off</span>：親和敘事 vs spec 原本的功能條列。</div>
+    <div class="row"><span class="q">open Q</span>：PM 要保留 spec 原用語嗎？</div>
+  </div>
+
+  <div class="note" style="left:560px;top:560px">
+    <div class="ttl"><span class="n">3</span>入口收斂成單一「Manage care preferences」</div>
+    <div class="row"><span class="k">why</span>：避免每個原則各放一個編輯鈕、降低認知負擔。</div>
+    <div class="row"><span class="k">trade-off</span>：簡潔 vs 可發現性（編輯要多點一層）。</div>
+  </div>
+</div>
+</body>
+</html>
