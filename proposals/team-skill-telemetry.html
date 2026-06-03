@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Team Skill Usage Telemetry — Ops 介紹</title>
+<style>
+:root{
+  --bg:#F6EFE8; --section:#153242; --accent:#0690A7; --primary:#D71920;
+  --ink:#222; --text:#555; --muted:#8E8E8E; --subtle:#ADADAD; --line:#E5E0D8;
+  --greenBg:#CDE9DC; --greenText:#0F7A4F;
+  --warnBg:#FEB912; --warnText:#8A6510;
+  --dangerBg:#FEF2F2; --dangerText:#DC2626; --dangerBorder:#FCA5A5;
+  --codeBg:#1E1E2E; --codeText:#CDD6F4; --codeMuted:#7F849C; --codeGreen:#A6E3A1; --codeYellow:#F9E2AF;
+  --sans:"PingFang TC","Microsoft JhengHei",Calibri,"Helvetica Neue",sans-serif;
+  --mono:"SF Mono",Consolas,"Roboto Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#0e1418;font-family:var(--sans);color:var(--ink);line-height:1.5;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+
+/* ── Deck container & slides ─────────────────────────────── */
+.deck{position:relative;width:1280px;height:800px;transform-origin:center center}
+.slide{
+  position:absolute;inset:0;background:var(--bg);
+  padding:54px 64px 48px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.5);
+  opacity:0;visibility:hidden;transform:translateX(40px);
+  transition:opacity .25s ease,transform .35s ease,visibility 0s linear .35s;
+}
+.slide.active{opacity:1;visibility:visible;transform:translateX(0);transition-delay:0s,0s,0s}
+.slide.prev{transform:translateX(-40px)}
+.slide.dark{background:var(--section);color:#fff}
+.slide.dark .eyebrow{color:#AFE0EF}
+.slide.dark h1, .slide.dark h2{color:#fff}
+.slide.dark .text{color:#cfd8dc}
+
+/* ── Typography ──────────────────────────────────────────── */
+.eyebrow{color:var(--primary);font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:56px;font-weight:700;line-height:1.15;color:var(--section);margin-bottom:20px}
+h2{font-size:36px;font-weight:700;line-height:1.2;color:var(--section);margin-bottom:22px}
+h3{font-size:22px;font-weight:600;color:var(--section);margin-bottom:10px}
+.lead{font-size:22px;color:var(--text);line-height:1.5;margin-bottom:24px}
+.text{font-size:17px;color:var(--text);line-height:1.65}
+.muted{color:var(--muted);font-size:14px}
+
+.page{position:absolute;bottom:20px;right:32px;color:var(--muted);font-size:12px;letter-spacing:2px}
+.brand{position:absolute;top:24px;left:64px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);letter-spacing:2px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+
+/* ── Layout helpers ──────────────────────────────────────── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.card{background:#fff;border-radius:10px;padding:22px 24px;border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card h3{font-size:18px;margin-bottom:8px}
+.card .text{font-size:15px}
+
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-right:6px}
+.tag-ok{background:var(--greenBg);color:var(--greenText)}
+.tag-warn{background:var(--warnBg);color:var(--warnText)}
+.tag-danger{background:var(--dangerBg);color:var(--dangerText)}
+.tag-info{background:#E7E5FE;color:#5B5BD6}
+.tag-audience{background:#E7F1FF;color:#0058B8;border:1px solid #B6D4F7}
+
+.code{background:var(--codeBg);color:var(--codeText);font-family:var(--mono);font-size:14px;border-radius:8px;padding:18px 22px;line-height:1.7;white-space:pre;overflow-x:auto}
+.code .c{color:var(--codeMuted)}
+.code .g{color:var(--codeGreen)}
+.code .y{color:var(--codeYellow)}
+
+ul.bullets{list-style:none;padding:0}
+ul.bullets li{padding:8px 0 8px 28px;position:relative;font-size:17px;color:var(--text)}
+ul.bullets li::before{content:"";position:absolute;left:6px;top:18px;width:8px;height:8px;background:var(--accent);border-radius:50%}
+ul.bullets li.bad::before{background:var(--dangerText)}
+ul.bullets li.good::before{background:var(--greenText)}
+
+table{width:100%;border-collapse:collapse;font-size:15px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+th{background:#F0E8DD;text-align:left;padding:12px 16px;font-weight:600;color:var(--section);font-size:13px;letter-spacing:1px;text-transform:uppercase}
+td{padding:12px 16px;border-top:1px solid var(--line);color:var(--text)}
+td .mono{font-family:var(--mono);font-size:13px;color:var(--ink)}
+
+.kv{display:grid;grid-template-columns:160px 1fr;gap:12px 24px;font-size:16px}
+.kv dt{color:var(--muted);font-weight:600}
+.kv dd{color:var(--ink)}
+
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:stretch}
+.flow .step{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.flow .step .num{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px}
+.flow .step h3{font-size:16px;margin:4px 0 6px}
+.flow .step .text{font-size:13px}
+.flow .sep{align-self:center;color:var(--accent);font-size:24px;font-weight:bold}
+
+.banner{background:#fff;border-left:4px solid var(--accent);padding:18px 22px;border-radius:0 8px 8px 0;margin-bottom:18px;font-size:16px;color:var(--ink)}
+.banner.warn{border-color:var(--warnText);background:#FFF7ED}
+.banner.danger{border-color:var(--dangerText);background:var(--dangerBg)}
+.banner strong{color:var(--section)}
+
+.cover{display:flex;flex-direction:column;justify-content:center;height:100%}
+.cover .eyebrow{font-size:14px}
+.cover h1{font-size:72px;line-height:1.08}
+.cover .lead{font-size:24px;color:var(--text);margin-top:18px;max-width:880px}
+.cover .meta{position:absolute;bottom:48px;left:64px;color:var(--muted);font-size:13px;letter-spacing:1px}
+
+.timeline{display:flex;align-items:flex-start;gap:0;margin-top:20px}
+.timeline .node{flex:1;text-align:center;position:relative}
+.timeline .node::before{content:"";position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--line);z-index:0}
+.timeline .node:last-child::before{display:none}
+.timeline .dot{width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--line);margin:0 auto 10px;position:relative;z-index:1}
+.timeline .node.done .dot{background:var(--greenText);border-color:var(--greenText)}
+.timeline .node.cur .dot{background:var(--warnBg);border-color:var(--warnText)}
+.timeline .node .label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.timeline .node .desc{font-size:13px;color:var(--text);margin-top:4px;padding:0 8px}
+
+.heatmap{font-family:var(--mono);font-size:14px;line-height:1.7;color:var(--text)}
+.heatmap .bar{color:var(--accent)}
+
+/* Audience callout — distinguish hie-rei designers vs Ops viewers */
+.audience-row{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap}
+.audience-row .who{
+  background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 18px;
+  flex:1;min-width:280px;
+}
+.audience-row .who.dark-bg{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+.audience-row .who h3{font-size:14px;margin-bottom:6px;color:var(--accent)}
+.audience-row .who.dark-bg h3{color:#AFE0EF}
+.audience-row .who .text{font-size:14px;line-height:1.55}
+.audience-row .who.dark-bg .text{color:#cfd8dc}
+
+/* ── Nav UI ──────────────────────────────────────────────── */
+.nav{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:12px;background:rgba(20,28,34,.85);
+  backdrop-filter:blur(8px);border-radius:999px;padding:10px 18px;z-index:100;
+  border:1px solid rgba(255,255,255,.08);
+}
+.nav button{
+  background:transparent;border:none;color:#cfd8dc;cursor:pointer;
+  font-size:18px;padding:4px 10px;border-radius:4px;font-family:var(--mono);
+}
+.nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav .counter{color:#7e9bab;font-size:13px;font-family:var(--mono);padding:0 8px}
+.nav .dots{display:flex;gap:6px}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:background .15s}
+.nav .dot:hover{background:rgba(255,255,255,.4)}
+.nav .dot.cur{background:var(--accent)}
+
+.hint{
+  position:fixed;top:20px;right:24px;color:rgba(255,255,255,.4);
+  font-size:11px;letter-spacing:1px;text-transform:uppercase;font-family:var(--mono);
+  z-index:100;pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<div class="hint">← → space &nbsp;·&nbsp; ESC overview</div>
+
+<div class="deck" id="deck">
+
+<!-- 1: Cover -->
+<section class="slide cover" data-title="Cover">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry · v0.1.0</div>
+  <div class="eyebrow">給 Ops · 2026-06-03</div>
+  <h1>幫團隊 skill<br>裝上計數器</h1>
+  <p class="lead">每次設計團隊的 Claude Code skill 被呼叫就記一筆，每週一早上自動產出使用率報表。<br>看哪些 skill 真的有人用、誰在用、什麼頻率。</p>
+  <div class="meta">
+    <div style="margin-bottom:8px"><strong style="color:var(--section)">Repo</strong> &nbsp;<a href="https://github.com/karen-shen_tmemu/team-skill-telemetry" style="color:var(--accent);text-decoration:none;font-family:var(--mono)">github.com/karen-shen_tmemu/team-skill-telemetry</a></div>
+    <div><strong style="color:var(--section)">Contact</strong> &nbsp;karen_shen@trendmicro.com</div>
+  </div>
+</section>
+
+<!-- 2: Problem -->
+<section class="slide" data-title="Problem">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry</div>
+  <div class="eyebrow">問題</div>
+  <h2>過去半年 ship 了 10 個 team skill<br><span style="color:var(--primary)">但完全不知道有沒有人用</span></h2>
+  <div class="grid3" style="margin-top:36px">
+    <div class="card">
+      <h3 style="color:var(--primary)">看不見的問題</h3>
+      <ul class="bullets" style="margin-top:6px">
+        <li class="bad" style="padding-left:24px">哪些 skill 天天用？</li>
+        <li class="bad" style="padding-left:24px">哪些其實沒人碰？</li>
+        <li class="bad" style="padding-left:24px">採用率隨時間怎麼變？</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--primary)">無法回答的決策</h3>
+      <ul class="bullets" style="margin-top:6px">
+        <li class="bad" style="padding-left:24px">哪個值得繼續投資？</li>
+        <li class="bad" style="padding-left:24px">哪個該砍掉或合併？</li>
+        <li class="bad" style="padding-left:24px">新功能上線採用率起來了嗎？</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--primary)">看不到的對象</h3>
+      <ul class="bullets" style="margin-top:6px">
+        <li class="bad" style="padding-left:24px">團隊誰熟誰生？</li>
+        <li class="bad" style="padding-left:24px">誰需要培訓？</li>
+        <li class="bad" style="padding-left:24px">誰可能變 power user？</li>
+      </ul>
+    </div>
+  </div>
+  <p class="text" style="margin-top:36px;color:var(--muted)">每個 skill 從幾小時到幾天的投入，沒有訊號等於白做。</p>
+  <div class="page">02 / 09</div>
+</section>
+
+<!-- 3: Solution -->
+<section class="slide dark" data-title="Solution">
+  <div class="eyebrow">解法</div>
+  <h2 style="margin-bottom:36px">一個 hook + 每週自動報表</h2>
+
+  <div class="flow">
+    <div class="step">
+      <div class="num">STEP 1</div>
+      <h3>記錄</h3>
+      <p class="text" style="color:#cfd8dc">team skill 被呼叫時，hook 自動 append 一行 JSON 到本機 jsonl 檔。<br>< 20ms，不影響使用者。</p>
+    </div>
+    <div class="sep">→</div>
+    <div class="step">
+      <div class="num">STEP 2</div>
+      <h3>聚合</h3>
+      <p class="text" style="color:#cfd8dc">每週一 09:23 本機 cron 把本週事件推到 GitHub repo，重生 markdown 週報。</p>
+    </div>
+    <div class="sep">→</div>
+    <div class="step">
+      <div class="num">STEP 3</div>
+      <h3>看報表</h3>
+      <p class="text" style="color:#cfd8dc">直接打開 GitHub 上的 <span class="mono" style="color:#AFE0EF">weekly-latest.md</span>，瀏覽器即看。</p>
+    </div>
+  </div>
+
+  <div class="banner" style="margin-top:36px;background:rgba(255,255,255,.08);border-color:#AFE0EF;color:#fff">
+    <strong style="color:#AFE0EF">關鍵設計：程式碼 + 資料同一個 private repo</strong>
+  </div>
+
+  <div class="audience-row">
+    <div class="who dark-bg">
+      <h3>對 hie-rei 設計團隊（被追蹤的人）</h3>
+      <p class="text">Hook 隨 <span class="mono">git pull hie-rei</span> 自動到位 — 不需要 clone 額外 repo、不需要敲任何指令。</p>
+    </div>
+    <div class="who dark-bg">
+      <h3>對 Ops（看報表的人，包括你）</h3>
+      <p class="text">直接開 GitHub 網址即可 — 本來就不需要 clone 任何 repo。被加 collaborator 後可閱覽。</p>
+    </div>
+  </div>
+  <div class="page" style="color:#7e9bab">03 / 09</div>
+</section>
+
+<!-- 4: Report Sample -->
+<section class="slide" data-title="Report">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry</div>
+  <div class="eyebrow">報表長這樣</div>
+  <h2>每週一自動更新</h2>
+  <p class="text" style="margin-bottom:20px;font-size:15px;color:var(--muted)">URL：<span class="mono">github.com/karen-shen_tmemu/team-skill-telemetry/blob/main/weekly-latest.md</span></p>
+
+  <div class="grid2" style="gap:24px">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h3>Summary</h3>
+        <p class="text" style="font-size:14px">Total invocations · Active users · Top skill · Cold skills</p>
+      </div>
+      <div class="card">
+        <h3>Per-skill</h3>
+        <table style="margin-top:10px;font-size:13px">
+          <thead><tr><th>Skill</th><th>次數</th><th>人數</th><th>Top user</th></tr></thead>
+          <tbody>
+            <tr><td>design-pr-review</td><td>54</td><td>5</td><td>karen (22)</td></tr>
+            <tr><td>design-context</td><td>23</td><td>4</td><td>alice (10)</td></tr>
+            <tr><td>commit</td><td>18</td><td>3</td><td>bob (8)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h3>Per-user</h3>
+        <table style="margin-top:10px;font-size:13px">
+          <thead><tr><th>User</th><th>Total</th><th>Skills</th></tr></thead>
+          <tbody>
+            <tr><td>karen</td><td>38</td><td>design-pr-review (22), commit (10), merge (6)</td></tr>
+            <tr><td>alice</td><td>27</td><td>design-context (10), …</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Daily heatmap</h3>
+        <div class="heatmap" style="margin-top:10px">
+          Mon <span class="bar">████████</span> 28<br>
+          Tue <span class="bar">██████</span> 22<br>
+          Wed <span class="bar">█████████████</span> 45<br>
+          Thu <span class="bar">██████</span> 21<br>
+          Fri <span class="bar">████████</span> 26
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page">04 / 09</div>
+</section>
+
+<!-- 5: What gets recorded -->
+<section class="slide" data-title="Privacy">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry</div>
+  <div class="eyebrow">隱私 · 記什麼</div>
+  <h2>純 metadata · 0 業務內容</h2>
+
+  <div class="grid2" style="margin-top:28px;gap:32px">
+    <div>
+      <h3 style="margin-bottom:14px;color:var(--greenText)">✓ 會記錄</h3>
+      <table>
+        <thead><tr><th>欄位</th><th>範例</th></tr></thead>
+        <tbody>
+          <tr><td>時間戳</td><td class="mono">2026-06-03T14:32Z</td></tr>
+          <tr><td>使用者 email</td><td class="mono">karen_shen@trendmicro.com</td></tr>
+          <tr><td>機器名稱</td><td class="mono">TW-BRAINBCHEN</td></tr>
+          <tr><td>Skill 名稱</td><td class="mono">design-pr-review</td></tr>
+          <tr><td>Session ID</td><td class="mono">abc-123-…</td></tr>
+          <tr><td>工作目錄</td><td class="mono">~/.../hie-rei</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-bottom:14px;color:var(--dangerText)">✗ 不會記錄</h3>
+      <ul class="bullets">
+        <li class="bad">跟 Claude 講了什麼（prompt 內容）</li>
+        <li class="bad">Skill 處理了哪些檔案</li>
+        <li class="bad">Skill 的輸出內容</li>
+        <li class="bad">任何程式碼或設計稿內容</li>
+        <li class="bad">同事間的對話 / 訊息</li>
+      </ul>
+      <div class="banner" style="margin-top:18px">
+        <strong>儲存位置</strong>：private GitHub repo，只有 Karen 邀請的 collaborator 看得到。<br>
+        <strong>不上 Confluence、不寄 email、不上外部服務、無外網上傳。</strong>
+      </div>
+    </div>
+  </div>
+  <div class="page">05 / 09</div>
+</section>
+
+<!-- 6: Installation -->
+<section class="slide" data-title="Install">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry</div>
+  <div class="eyebrow">安裝</div>
+  <h2>對被追蹤的 hie-rei 成員：<span class="tag tag-ok" style="font-size:18px;padding:6px 14px">0 動作</span></h2>
+  <p class="lead" style="margin-top:14px">Karen 把 hook 注入 hie-rei <span class="mono" style="font-size:18px">.claude/scripts/</span> 之後，所有設計團隊成員下次 <span class="mono" style="font-size:18px">git pull hie-rei</span>（每天本來就會做）自動拿到。</p>
+
+  <div class="audience-row">
+    <div class="who">
+      <h3>對 hie-rei 設計團隊（被追蹤的人）</h3>
+      <ul class="bullets" style="margin-top:6px">
+        <li class="good" style="padding-left:24px;font-size:15px">不用 clone 額外 repo</li>
+        <li class="good" style="padding-left:24px;font-size:15px">不用裝 npm / pip 套件</li>
+        <li class="good" style="padding-left:24px;font-size:15px">不用設環境變數</li>
+        <li class="good" style="padding-left:24px;font-size:15px">不用敲任何指令</li>
+      </ul>
+    </div>
+    <div class="who">
+      <h3>對 Ops（看報表的人）</h3>
+      <p class="text" style="margin-bottom:8px">瀏覽器開 GitHub 網址即可：</p>
+      <p class="text" style="font-family:var(--mono);font-size:13px;color:var(--accent);word-break:break-all">github.com/karen-shen_tmemu/team-skill-telemetry/blob/main/weekly-latest.md</p>
+      <p class="text" style="margin-top:8px;font-size:14px;color:var(--muted)">需先被 Karen 加為 collaborator。</p>
+    </div>
+  </div>
+
+  <div class="banner warn" style="margin-top:24px">
+    <strong>想 Opt-out（不被記錄）</strong> · 在自己 shell rc 加一行 <span class="mono">export SKIP_SKILL_TELEMETRY=1</span>，hook 看到就跳過。
+  </div>
+  <div class="page">06 / 09</div>
+</section>
+
+<!-- 7: Tech under the hood -->
+<section class="slide dark" data-title="Tech">
+  <div class="eyebrow">技術原理</div>
+  <h2>純 git，無外部服務</h2>
+
+  <div class="kv" style="margin-top:24px;font-size:15px;color:#cfd8dc">
+    <dt>記錄</dt>
+    <dd>Claude Code <span class="mono" style="color:#AFE0EF">PreToolUse</span> hook，攔 <span class="mono" style="color:#AFE0EF">tool_name == "Skill"</span> 且 skill 在 hie-rei allowlist 內 → append 一行 JSON 到本機 <span class="mono" style="color:#AFE0EF">~/.claude/team-skill-telemetry/events.jsonl</span></dd>
+
+    <dt>同步</dt>
+    <dd>每週一 09:23 launchd 觸發 <span class="mono" style="color:#AFE0EF">weekly-sync.sh</span>：<br>
+    <span style="color:#7e9bab">1.</span> <span class="mono">mktemp -d</span> 建暫存 → <span class="mono">gh repo clone --depth 1</span><br>
+    <span style="color:#7e9bab">2.</span> 篩本週事件 → <span class="mono">raw/&lt;user&gt;-&lt;week&gt;.jsonl</span><br>
+    <span style="color:#7e9bab">3.</span> <span class="mono">aggregate.py</span> 重生 <span class="mono">weekly-*.md</span> + <span class="mono">weekly-latest.md</span><br>
+    <span style="color:#7e9bab">4.</span> commit + push (rebase-retry on conflict)<br>
+    <span style="color:#7e9bab">5.</span> <span class="mono">rm -rf $TMP</span></dd>
+
+    <dt>多人衝突</dt>
+    <dd>每個人有自己的 <span class="mono" style="color:#AFE0EF">&lt;user&gt;-&lt;week&gt;.jsonl</span>，永不撞檔。週報 markdown 用 deterministic 生成，誰最後 push 內容都一樣 → pull-rebase-retry 自然收斂。</dd>
+
+    <dt>失敗處理</dt>
+    <dd>cron 失敗只 log 到 <span class="mono" style="color:#AFE0EF">~/.claude/team-skill-telemetry/sync-errors.log</span>，下週再補；不阻斷 session。</dd>
+  </div>
+  <div class="page" style="color:#7e9bab">07 / 09</div>
+</section>
+
+<!-- 8: Roadmap -->
+<section class="slide" data-title="Roadmap">
+  <div class="brand"><span class="dot"></span>team-skill-telemetry</div>
+  <div class="eyebrow">路線圖</div>
+  <h2>分階段上線，小步驗證</h2>
+
+  <div class="timeline" style="margin-top:36px">
+    <div class="node done">
+      <div class="dot"></div>
+      <div class="label">v0.1.0</div>
+      <div class="desc">Scaffold 完成<br>hook + cron + aggregator + installer</div>
+    </div>
+    <div class="node cur">
+      <div class="dot"></div>
+      <div class="label">本週</div>
+      <div class="desc">hie-rei PR merge + 邀 collaborator + Teams #共識 公告</div>
+    </div>
+    <div class="node">
+      <div class="dot"></div>
+      <div class="label">下週</div>
+      <div class="desc">第一份完整全團隊週報出爐</div>
+    </div>
+    <div class="node">
+      <div class="dot"></div>
+      <div class="label">v0.2</div>
+      <div class="desc">跨週 trend / dashboard（視 v0.1 採用情況決定）</div>
+    </div>
+  </div>
+
+  <div class="banner warn" style="margin-top:48px">
+    <strong>v0.1 不做的事</strong>：跨週 trend、real-time dashboard、skill 成功/失敗區分、Slack 通知。先收滿一個月再決定要不要加。
+  </div>
+  <div class="page">08 / 09</div>
+</section>
+
+<!-- 9: Q & Contact -->
+<section class="slide dark" data-title="FAQ">
+  <div class="eyebrow">FAQ · 聯絡</div>
+  <h2 style="margin-bottom:32px">常見問題</h2>
+
+  <div class="grid2" style="gap:28px">
+    <div>
+      <h3 style="color:#AFE0EF;font-size:17px">「我不想被記錄」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px;margin-bottom:18px"><span class="mono" style="color:#A6E3A1">export SKIP_SKILL_TELEMETRY=1</span> 加進 <span class="mono">~/.zshrc</span>，就完全不記。</p>
+
+      <h3 style="color:#AFE0EF;font-size:17px">「Opt-out 後想看自己的歷史資料」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px;margin-bottom:18px">repo 內 <span class="mono">raw/&lt;your-slug&gt;-*.jsonl</span> 撈得到。</p>
+
+      <h3 style="color:#AFE0EF;font-size:17px">「我加了新 skill 到 hie-rei，要改 hook 嗎？」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px">不用。Allowlist 是動態讀 <span class="mono">hie-rei/.claude/skills/</span> 目錄列表，新 skill 自動納入追蹤。</p>
+    </div>
+    <div>
+      <h3 style="color:#AFE0EF;font-size:17px">「想看的分析維度沒有」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px;margin-bottom:18px">aggregate.py 是 deterministic，新欄位歡迎 issue / PR；raw data 都還在 repo 內。</p>
+
+      <h3 style="color:#AFE0EF;font-size:17px">「想全部砍掉」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px;margin-bottom:18px"><span class="mono" style="color:#A6E3A1">bash installer/uninstall.sh</span> — launchd plist + hie-rei hook entry 移除。</p>
+
+      <h3 style="color:#AFE0EF;font-size:17px">「資料保留多久？」</h3>
+      <p class="text" style="color:#cfd8dc;font-size:15px">v0.1 永久保留。視容量未來可改 90 天後歸檔。</p>
+    </div>
+  </div>
+
+  <div class="banner" style="margin-top:36px;background:rgba(255,255,255,.08);border-color:#AFE0EF;color:#fff">
+    <div style="margin-bottom:8px"><strong style="color:#AFE0EF">Repo</strong> &nbsp;<a href="https://github.com/karen-shen_tmemu/team-skill-telemetry" style="color:#A6E3A1;text-decoration:none;font-family:var(--mono)">github.com/karen-shen_tmemu/team-skill-telemetry</a></div>
+    <div><strong style="color:#AFE0EF">Contact</strong> &nbsp;karen_shen@trendmicro.com</div>
+  </div>
+  <div class="page" style="color:#7e9bab">09 / 09</div>
+</section>
+
+</div>
+
+<div class="nav" id="nav">
+  <button id="prev" aria-label="Previous">◀</button>
+  <div class="dots" id="dots"></div>
+  <button id="next" aria-label="Next">▶</button>
+  <span class="counter" id="counter">1 / 9</span>
+</div>
+
+<script>
+(function(){
+  const deck = document.getElementById('deck');
+  const slides = Array.from(deck.querySelectorAll('.slide'));
+  const dotsEl = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  let idx = 0;
+
+  // Build dots
+  slides.forEach((sl, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot';
+    d.title = sl.dataset.title || ('Slide ' + (i+1));
+    d.addEventListener('click', () => go(i));
+    dotsEl.appendChild(d);
+  });
+  const dots = Array.from(dotsEl.querySelectorAll('.dot'));
+
+  function go(n){
+    if (n < 0 || n >= slides.length) return;
+    const oldIdx = idx;
+    idx = n;
+    slides.forEach((sl, i) => {
+      sl.classList.toggle('active', i === idx);
+      sl.classList.toggle('prev', i < idx);
+    });
+    dots.forEach((d, i) => d.classList.toggle('cur', i === idx));
+    counter.textContent = (idx + 1) + ' / ' + slides.length;
+    // Update URL hash for deep-linking
+    history.replaceState(null, '', '#' + (idx + 1));
+  }
+
+  function next(){ go(Math.min(idx + 1, slides.length - 1)); }
+  function prev(){ go(Math.max(idx - 1, 0)); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (/^[1-9]$/.test(e.key)) { const n = parseInt(e.key, 10) - 1; if (n < slides.length) go(n); }
+  });
+
+  // Deep-link via hash
+  const initial = parseInt(location.hash.replace('#',''), 10);
+  if (!isNaN(initial) && initial >= 1 && initial <= slides.length) {
+    go(initial - 1);
+  } else {
+    go(0);
+  }
+
+  // Fit deck to viewport while preserving 1280×800 aspect
+  function fit(){
+    const w = window.innerWidth, h = window.innerHeight;
+    const s = Math.min(w / 1280, h / 800, 1);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // Click left/right halves to navigate (with margin so nav clicks still work)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav') || e.target.closest('a') || e.target.closest('button')) return;
+    if (e.clientX < window.innerWidth / 2) prev();
+    else next();
+  });
+})();
+</script>
+
+</body>
+</html>
