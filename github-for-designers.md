@@ -11,7 +11,7 @@
 | Week 3 | Git 常見名詞解惑 Git Vocabulary | Commit vs Push、Branch vs Fork、判斷時機（decision guide）、Figma 類比總整理 |
 | Week 4 | 用 AI 操作 Git Using AI for Git | Claude Code 操作示範（natural language → git commands）、使用時機、安全機制（safety mechanisms）、避免 push 錯路徑 |
 | Week 5 | 讓 AI 讀對規範 Feeding the AI the right context | CLAUDE.md & memory（全域 vs 專案、優先順序、維護、強制力與限制）、design-context（持續同步規範 / 需求、inline design notes 標注） |
-| Week 6 | 多專案工作流 Multi-Repo Workflow | 一人多 repo 架構、每日流程（daily workflow）、Global CLAUDE.md 管理 |
+| Week 6 | 用 GitHub 做個人檔案管理 & Agent Harness GitHub for Personal File Management & Agent Harness | 跨 repo（四層架構複習 + design-context skill）、nested repo 何時用 / 不用、跨裝置同步（痛點 → 解法）、錯誤恢復 |
 | Week 7 _(TODO)_ | Subagent & Agent 工作分派 Subagents & Agents | 哪些工作適合丟給 subagent / agent（適用 vs 不適用）、Opus 4.8 workflow（fast mode、1M context、何時用） |
 
 > **TODO（sharing topic）**：Week 7 — subagent & agent 適合的工作介紹（哪些該委派、哪些自己做），順便講 Opus 4.8 workflow。
@@ -889,108 +889,175 @@ Push 完之後，打開 GitHub 網頁確認：
 
 大部分情況放 **Department 層級**——由設計部門擁有和維護，工程師和其他專案是「取用」的關係。建議獨立成一個 repo（如 `company/design-system`），而不是塞在某個專案 repo 裡。這樣當多個專案同時引用時，更新才不會互相干擾。
 
-<!-- ===== Week 6：多專案工作流 Multi-Repo Workflow ===== -->
+<!-- ===== Week 6：GitHub for Personal File Management & Agent Harness ===== -->
 
-### 一人多 Repo 的工作架構 Multi-Repo Workflow
+## 5. 用 GitHub 做個人檔案管理 & Agent Harness GitHub as Personal File Management & Agent Harness
 
-設計師通常同時支援多個專案，意味著你每天可能在好幾個 repo 之間切換：
+設計師對 GitHub 的第一印象 = 工程師存 code 的地方。但只要是文字檔（markdown 筆記、設定檔、規範），都能用 GitHub 管。對設計師最直接的兩個用途：
 
-```
-一個設計師的日常：
-
-Personal repo       ──  自己的設定、學習筆記
-Department repo     ──  design system（跨專案共用）
-Project A repo      ──  正在支援的專案
-Project B repo      ──  同時支援的另一個專案
-```
-
-#### 建議的本機資料夾結構
-
-```
-~/work/
-├── personal/            ← Personal repos
-│   └── my-settings/
-├── department/          ← Department repos
-│   └── design-system/
-└── projects/            ← Project repos
-    ├── project-a/
-    └── project-b/
-```
-
-分層放的好處：**看資料夾路徑就知道你在哪一層**，降低 push 錯 repo 的風險。
-
-#### 每天的工作流程
-
-| 步驟 | 動作 | 說明 |
+| 用途 | 例子 | 為什麼用 GitHub 而不是 Dropbox / iCloud |
 |---|---|---|
-| 1. 早上開工 | pull 所有正在參與的 repo | 同步到最新狀態 |
-| 2. 確認任務 | 判斷今天的任務屬於哪個 repo | 改元件規格 → design-system、做頁面 → project-a |
-| 3. 專注工作 | 一次只在一個 repo 裡工作 | commit 完 → push → 再切到下一個 repo |
-| 4. 收工前 | 確認每個改過的 repo 都 push 了 | 避免改動只留在本機 |
+| **個人檔案管理** Personal file management | 工作筆記、設計規範、會議記錄、portfolio | 有版本歷史、可以 diff、雲端同步工具不會把它改壞 |
+| **Agent harness** | `~/.claude/CLAUDE.md`、自定 skill、settings.json、hooks | AI 設定要跨裝置一致，又要可以 review 改了什麼 |
 
-#### 不同層級的 Git 操作規則
+> **Agent harness** = 你給 AI 的「執行環境」。這些檔案決定 AI 怎麼幫你工作——比設計檔還重要，更需要版本控管。
 
-| | Company | Department | Project | Personal |
-|---|---|---|---|---|
-| **直接 push main？** | 不行 | 不行 | 不行 | 可以 |
-| **需要開 PR？** | 是 | 是 | 是 | 不需要 |
-| **需要 review？** | 是（Admin） | 是（設計主管） | 是（專案成員） | 不需要 |
-| **影響範圍** | 全公司 | 全部門 | 單一專案 | 只有你 |
-| **改動頻率** | 低（季度） | 中（迭代週期） | 高（每天） | 看你自己 |
+一旦你開始用 GitHub 管這些東西，會自然碰到兩個問題：① 多個 repo 怎麼一起運作 ② 多台機器怎麼保持一致。這週把這兩塊講清楚。
 
-越上層的 repo 影響越大，流程越嚴格。Personal repo 最自由，可以隨意嘗試。
+### 跨 Repo Cross-Repo
 
-### 用 Global CLAUDE.md 管理多 Repo
+#### 複習：Repo 的四層架構
 
-前面提到每個 repo 可以有自己的 `CLAUDE.md`。但如果你同時參與多個 repo，還可以設定一份**全域的 CLAUDE.md**（放在 `~/.claude/CLAUDE.md`），寫上跨 repo 通用的規則。Claude Code 每次啟動都會讀這份檔案，不管你在哪個 repo 裡。
+W5 講過設計師工作會碰到的四層 repo。這裡再用一張圖回顧：
 
-建議在全域 CLAUDE.md 加上這四類規則：
-
-#### 1. 多帳號切換
-
-如果你有多個 GitHub 帳號（例如公司帳號 + 個人帳號），寫清楚對應關係，讓 AI 幫你把關：
-
-```markdown
-## Multi-Account Safety
-- 個人帳號：JiaWen-Shen（用於個人 repo）
-- 工作帳號：karen-shen_tmemu（用於公司 repo）
-- Push 前必須確認 gh auth status，確認帳號與目標 repo 匹配
-- Push 完成後切回工作帳號
+```
+Company    ─────────  全公司 onboarding / policy
+   ↓
+Department ─────────  Design System / 設計部門規範
+   ↓
+Project    ─────────  PRD / 專案程式碼 / 設計交付
+   ↓
+Personal   ─────────  個人筆記 / settings / agent harness  ← 這週新增的重點
 ```
 
-#### 2. Repo 切換安全檢查
+越上層 = 影響越大、流程越嚴格、改動頻率越低。**Personal 是你完全自由的層，所有實驗都從這裡開始**——個人 agent harness 就放這層。
 
-同時支援多專案時，最怕切過去之後忘記前一個 repo 還有沒存的改動：
+#### 怎麼讓 AI 同時懂這四層？— design-context skill
 
-```markdown
-## Multi-Repo Workflow
-- 切換到不同 repo 工作前，先確認前一個 repo 的改動已 commit + push
-- 每次開始工作前，確認自己在正確的 repo 和正確的 branch
+問題：你在 Project A 工作時，希望 AI 同時知道 ① Department 的 design system 規範 ② Project A 的 PRD ③ 團隊在 Teams 上的最新共識。但這三份內容分別在三個不同的地方——AI 預設只看當前 repo，看不到其他層。
+
+**[design-context skill](#) 的角色** = 把上層 repo 和外部來源的規範，自動 sync 進當下工作的 repo，讓 AI 一次看到全部。
+
+| 層級 | 來源 | 怎麼進到當前 repo |
+|---|---|---|
+| Department 規範 | 部門 design system repo | skill 自動 sparse-checkout 拉最新版 |
+| Project 規格 | 專案 PRD repo | skill 抓對應 ticket 的 spec |
+| 團隊共識 | Teams `#共識` channel | skill 抓最新 tag 過濾 |
+
+對 Claude Code 說：「sync 一下 design context」——三層規範就同步到當前 repo 的 `design-context/` 資料夾，AI 工作時自動讀。
+
+> **重點**：跨 repo 不是「同時開三個 VS Code 視窗自己對照」，而是「讓 AI 自動把需要的內容帶到當前 repo」。
+
+#### Nested Repo：何時用 / 何時不用
+
+Nested repo = 一個 repo 裡面嵌另一個 repo（最常見：submodule）。聽起來很方便，但**多數情況不需要**。
+
+| 情境 | 該不該用 | 為什麼 |
+|---|---|---|
+| Design system 被多個專案引用 | ✅ Submodule | 每個專案鎖到特定版本，design system 更新可控 |
+| 部門共用工具放進個人 settings | ✅ Submodule | 個人 layer 和共用 layer 分開，不會誤推 |
+| 只是想把某個資料夾「也同步」 | ❌ 別用 | 用 symlink 或腳本更輕，submodule 太重 |
+| 父 repo 在雲端同步資料夾（iCloud / Dropbox / Jottacloud）內 | ❌ 別用 | 同步工具會跟 `.git/` 打架，refs 衝突、整個 repo 可能壞掉 |
+
+**怎麼辨識手上的東西是 nested repo？** `git status` 出現 `Subproject commit` 或 `modified: some-folder (untracked content)`，就是。
+
+> **個人 repo 不要為了「整齊」硬塞 submodule**——多數情況 plain folder + 各自 `git init` 更省心。Submodule 的代價是每次 clone、pull 都多一步，不熟的人很容易忘記同步子 repo。
+
+### 跨裝置 Cross-Device
+
+#### 痛點 Pain Points
+
+設計師日常會在多台機器之間切換——公司 Mac、家裡 Mac、有時還有 iMac。沒有跨裝置同步策略時，會發生這些事：
+
+| 痛點 | 後果 |
+|---|---|
+| 公司改完 `CLAUDE.md`，回家 AI 行為不一樣 | 一致性破功，每台機器要重新調 AI |
+| Skill 在公司加好，家裡 AI 不知道有這個工具 | 同樣的工作流家裡跑不起來 |
+| 設計筆記散在三台機器 | 找不到某個會議記錄在哪台 |
+| iCloud / Dropbox 把 `.git/` 也同步 | git refs 衝突、commit 對不上、最慘整個 repo 壞掉 |
+
+#### 解法：分兩條軌道
+
+**軌道一：純檔案 → 用雲端同步資料夾**
+
+設計檔、PDF、會議筆記 markdown 這類「成品檔案」放雲端同步資料夾（Jottacloud / iCloud），沒有 `.git/`，雲端同步工具表現很好。
+
+**軌道二：repo 和 agent harness → 用 git remote**
+
+任何有 `.git/` 的東西（個人 repo、`~/.claude/` 設定、skill）走 git remote 同步，**不放雲端同步資料夾**。
+
+```
+換裝置流程（個人 settings 為例）
+
+第一次：
+  git clone https://github.com/你/dotclaude.git ~/dotclaude
+  bash ~/dotclaude/scripts/bootstrap-symlinks.sh   ← 把 ~/.claude/ 連到 ~/dotclaude/
+
+之後：
+  A 機改完 → cd ~/dotclaude && git add -A && git commit && git push
+  B 機開工前 → cd ~/dotclaude && git pull
 ```
 
-#### 3. 收工時檢查所有 Repo
+對 Claude Code 說：「我想把這個資料夾跨裝置同步，幫我看該走哪條軌道」——AI 會看裡面有沒有 `.git/` 判斷。
 
-如果你一天碰了三個 repo，收工時不該只檢查最後一個：
+#### 為什麼 `.git/` 不能放雲端同步資料夾？
 
-```markdown
-## Session Handoff
-- 收工前檢查所有今天碰過的 repo，確認都已 commit + push
-- 記錄每個 repo 目前的進度和下一步
+雲端同步工具的工作模式是「看到檔案變了就上傳」。但 `.git/` 裡的 refs 和 objects 變化頻率極高，又會多台機器同時動——競態 race condition 結果：
+
+- A 機 commit 完，雲端還在上傳 → B 機 pull 拿到半成品
+- 兩台同時 commit → refs 衝突，git 認為 repo 壞了
+- 雲端「自動修復」不一致的檔案 → 整批 commit 消失
+
+**底線**：repo 走 git remote，雲端同步只放「沒 `.git/` 的純檔案」。
+
+### 錯誤恢復 Recovery
+
+跨 repo + 跨裝置變多之後，總有手滑的時候。三類常見狀況：
+
+#### Push 錯 repo / 錯帳號
+
+| 程度 | 怎麼救 | 對 Claude Code 說 |
+|---|---|---|
+| 還沒被別人 pull（private repo） | revert + force-push | 「我 push 錯 repo 了，幫我從遠端撤回那個 commit」 |
+| 已經被別人 pull / 公司 repo | 不要 force-push，開新 commit 修回去 | 「保留歷史，加一個 revert commit 蓋掉錯的改動」 |
+| 含敏感資訊（API key、密碼） | **立刻 revoke key**，再清歷史 | 「這個 commit 有 leak key，先告訴我怎麼 revoke，再清 git 歷史」 |
+
+> **原則**：private repo 出事可以暴力修；public / 團隊 repo 永遠選保留歷史的修法。
+
+#### 改動誤刪 / Discard 過頭
+
+| 還沒 commit | 已經 commit 過 |
+|---|---|
+| VS Code Timeline tab 有 local history | `git reflog` 可以找回任何 commit，30 天內都還在 |
+
+對 Claude Code 說：「我剛剛 discard 太多了，幫我從 reflog 找回上週三那個改動」。
+
+#### 跨裝置 conflict — 兩台同時改了同一份檔案
+
+```
+A 機 push 了，B 機沒 pull 就改，再 push → reject
 ```
 
-#### 4. 新 Repo 建立慣例
+正常流程：B 機 `git pull` → 出現 merge conflict → 手動選保留哪一段 → commit → push。對 Claude Code 說：「幫我解這個 conflict，A 機改了規範 X，我這邊加了規範 Y，兩個都要留」。
 
-確保每個新 repo 從第一天就有基本規範：
+> **預防 > 修復**：每台機器養成「開工先 pull、收工先 push」的習慣，conflict 機率會降到接近零。
 
-```markdown
-## New Repo Checklist
-- 建立 CLAUDE.md，記錄：repo 層級、對應 GitHub 帳號、專案規範
-- 加入 .gitignore（node_modules、.env、.DS_Store）
-- 設定 remote 並確認指向正確的 organization / 個人帳號
+### Week 6 Cheatsheet 一頁帶走
+
 ```
+每日 SOP
+─────────────────────────────
+□ 開工：pull 今天會碰的所有 repo
+□ 工作：一次專注一個 repo，commit 完再切下一個
+□ 切 repo 前：確認前一個已 commit + push
+□ Push 前：確認帳號 + remote + branch 都對
+□ 收工：所有改過的 repo 都 push 了嗎？
 
-這樣的設定等於幫你建了一套「AI 協作的 SOP」——不管你在哪個 repo 工作，Claude Code 都會遵守同一套安全規則。
+跨裝置 SOP
+─────────────────────────────
+□ 有 .git/ → 走 git remote
+□ 純檔案（設計檔、PDF）→ 走雲端同步資料夾
+□ 個人 settings 用「git clone + symlink」模式管
+□ A 機推完 → B 機開工前先 pull
+
+出事先做的事
+─────────────────────────────
+□ 不要慌、不要 force-push
+□ 先問 Claude Code「現在 git 狀態是什麼？」
+□ 含敏感資訊 → 先 revoke key，再清歷史
+□ 找不到改動 → git reflog（30 天內都還在）
+```
 
 ---
 
-*最後更新：2026-04-14*
+*最後更新：2026-06-08*
