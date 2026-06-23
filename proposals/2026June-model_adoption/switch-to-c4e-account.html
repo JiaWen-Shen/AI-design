@@ -137,12 +137,13 @@
 <h2><span class="num">1</span>這份 prompt 幫你做三件事</h2>
 <ul>
   <li><strong>Switch to C4E account</strong> — 從 RDsec AI proxy 切到 Trend Micro Claude Enterprise（SSO）</li>
-  <li><strong>Set default model = Opus 4.7</strong> — 寫進 settings.json，新開 session 自動套</li>
+  <li><strong>Set default model = Opus 4.7 + effortLevel = high</strong> — 寫進 settings.json，新開 session 自動套。<br>
+      （Claude Code 在 Opus 4.7 預設 effort = <code>xhigh</code>，token 燒得快；鎖 <code>high</code> 省 ~30% 量同時保留智慧）</li>
   <li><strong>Enable 1hr prompt cache</strong> — TTL 從 5 分鐘改 1 小時，跨會議 cache 不掉、省 token</li>
 </ul>
 <p>三件事獨立檢查、獨立 skip：已做過的不重跑。最後 agent 自動回報 Karen。</p>
 <div class="ok-callout">
-  <strong>✅ 可重跑當 health-check</strong>：已設定完的人也可以丟一次，Step 0 偵測 6/6 ✅ → 顯示「你已經就緒」+ 只發一筆 auto-report，不會改任何東西。
+  <strong>✅ 可重跑當 health-check</strong>：已設定完的人也可以丟一次，Step 0 偵測 7/7 ✅ → 顯示「你已經就緒」+ 只發一筆 auto-report，不會改任何東西。
 </div>
 
 <h2><span class="num">2</span>整段 Goal Prompt（複製貼進 Claude Code chat）</h2>
@@ -176,9 +177,11 @@
      jq '.model == "claude-opus-4-7"' "$REAL"
   D. settings.json env.ENABLE_PROMPT_CACHING_1H = "1"？
      jq '.env.ENABLE_PROMPT_CACHING_1H == "1"' "$REAL"
-  E. ~/.zshrc 有未註解的 export ANTHROPIC_*？
+  E. settings.json effortLevel = "high"？（Claude Code 在 Opus 4.7 預設 xhigh，省 token 要鎖 high）
+     jq '.effortLevel == "high"' "$REAL"
+  F. ~/.zshrc 有未註解的 export ANTHROPIC_*？
      grep -cE "^[^#]*export[[:space:]]+ANTHROPIC_" ~/.zshrc 2>/dev/null
-  F. Keychain 是 stale RDsec-era token 還是 C4E 有效 token？
+  G. Keychain 是 stale RDsec-era token 還是 C4E 有效 token？
      # 有 Keychain entry + oauthAccount.organizationType = claude_enterprise → 已是 C4E，skip
      # 有 Keychain entry + 不是 claude_enterprise（或讀不到）→ stale，要清
      # 沒 Keychain entry → 已 logout 狀態，skip
@@ -193,13 +196,14 @@
   | B | settings.json apiKeyHelper       | ✅ 已乾淨     | skip       |
   | C | model = claude-opus-4-7          | ⚠️ 未設       | 將設定     |
   | D | ENABLE_PROMPT_CACHING_1H = 1     | ✅ 已設       | skip       |
-  | E | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 條未註解 | 將註解     |
-  | F | Keychain stale token             | ⚠️ stale      | 將清除     |
+  | E | effortLevel = "high"             | ⚠️ 未設       | 將設定     |
+  | F | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 條未註解 | 將註解     |
+  | G | Keychain stale token             | ⚠️ stale      | 將清除     |
 
-若 6 項全 ✅ → 跳到 Step 4 跑 auto-report，然後 Step 5 印 CASE A（不印重啟指引）。
+若 7 項全 ✅ → 跳到 Step 4 跑 auto-report，然後 Step 5 印 CASE A（不印重啟指引）。
 若任一 ⚠️ → 跑對應 Step 1-3 → Step 4 → Step 5 印 CASE B（含重啟指引）。
 
-## STEP 1 — Edit settings.json（A/B/C/D 任一 ⚠️ 才動）
+## STEP 1 — Edit settings.json（A/B/C/D/E 任一 ⚠️ 才動）
 
 用 jq（沒 jq 切 python），只對紅項做動作、綠項不動：
 
@@ -207,15 +211,16 @@
           .env.ANTHROPIC_AUTH_TOKEN, .env.FORCE_PROMPT_CACHING_5M,
           .apiKeyHelper, .anthropicBaseURL)
       | .env = (.env // {}) + {"ENABLE_PROMPT_CACHING_1H": "1"}
-      | .model = "claude-opus-4-7"' \
+      | .model = "claude-opus-4-7"
+      | .effortLevel = "high"' \
     "$REAL" > /tmp/s.new && mv /tmp/s.new "$REAL"
 
-## STEP 2 — Comment ~/.zshrc exports（E ⚠️ 才動）
+## STEP 2 — Comment ~/.zshrc exports（F ⚠️ 才動）
 
   STAMP="[RDsec→C4E $(date +%Y-%m-%d)]"
   sed -i '' -E "s|^([[:space:]]*export[[:space:]]+ANTHROPIC_(BASE_URL|API_KEY|AUTH_TOKEN).*)|# $STAMP \1|" ~/.zshrc
 
-## STEP 3 — Clear Keychain（F ⚠️ 才動）
+## STEP 3 — Clear Keychain（G ⚠️ 才動）
 
   security delete-generic-password -s "Claude Code-credentials" -a "$USER" 2>/dev/null || true
   （會跳 macOS 解鎖視窗 — 輸入密碼或 Touch ID，預期行為）
@@ -245,7 +250,7 @@
 
 依 Step 0 結果分支，只印對應版本：
 
-### CASE A — 6/6 全 ✅（無需任何動作）
+### CASE A — 7/7 全 ✅（無需任何動作）
 
   ════════════════════════════════════════════════
    ✅ 設定完成 — 你已經就緒
@@ -254,6 +259,7 @@
    你已經是：
      ✓ C4E account（organizationType=claude_enterprise）
      ✓ default model = claude-opus-4-7
+     ✓ effortLevel = high（不是預設 xhigh，省 token）
      ✓ ENABLE_PROMPT_CACHING_1H = 1
      ✓ ~/.zshrc 無 ANTHROPIC_* 殘留
      ✓ Keychain 是 C4E 有效 token
@@ -296,7 +302,7 @@
 
 <h2><span class="num">3</span>Agent 跑完印的完成訊息（兩種情境）</h2>
 
-<h3>CASE A — 6/6 全 ✅（已就緒、無需動）</h3>
+<h3>CASE A — 7/7 全 ✅（已就緒、無需動）</h3>
 <div class="goal-block">════════════════════════════════════════════════
  ✅ 設定完成 — 你已經就緒
 ════════════════════════════════════════════════
@@ -304,6 +310,7 @@
  你已經是：
    ✓ C4E account（organizationType=claude_enterprise）
    ✓ default model = claude-opus-4-7
+   ✓ effortLevel = high（不是預設 xhigh，省 token）
    ✓ ENABLE_PROMPT_CACHING_1H = 1
    ✓ ~/.zshrc 無 ANTHROPIC_* 殘留
    ✓ Keychain 是 C4E 有效 token
@@ -319,7 +326,8 @@
  今天做了：
    已修：A settings.json 清 ANTHROPIC_BASE_URL
    已修：C 加 model = claude-opus-4-7
-   已修：F 清 Keychain stale token
+   已修：E 加 effortLevel = high
+   已修：G 清 Keychain stale token
 
  接下來請重啟 Claude Code（走 SSO）：
 
@@ -330,6 +338,7 @@
    Account:  xxx@trendmicro.com
    Org:      Trend Micro
    Model:    claude-opus-4-7
+   Effort:   high
 
  📤 結果已自動回報給 Karen（Google Sheet）
 ════════════════════════════════════════════════</div>
@@ -373,12 +382,13 @@
 <h2><span class="num">1</span>This prompt does three things</h2>
 <ul>
   <li><strong>Switch to C4E account</strong> — from RDsec AI proxy to Trend Micro Claude Enterprise (SSO)</li>
-  <li><strong>Set default model = Opus 4.7</strong> — written into settings.json, applies on next session</li>
+  <li><strong>Set default model = Opus 4.7 + effortLevel = high</strong> — written into settings.json, applies on next session.<br>
+      (Claude Code defaults Opus 4.7 to <code>effort = xhigh</code>, which burns tokens fast; locking <code>high</code> cuts ~30% volume while keeping intelligence.)</li>
   <li><strong>Enable 1hr prompt cache</strong> — TTL from 5 min → 1 hr, cache survives meeting breaks, saves tokens</li>
 </ul>
 <p>Three items independently checked, independently skipped — anything already done is not re-applied. Agent auto-reports to Karen on completion.</p>
 <div class="ok-callout">
-  <strong>✅ Re-runnable as health-check</strong>: even if you're already configured, you can run it once — Step 0 detects 6/6 ✅, prints "You're ready" + sends one auto-report. Nothing gets modified.
+  <strong>✅ Re-runnable as health-check</strong>: even if you're already configured, you can run it once — Step 0 detects 7/7 ✅, prints "You're ready" + sends one auto-report. Nothing gets modified.
 </div>
 
 <h2><span class="num">2</span>The Goal Prompt (paste into Claude Code chat)</h2>
@@ -412,9 +422,11 @@ Run the checks below and print a 6-row table (each item tagged ✅ already done 
      jq '.model == "claude-opus-4-7"' "$REAL"
   D. settings.json env.ENABLE_PROMPT_CACHING_1H == "1"?
      jq '.env.ENABLE_PROMPT_CACHING_1H == "1"' "$REAL"
-  E. ~/.zshrc has un-commented export ANTHROPIC_*?
+  E. settings.json effortLevel == "high"? (Claude Code defaults Opus 4.7 to xhigh; lock high to save tokens)
+     jq '.effortLevel == "high"' "$REAL"
+  F. ~/.zshrc has un-commented export ANTHROPIC_*?
      grep -cE "^[^#]*export[[:space:]]+ANTHROPIC_" ~/.zshrc 2>/dev/null
-  F. Keychain — stale RDsec-era token vs valid C4E token?
+  G. Keychain — stale RDsec-era token vs valid C4E token?
      # Keychain entry exists + oauthAccount.organizationType = claude_enterprise → already C4E, skip
      # Keychain entry exists + not claude_enterprise (or unreadable) → stale, clear it
      # No Keychain entry → logged-out state, skip (next launch triggers SSO)
@@ -429,13 +441,14 @@ Print as table (example):
   | B | settings.json apiKeyHelper       | ✅ already clean    | skip    |
   | C | model = claude-opus-4-7          | ⚠️ not set           | set     |
   | D | ENABLE_PROMPT_CACHING_1H = 1     | ✅ already set      | skip    |
-  | E | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 line uncommented| comment |
-  | F | Keychain stale token             | ⚠️ stale             | clear   |
+  | E | effortLevel = "high"             | ⚠️ not set           | set     |
+  | F | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 line uncommented| comment |
+  | G | Keychain stale token             | ⚠️ stale             | clear   |
 
-If all 6 ✅ → skip Steps 1-3, run Step 4 auto-report, then print CASE A (no restart instructions).
+If all 7 ✅ → skip Steps 1-3, run Step 4 auto-report, then print CASE A (no restart instructions).
 If any ⚠️ → run only the matching Step 1-3 → Step 4 → print CASE B (with restart instructions).
 
-## STEP 1 — Edit settings.json (only if any of A/B/C/D is ⚠️)
+## STEP 1 — Edit settings.json (only if any of A/B/C/D/E is ⚠️)
 
 Use jq (fall back to python). Operate only on items flagged ⚠️; ✅ items stay untouched:
 
@@ -443,15 +456,16 @@ Use jq (fall back to python). Operate only on items flagged ⚠️; ✅ items st
           .env.ANTHROPIC_AUTH_TOKEN, .env.FORCE_PROMPT_CACHING_5M,
           .apiKeyHelper, .anthropicBaseURL)
       | .env = (.env // {}) + {"ENABLE_PROMPT_CACHING_1H": "1"}
-      | .model = "claude-opus-4-7"' \
+      | .model = "claude-opus-4-7"
+      | .effortLevel = "high"' \
     "$REAL" > /tmp/s.new && mv /tmp/s.new "$REAL"
 
-## STEP 2 — Comment ~/.zshrc exports (only if E is ⚠️)
+## STEP 2 — Comment ~/.zshrc exports (only if F is ⚠️)
 
   STAMP="[RDsec->C4E $(date +%Y-%m-%d)]"
   sed -i '' -E "s|^([[:space:]]*export[[:space:]]+ANTHROPIC_(BASE_URL|API_KEY|AUTH_TOKEN).*)|# $STAMP \1|" ~/.zshrc
 
-## STEP 3 — Clear Keychain (only if F is ⚠️)
+## STEP 3 — Clear Keychain (only if G is ⚠️)
 
   security delete-generic-password -s "Claude Code-credentials" -a "$USER" 2>/dev/null || true
   (A macOS unlock dialog will pop — enter password or Touch ID. Expected.)
@@ -481,7 +495,7 @@ Use jq (fall back to python). Operate only on items flagged ⚠️; ✅ items st
 
 Branch by Step 0 result; print ONLY the matching version:
 
-### CASE A — 6/6 ✅ (nothing to do)
+### CASE A — 7/7 ✅ (nothing to do)
 
   ════════════════════════════════════════════════
    ✅ All set — you're ready
@@ -490,6 +504,7 @@ Branch by Step 0 result; print ONLY the matching version:
    You already have:
      ✓ C4E account (organizationType=claude_enterprise)
      ✓ default model = claude-opus-4-7
+     ✓ effortLevel = high (not the xhigh default — saves tokens)
      ✓ ENABLE_PROMPT_CACHING_1H = 1
      ✓ ~/.zshrc clean of ANTHROPIC_* residue
      ✓ Keychain has a valid C4E token
@@ -523,6 +538,7 @@ Branch by Step 0 result; print ONLY the matching version:
      Account:  xxx@trendmicro.com
      Org:      Trend Micro
      Model:    claude-opus-4-7
+     Effort:   high
 
    📤 Result auto-reported to Karen (Google Sheet)
   ════════════════════════════════════════════════
@@ -532,7 +548,7 @@ Absolutely no diff dumps, no process narration, no verbose logs. Only Step 0 tab
 
 <h2><span class="num">3</span>Completion message (two cases)</h2>
 
-<h3>CASE A — 6/6 ✅ (already configured)</h3>
+<h3>CASE A — 7/7 ✅ (already configured)</h3>
 <div class="goal-block">════════════════════════════════════════════════
  ✅ All set — you're ready
 ════════════════════════════════════════════════
@@ -540,6 +556,7 @@ Absolutely no diff dumps, no process narration, no verbose logs. Only Step 0 tab
  You already have:
    ✓ C4E account (organizationType=claude_enterprise)
    ✓ default model = claude-opus-4-7
+   ✓ effortLevel = high (not the xhigh default — saves tokens)
    ✓ ENABLE_PROMPT_CACHING_1H = 1
    ✓ ~/.zshrc clean of ANTHROPIC_* residue
    ✓ Keychain has a valid C4E token
@@ -555,7 +572,8 @@ Absolutely no diff dumps, no process narration, no verbose logs. Only Step 0 tab
  What was fixed today:
    Fixed: A settings.json — cleared ANTHROPIC_BASE_URL
    Fixed: C set model = claude-opus-4-7
-   Fixed: F cleared Keychain stale token
+   Fixed: E set effortLevel = high
+   Fixed: G cleared Keychain stale token
 
  Now restart Claude Code (it will trigger SSO):
 
@@ -566,6 +584,7 @@ Absolutely no diff dumps, no process narration, no verbose logs. Only Step 0 tab
    Account:  xxx@trendmicro.com
    Org:      Trend Micro
    Model:    claude-opus-4-7
+   Effort:   high
 
  📤 Result auto-reported to Karen (Google Sheet)
 ════════════════════════════════════════════════</div>
