@@ -31,3 +31,6 @@ assets/*.jpeg
 .env
 .env.*
 !.env.example
+
+# Nested repos hosted elsewhere (not submodules of this repo)
+proposals/2026June-model_adoption/team-claude-code-1hr-cache/

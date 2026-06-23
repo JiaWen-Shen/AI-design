@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Claude Code Environment Settings — Goal Prompt</title>
+<style>
+  :root {
+    --primary: #065A82;
+    --secondary: #1C7293;
+    --accent: #21295C;
+    --warn: #E07B00;
+    --ok: #2D7D46;
+    --bg: #ffffff;
+    --panel: #F2F6F9;
+    --code-bg: #1a1a2e;
+    --code-text: #e5e7eb;
+    --code-keyword: #6EE7B7;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'PingFang TC', 'Helvetica Neue', system-ui, sans-serif;
+    color: #1a1a1a; max-width: 920px; margin: 0 auto; padding: 32px 28px;
+    line-height: 1.55; font-size: 15px;
+  }
+  h1 {
+    font-size: 30px; color: var(--primary); margin: 0 0 6px;
+    border-bottom: 3px solid var(--primary); padding-bottom: 8px;
+  }
+  .lede {
+    color: var(--muted); font-size: 14px; margin: 8px 0 18px;
+  }
+  .tabs {
+    display: flex; gap: 0; margin: 0 0 24px;
+    border-bottom: 2px solid #d4d8de;
+  }
+  .tab-btn {
+    background: transparent; border: none;
+    padding: 10px 22px; cursor: pointer;
+    font-size: 15px; font-weight: 600; color: var(--muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .lang-pane { display: none; }
+  .lang-pane.active { display: block; }
+  h2 {
+    font-size: 20px; color: var(--primary);
+    margin-top: 32px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    font-size: 14px; font-weight: 700;
+  }
+  h3 { font-size: 16px; color: var(--secondary); margin-top: 18px; margin-bottom: 4px; }
+  p, ul, ol { margin: 6px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { border: 1px solid #d4d8de; padding: 6px 10px; vertical-align: top; text-align: left; }
+  th { background: var(--primary); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  code {
+    font-family: 'Menlo', 'Consolas', monospace;
+    background: #f0f2f5; padding: 1px 5px; border-radius: 3px;
+    font-size: 13px; color: var(--accent);
+  }
+  .goal-block {
+    background: var(--code-bg); color: var(--code-text);
+    padding: 18px 48px 18px 20px; border-radius: 6px;
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 12.5px; line-height: 1.55;
+    white-space: pre-wrap; word-wrap: break-word;
+    border-left: 4px solid var(--code-keyword);
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(110,231,183,0.12); color: var(--code-keyword);
+    border: 1px solid rgba(110,231,183,0.5); border-radius: 4px;
+    padding: 4px 10px; cursor: pointer;
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 11px; font-weight: 600;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    z-index: 2;
+  }
+  .copy-btn:hover {
+    background: var(--code-keyword); color: var(--code-bg);
+  }
+  .copy-btn.copied {
+    background: var(--ok); color: #fff; border-color: var(--ok);
+  }
+  .copy-bracket {
+    color: var(--muted); font-size: 11px; text-align: center;
+    font-family: 'Menlo', 'Consolas', monospace; margin: 4px 0;
+  }
+  .callout {
+    background: #FEF3C7; border-left: 4px solid var(--warn);
+    padding: 10px 14px; margin: 12px 0; border-radius: 3px;
+    font-size: 14px;
+  }
+  .ok-callout {
+    background: #ECFDF5; border-left: 4px solid var(--ok);
+    padding: 10px 14px; margin: 12px 0; border-radius: 3px;
+    font-size: 14px;
+  }
+  .footer {
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid #d4d8de;
+    color: var(--muted); font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Claude Code Environment Settings</h1>
+<p class="lede">一段 prompt、一次重啟，三件事一次到位 / One prompt, one restart — three settings done. Karen Shen · 2026-06-23</p>
+
+<div class="tabs">
+  <button class="tab-btn active" data-lang="zh">🇹🇼 繁體中文</button>
+  <button class="tab-btn" data-lang="en">🇬🇧 English</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- ZH PANE                                                       -->
+<!-- ============================================================ -->
+<div class="lang-pane active" id="pane-zh">
+
+<h2><span class="num">1</span>這份 prompt 幫你做三件事</h2>
+<ul>
+  <li><strong>Switch to C4E account</strong> — 從 RDsec AI proxy 切到 Trend Micro Claude Enterprise（SSO）</li>
+  <li><strong>Set default model = Opus 4.7</strong> — 寫進 settings.json，新開 session 自動套</li>
+  <li><strong>Enable 1hr prompt cache</strong> — TTL 從 5 分鐘改 1 小時，跨會議 cache 不掉、省 token</li>
+</ul>
+<p>三件事獨立檢查、獨立 skip：已做過的不重跑。最後 agent 自動回報 Karen。</p>
+<div class="ok-callout">
+  <strong>✅ 可重跑當 health-check</strong>：已設定完的人也可以丟一次，Step 0 偵測 6/6 ✅ → 顯示「你已經就緒」+ 只發一筆 auto-report，不會改任何東西。
+</div>
+
+<h2><span class="num">2</span>整段 Goal Prompt（複製貼進 Claude Code chat）</h2>
+<p>VS Code 左側 Claude Code chat 開新對話，或任何 terminal 跑 <code>claude</code>。整段貼上即可，agent 全包。</p>
+
+<div class="copy-bracket">— 從這裡開始複製 —</div>
+<div class="goal-block"># GOAL: 把這台 Mac 的 Claude Code 切到 C4E + 設 default model + 開 1hr cache。整段做完才回我。
+
+## CONTEXT
+我是 TM 設計師。要把這台 Mac 從 RDsec proxy 切到 C4E（Trend Micro Claude Enterprise），同時設 default model = Opus 4.7、prompt cache TTL = 1hr。
+
+## INVARIANTS（不可違反）
+- 不刪檔，只改內容
+- ~/.zshrc 的 export ANTHROPIC_* 加 # 註解保留（不刪行）+ 標 # [RDsec→C4E YYYY-MM-DD]
+- settings.json 改寫用 jq + temp file + mv 原子操作；沒 jq 用 python in-place
+- settings.json 若是 symlink → readlink -f 解析到實檔再寫
+- 不動 ~/dotclaude/settings.local.json 的 RDSEC_API_KEY（codex 仍要用）
+- 任何 step fail 立刻 stop + 印 error
+
+## STEP 0 — Pre-flight：逐項檢查、已做的 skip
+
+跑下面這些 check，印一張 6 列表格給我（每項標 ✅ already done / ⚠️ needs fix）：
+
+  REAL=$(readlink -f ~/.claude/settings.json 2>/dev/null || echo ~/.claude/settings.json)
+
+  A. settings.json env 有 ANTHROPIC_BASE_URL/API_KEY/AUTH_TOKEN？
+     jq 'any(.env // {} | keys[]; startswith("ANTHROPIC_"))' "$REAL"
+  B. settings.json 頂層有 apiKeyHelper 或 anthropicBaseURL？
+     jq '(has("apiKeyHelper") or has("anthropicBaseURL"))' "$REAL"
+  C. settings.json model = claude-opus-4-7？
+     jq '.model == "claude-opus-4-7"' "$REAL"
+  D. settings.json env.ENABLE_PROMPT_CACHING_1H = "1"？
+     jq '.env.ENABLE_PROMPT_CACHING_1H == "1"' "$REAL"
+  E. ~/.zshrc 有未註解的 export ANTHROPIC_*？
+     grep -cE "^[^#]*export[[:space:]]+ANTHROPIC_" ~/.zshrc 2>/dev/null
+  F. Keychain 是 stale RDsec-era token 還是 C4E 有效 token？
+     # 有 Keychain entry + oauthAccount.organizationType = claude_enterprise → 已是 C4E，skip
+     # 有 Keychain entry + 不是 claude_enterprise（或讀不到）→ stale，要清
+     # 沒 Keychain entry → 已 logout 狀態，skip
+     HAS_KC=$(security find-generic-password -s "Claude Code-credentials" -a "$USER" >/dev/null 2>&1 && echo yes || echo no)
+     ORG_TYPE=$(jq -r '.oauthAccount.organizationType // "none"' ~/.claude.json 2>/dev/null)
+     [ "$HAS_KC" = "yes" ] && [ "$ORG_TYPE" != "claude_enterprise" ] && echo "stale" || echo "ok"
+
+印成這樣（範例）：
+  | # | 項目                             | 狀態          | 動作       |
+  |---|----------------------------------|---------------|------------|
+  | A | settings.json env ANTHROPIC_*    | ⚠️ 有殘留     | 將清除     |
+  | B | settings.json apiKeyHelper       | ✅ 已乾淨     | skip       |
+  | C | model = claude-opus-4-7          | ⚠️ 未設       | 將設定     |
+  | D | ENABLE_PROMPT_CACHING_1H = 1     | ✅ 已設       | skip       |
+  | E | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 條未註解 | 將註解     |
+  | F | Keychain stale token             | ⚠️ stale      | 將清除     |
+
+若 6 項全 ✅ → 跳到 Step 4 跑 auto-report，然後 Step 5 印 CASE A（不印重啟指引）。
+若任一 ⚠️ → 跑對應 Step 1-3 → Step 4 → Step 5 印 CASE B（含重啟指引）。
+
+## STEP 1 — Edit settings.json（A/B/C/D 任一 ⚠️ 才動）
+
+用 jq（沒 jq 切 python），只對紅項做動作、綠項不動：
+
+  jq 'del(.env.ANTHROPIC_BASE_URL, .env.ANTHROPIC_API_KEY,
+          .env.ANTHROPIC_AUTH_TOKEN, .env.FORCE_PROMPT_CACHING_5M,
+          .apiKeyHelper, .anthropicBaseURL)
+      | .env = (.env // {}) + {"ENABLE_PROMPT_CACHING_1H": "1"}
+      | .model = "claude-opus-4-7"' \
+    "$REAL" > /tmp/s.new && mv /tmp/s.new "$REAL"
+
+## STEP 2 — Comment ~/.zshrc exports（E ⚠️ 才動）
+
+  STAMP="[RDsec→C4E $(date +%Y-%m-%d)]"
+  sed -i '' -E "s|^([[:space:]]*export[[:space:]]+ANTHROPIC_(BASE_URL|API_KEY|AUTH_TOKEN).*)|# $STAMP \1|" ~/.zshrc
+
+## STEP 3 — Clear Keychain（F ⚠️ 才動）
+
+  security delete-generic-password -s "Claude Code-credentials" -a "$USER" 2>/dev/null || true
+  （會跳 macOS 解鎖視窗 — 輸入密碼或 Touch ID，預期行為）
+
+## STEP 4 — Auto-report（無論 skip 與否都跑）
+
+  HOSTNAME=$(hostname -s)
+  PAYLOAD=$(python3 -c "
+  import json
+  print(json.dumps({
+    'app': 'c4e-migration', 'version': 1,
+    'hostname': '$HOSTNAME', 'user': '$USER',
+    'os': '$(sw_vers -productName) $(sw_vers -productVersion)',
+    'time': '$(date "+%Y-%m-%d %H:%M:%S %Z")',
+    'preflight': {'A':'$A','B':'$B','C':'$C','D':'$D','E':'$E','F':'$F'},
+    'verified': True
+  }))")
+
+  curl -sLf --post302 --max-time 15 -X POST -H "Content-Type: text/plain" \
+       -d "$PAYLOAD" \
+       "https://script.google.com/macros/s/AKfycbzanjFPRPx6W7qIqzCjenJqWU4fKjEauJozTB2ZpjJH1V3inypjbH7VRtS67uhyMNp5/exec" \
+    && echo "✅ Auto-report posted to Karen" \
+    || (echo "$PAYLOAD" > ~/Desktop/c4e-migration-$HOSTNAME.json &&
+        echo "⚠ endpoint unreachable — payload at ~/Desktop/c4e-migration-$HOSTNAME.json，請拖到 Teams DM 給 Karen")
+
+## STEP 5 — 印完成訊息（必印、不可省略）
+
+依 Step 0 結果分支，只印對應版本：
+
+### CASE A — 6/6 全 ✅（無需任何動作）
+
+  ════════════════════════════════════════════════
+   ✅ 設定完成 — 你已經就緒
+  ════════════════════════════════════════════════
+
+   你已經是：
+     ✓ C4E account（organizationType=claude_enterprise）
+     ✓ default model = claude-opus-4-7
+     ✓ ENABLE_PROMPT_CACHING_1H = 1
+     ✓ ~/.zshrc 無 ANTHROPIC_* 殘留
+     ✓ Keychain 是 C4E 有效 token
+
+   📤 已自動回報給 Karen（Google Sheet）— 無需重啟、無需重跑。
+  ════════════════════════════════════════════════
+
+### CASE B — 至少 1 項 ⚠️（有改東西）
+
+  ════════════════════════════════════════════════
+   ✅ 設定完成
+  ════════════════════════════════════════════════
+
+   今天做了：
+     {對齊 Step 0 表格，每個 ⚠️ 項列一行「已修：項目名 → 動作摘要」}
+
+   接下來請重啟 Claude Code（走 SSO）：
+
+   💻 VS Code 用戶
+     1. Cmd+Q 完全關掉 VS Code
+     2. 從 Spotlight / Dock 重開 VS Code
+     3. 打開 Claude Code chat → 自動跳瀏覽器走 SSO
+     4. 選「Continue with Trend Micro」
+
+   🖥 Terminal 用戶
+     1. 在這個 claude session 內輸入 exit
+     2. 關掉這個 terminal tab
+     3. 開新 terminal 跑 claude → 自動跳 SSO
+
+   重啟後在新 session 輸入 /status，確認：
+     Account:  xxx@trendmicro.com
+     Org:      Trend Micro
+     Model:    claude-opus-4-7
+
+   📤 結果已自動回報給 Karen（Google Sheet）
+  ════════════════════════════════════════════════
+
+絕對不要 dump diff、不要解釋過程、不要 verbose log。只要 Step 0 表格 + Step 5 對應 CASE 兩塊。</div>
+<div class="copy-bracket">— 複製到這裡 —</div>
+
+<h2><span class="num">3</span>Agent 跑完印的完成訊息（兩種情境）</h2>
+
+<h3>CASE A — 6/6 全 ✅（已就緒、無需動）</h3>
+<div class="goal-block">════════════════════════════════════════════════
+ ✅ 設定完成 — 你已經就緒
+════════════════════════════════════════════════
+
+ 你已經是：
+   ✓ C4E account（organizationType=claude_enterprise）
+   ✓ default model = claude-opus-4-7
+   ✓ ENABLE_PROMPT_CACHING_1H = 1
+   ✓ ~/.zshrc 無 ANTHROPIC_* 殘留
+   ✓ Keychain 是 C4E 有效 token
+
+ 📤 已自動回報給 Karen（Google Sheet）— 無需重啟、無需重跑。
+════════════════════════════════════════════════</div>
+
+<h3>CASE B — 至少 1 項 ⚠️（有改東西）</h3>
+<div class="goal-block">════════════════════════════════════════════════
+ ✅ 設定完成
+════════════════════════════════════════════════
+
+ 今天做了：
+   已修：A settings.json 清 ANTHROPIC_BASE_URL
+   已修：C 加 model = claude-opus-4-7
+   已修：F 清 Keychain stale token
+
+ 接下來請重啟 Claude Code（走 SSO）：
+
+ 💻 VS Code：Cmd+Q → 從 Spotlight 重開 → 跳瀏覽器 SSO
+ 🖥 Terminal：exit → 開新 terminal → 跑 claude → 跳瀏覽器 SSO
+
+ /status 預期：
+   Account:  xxx@trendmicro.com
+   Org:      Trend Micro
+   Model:    claude-opus-4-7
+
+ 📤 結果已自動回報給 Karen（Google Sheet）
+════════════════════════════════════════════════</div>
+
+<h2><span class="num">4</span>自動回報（Google Sheet 全自動）</h2>
+
+<table>
+  <tr><th>環節</th><th>怎麼跑</th><th>需要用戶動作？</th></tr>
+  <tr><td>Agent 端</td><td><code>curl -X POST</code> JSON payload 到 Apps Script Web App endpoint</td><td>否 — 整段 prompt 內</td></tr>
+  <tr><td>Apps Script 端</td><td><code>doPost()</code> 接 JSON、dedupe by (hostname, app)、覆寫或 append</td><td>否 — Karen 已部署</td></tr>
+  <tr><td>Karen 端</td><td>開 Google Sheet 看 adoption rate / device list</td><td>否</td></tr>
+  <tr><td>Fallback（endpoint 不可達）</td><td>payload 存 <code>~/Desktop/c4e-migration-&lt;hostname&gt;.json</code>，提示拖到 Teams DM 給 Karen</td><td>是 — 但僅 fallback</td></tr>
+</table>
+
+<p>對設計師：跑完 prompt 就完成回報，<strong>不需要點任何東西</strong>、<strong>不需要 GitHub / Teams 權限</strong>、<strong>不需要 MFA</strong>。</p>
+
+<h2><span class="num">5</span>FAQ</h2>
+<table>
+  <tr><th style="width:42%;">卡住</th><th>解法</th></tr>
+  <tr><td><code>/status</code> 看到 Account 是個人 email / Org = Personal</td>
+      <td>Keychain 沒清乾淨。新 session 內跑 <code>/logout</code> → 退出 → 重開一次走 SSO。</td></tr>
+  <tr><td>SSO 瀏覽器頁找不到 Trend Micro 選項</td>
+      <td>用公司 mail 簽 <code>https://claude.ai/login</code> 一次建立 mapping，再回 Claude Code。</td></tr>
+  <tr><td>系統說沒裝 jq</td>
+      <td>Prompt 內已備援 python，會自動切換。</td></tr>
+  <tr><td>Apps Script 回報失敗</td>
+      <td>payload 在 <code>~/Desktop/c4e-migration-&lt;hostname&gt;.json</code>，拖到 Teams DM 給 Karen。</td></tr>
+</table>
+
+<div class="callout">
+  <strong>卡住找 Karen</strong> — Teams DM <code>karen_shen@trendmicro.com</code>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- EN PANE                                                       -->
+<!-- ============================================================ -->
+<div class="lang-pane" id="pane-en">
+
+<h2><span class="num">1</span>This prompt does three things</h2>
+<ul>
+  <li><strong>Switch to C4E account</strong> — from RDsec AI proxy to Trend Micro Claude Enterprise (SSO)</li>
+  <li><strong>Set default model = Opus 4.7</strong> — written into settings.json, applies on next session</li>
+  <li><strong>Enable 1hr prompt cache</strong> — TTL from 5 min → 1 hr, cache survives meeting breaks, saves tokens</li>
+</ul>
+<p>Three items independently checked, independently skipped — anything already done is not re-applied. Agent auto-reports to Karen on completion.</p>
+<div class="ok-callout">
+  <strong>✅ Re-runnable as health-check</strong>: even if you're already configured, you can run it once — Step 0 detects 6/6 ✅, prints "You're ready" + sends one auto-report. Nothing gets modified.
+</div>
+
+<h2><span class="num">2</span>The Goal Prompt (paste into Claude Code chat)</h2>
+<p>Open a new Claude Code chat in VS Code, or run <code>claude</code> in any terminal. Paste the whole block — the agent handles everything.</p>
+
+<div class="copy-bracket">— Copy from here —</div>
+<div class="goal-block"># GOAL: Migrate this Mac's Claude Code to C4E + set default model + enable 1hr cache. Run all in one pass and report only when done.
+
+## CONTEXT
+I'm a TM designer. Migrate this Mac from RDsec proxy to C4E (Trend Micro Claude Enterprise), set default model = Opus 4.7, set prompt cache TTL = 1hr.
+
+## INVARIANTS (do not violate)
+- Do not delete files; only edit content
+- For ~/.zshrc `export ANTHROPIC_*`, comment-out with `#` (do not remove the line) + tag `# [RDsec->C4E YYYY-MM-DD]`
+- settings.json edits must use jq + temp file + mv (atomic); fall back to python in-place if jq is missing
+- If settings.json is a symlink → use `readlink -f` to resolve before writing
+- Do not touch `~/dotclaude/settings.local.json` `RDSEC_API_KEY` (codex CLI still needs it)
+- Any step fails → stop immediately + print error
+
+## STEP 0 — Pre-flight: check each item, skip those already done
+
+Run the checks below and print a 6-row table (each item tagged ✅ already done / ⚠️ needs fix):
+
+  REAL=$(readlink -f ~/.claude/settings.json 2>/dev/null || echo ~/.claude/settings.json)
+
+  A. settings.json env has ANTHROPIC_BASE_URL/API_KEY/AUTH_TOKEN?
+     jq 'any(.env // {} | keys[]; startswith("ANTHROPIC_"))' "$REAL"
+  B. settings.json top-level has apiKeyHelper or anthropicBaseURL?
+     jq '(has("apiKeyHelper") or has("anthropicBaseURL"))' "$REAL"
+  C. settings.json model == claude-opus-4-7?
+     jq '.model == "claude-opus-4-7"' "$REAL"
+  D. settings.json env.ENABLE_PROMPT_CACHING_1H == "1"?
+     jq '.env.ENABLE_PROMPT_CACHING_1H == "1"' "$REAL"
+  E. ~/.zshrc has un-commented export ANTHROPIC_*?
+     grep -cE "^[^#]*export[[:space:]]+ANTHROPIC_" ~/.zshrc 2>/dev/null
+  F. Keychain — stale RDsec-era token vs valid C4E token?
+     # Keychain entry exists + oauthAccount.organizationType = claude_enterprise → already C4E, skip
+     # Keychain entry exists + not claude_enterprise (or unreadable) → stale, clear it
+     # No Keychain entry → logged-out state, skip (next launch triggers SSO)
+     HAS_KC=$(security find-generic-password -s "Claude Code-credentials" -a "$USER" >/dev/null 2>&1 && echo yes || echo no)
+     ORG_TYPE=$(jq -r '.oauthAccount.organizationType // "none"' ~/.claude.json 2>/dev/null)
+     [ "$HAS_KC" = "yes" ] && [ "$ORG_TYPE" != "claude_enterprise" ] && echo "stale" || echo "ok"
+
+Print as table (example):
+  | # | Item                             | Status              | Action  |
+  |---|----------------------------------|---------------------|---------|
+  | A | settings.json env ANTHROPIC_*    | ⚠️ residue           | clean   |
+  | B | settings.json apiKeyHelper       | ✅ already clean    | skip    |
+  | C | model = claude-opus-4-7          | ⚠️ not set           | set     |
+  | D | ENABLE_PROMPT_CACHING_1H = 1     | ✅ already set      | skip    |
+  | E | ~/.zshrc export ANTHROPIC_*      | ⚠️ 1 line uncommented| comment |
+  | F | Keychain stale token             | ⚠️ stale             | clear   |
+
+If all 6 ✅ → skip Steps 1-3, run Step 4 auto-report, then print CASE A (no restart instructions).
+If any ⚠️ → run only the matching Step 1-3 → Step 4 → print CASE B (with restart instructions).
+
+## STEP 1 — Edit settings.json (only if any of A/B/C/D is ⚠️)
+
+Use jq (fall back to python). Operate only on items flagged ⚠️; ✅ items stay untouched:
+
+  jq 'del(.env.ANTHROPIC_BASE_URL, .env.ANTHROPIC_API_KEY,
+          .env.ANTHROPIC_AUTH_TOKEN, .env.FORCE_PROMPT_CACHING_5M,
+          .apiKeyHelper, .anthropicBaseURL)
+      | .env = (.env // {}) + {"ENABLE_PROMPT_CACHING_1H": "1"}
+      | .model = "claude-opus-4-7"' \
+    "$REAL" > /tmp/s.new && mv /tmp/s.new "$REAL"
+
+## STEP 2 — Comment ~/.zshrc exports (only if E is ⚠️)
+
+  STAMP="[RDsec->C4E $(date +%Y-%m-%d)]"
+  sed -i '' -E "s|^([[:space:]]*export[[:space:]]+ANTHROPIC_(BASE_URL|API_KEY|AUTH_TOKEN).*)|# $STAMP \1|" ~/.zshrc
+
+## STEP 3 — Clear Keychain (only if F is ⚠️)
+
+  security delete-generic-password -s "Claude Code-credentials" -a "$USER" 2>/dev/null || true
+  (A macOS unlock dialog will pop — enter password or Touch ID. Expected.)
+
+## STEP 4 — Auto-report (always runs, whether anything was changed or not)
+
+  HOSTNAME=$(hostname -s)
+  PAYLOAD=$(python3 -c "
+  import json
+  print(json.dumps({
+    'app': 'c4e-migration', 'version': 1,
+    'hostname': '$HOSTNAME', 'user': '$USER',
+    'os': '$(sw_vers -productName) $(sw_vers -productVersion)',
+    'time': '$(date "+%Y-%m-%d %H:%M:%S %Z")',
+    'preflight': {'A':'$A','B':'$B','C':'$C','D':'$D','E':'$E','F':'$F'},
+    'verified': True
+  }))")
+
+  curl -sLf --post302 --max-time 15 -X POST -H "Content-Type: text/plain" \
+       -d "$PAYLOAD" \
+       "https://script.google.com/macros/s/AKfycbzanjFPRPx6W7qIqzCjenJqWU4fKjEauJozTB2ZpjJH1V3inypjbH7VRtS67uhyMNp5/exec" \
+    && echo "✅ Auto-report posted to Karen" \
+    || (echo "$PAYLOAD" > ~/Desktop/c4e-migration-$HOSTNAME.json &&
+        echo "⚠ endpoint unreachable — payload at ~/Desktop/c4e-migration-$HOSTNAME.json — drag to Karen via Teams DM")
+
+## STEP 5 — Print the completion message (mandatory, no shortcut)
+
+Branch by Step 0 result; print ONLY the matching version:
+
+### CASE A — 6/6 ✅ (nothing to do)
+
+  ════════════════════════════════════════════════
+   ✅ All set — you're ready
+  ════════════════════════════════════════════════
+
+   You already have:
+     ✓ C4E account (organizationType=claude_enterprise)
+     ✓ default model = claude-opus-4-7
+     ✓ ENABLE_PROMPT_CACHING_1H = 1
+     ✓ ~/.zshrc clean of ANTHROPIC_* residue
+     ✓ Keychain has a valid C4E token
+
+   📤 Auto-reported to Karen (Google Sheet) — no restart, no rerun needed.
+  ════════════════════════════════════════════════
+
+### CASE B — at least one ⚠️ (something was changed)
+
+  ════════════════════════════════════════════════
+   ✅ Done
+  ════════════════════════════════════════════════
+
+   What was fixed today:
+     {Align with Step 0 table; one line per ⚠️ item: "Fixed: <item> -> <action>"}
+
+   Now restart Claude Code (it will trigger SSO):
+
+   💻 VS Code
+     1. Cmd+Q to fully quit VS Code
+     2. Reopen VS Code from Spotlight / Dock
+     3. Open Claude Code chat → browser opens for SSO
+     4. Choose "Continue with Trend Micro"
+
+   🖥 Terminal
+     1. Type `exit` in this claude session
+     2. Close this terminal tab
+     3. Open a new terminal → run `claude` → browser opens for SSO
+
+   After restart, run /status in the new session and confirm:
+     Account:  xxx@trendmicro.com
+     Org:      Trend Micro
+     Model:    claude-opus-4-7
+
+   📤 Result auto-reported to Karen (Google Sheet)
+  ════════════════════════════════════════════════
+
+Absolutely no diff dumps, no process narration, no verbose logs. Only Step 0 table + the matching Step 5 CASE block.</div>
+<div class="copy-bracket">— Copy to here —</div>
+
+<h2><span class="num">3</span>Completion message (two cases)</h2>
+
+<h3>CASE A — 6/6 ✅ (already configured)</h3>
+<div class="goal-block">════════════════════════════════════════════════
+ ✅ All set — you're ready
+════════════════════════════════════════════════
+
+ You already have:
+   ✓ C4E account (organizationType=claude_enterprise)
+   ✓ default model = claude-opus-4-7
+   ✓ ENABLE_PROMPT_CACHING_1H = 1
+   ✓ ~/.zshrc clean of ANTHROPIC_* residue
+   ✓ Keychain has a valid C4E token
+
+ 📤 Auto-reported to Karen (Google Sheet) — no restart, no rerun needed.
+════════════════════════════════════════════════</div>
+
+<h3>CASE B — at least one ⚠️ (something was changed)</h3>
+<div class="goal-block">════════════════════════════════════════════════
+ ✅ Done
+════════════════════════════════════════════════
+
+ What was fixed today:
+   Fixed: A settings.json — cleared ANTHROPIC_BASE_URL
+   Fixed: C set model = claude-opus-4-7
+   Fixed: F cleared Keychain stale token
+
+ Now restart Claude Code (it will trigger SSO):
+
+ 💻 VS Code: Cmd+Q → reopen from Spotlight → browser SSO
+ 🖥 Terminal: exit → open new terminal → run claude → browser SSO
+
+ /status expected:
+   Account:  xxx@trendmicro.com
+   Org:      Trend Micro
+   Model:    claude-opus-4-7
+
+ 📤 Result auto-reported to Karen (Google Sheet)
+════════════════════════════════════════════════</div>
+
+<h2><span class="num">4</span>Auto-report (fully automated via Google Sheet)</h2>
+
+<table>
+  <tr><th>Step</th><th>How</th><th>User action needed?</th></tr>
+  <tr><td>Agent</td><td><code>curl -X POST</code> JSON payload to Apps Script Web App endpoint</td><td>No — embedded in the prompt</td></tr>
+  <tr><td>Apps Script</td><td><code>doPost()</code> receives JSON, dedupes by (hostname, app), overwrites or appends</td><td>No — Karen deployed it</td></tr>
+  <tr><td>Karen</td><td>Opens Google Sheet for adoption rate / device list</td><td>No</td></tr>
+  <tr><td>Fallback (endpoint unreachable)</td><td>payload saved to <code>~/Desktop/c4e-migration-&lt;hostname&gt;.json</code>; user drags to Teams DM</td><td>Yes — only on fallback</td></tr>
+</table>
+
+<p>For designers: running the prompt completes the reporting — <strong>no clicks</strong>, <strong>no GitHub / Teams permissions</strong>, <strong>no MFA</strong>.</p>
+
+<h2><span class="num">5</span>FAQ</h2>
+<table>
+  <tr><th style="width:42%;">Stuck on…</th><th>Fix</th></tr>
+  <tr><td><code>/status</code> shows Account = personal email / Org = Personal</td>
+      <td>Keychain wasn't fully cleared. In the new session, run <code>/logout</code> → quit → reopen and re-SSO.</td></tr>
+  <tr><td>SSO browser page doesn't show "Trend Micro"</td>
+      <td>Sign in once with your company mail at <code>https://claude.ai/login</code> to create the mapping, then return to Claude Code.</td></tr>
+  <tr><td>System says jq is not installed</td>
+      <td>The prompt has a built-in python fallback — it will auto-switch.</td></tr>
+  <tr><td>Apps Script auto-report failed</td>
+      <td>Payload saved to <code>~/Desktop/c4e-migration-&lt;hostname&gt;.json</code> — drag to Karen via Teams DM.</td></tr>
+</table>
+
+<div class="callout">
+  <strong>Stuck? Reach Karen</strong> — Teams DM <code>karen_shen@trendmicro.com</code>
+</div>
+
+</div>
+
+<p class="footer">
+  Source: <code>~/Jottacloud/vibe/AI-design/proposals/2026June-model_adoption/switch-to-c4e-account.html</code><br>
+  Apps Script endpoint reused from the 1hr cache adoption setup (same Google Sheet, payload <code>app</code> field distinguishes <code>c4e-migration</code> vs <code>claude-1hr-cache-adoption</code>).
+</p>
+
+<script>
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      document.querySelectorAll('.lang-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + lang));
+      document.documentElement.lang = (lang === 'zh') ? 'zh-TW' : 'en';
+    });
+  });
+
+  // Copy button — inject into every .goal-block
+  document.querySelectorAll('.goal-block').forEach(block => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    const isEn = block.closest('#pane-en') !== null;
+    const labelIdle = isEn ? '📋 Copy' : '📋 複製';
+    const labelDone = isEn ? '✅ Copied!' : '✅ 已複製';
+    btn.textContent = labelIdle;
+    btn.addEventListener('click', async () => {
+      const text = block.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        // Fallback for older browsers / non-https
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      btn.textContent = labelDone;
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = labelIdle;
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+    block.appendChild(btn);
+  });
+</script>
+
+</body>
+</html>
