@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Week 6 — 帶著走的 dotclaude 設定 & AI Model 選擇</title>
+<style>
+:root{
+  --bg:#F6EFE8; --section:#153242; --question:#AFE0EF; --warningBox:#FFF7ED;
+  --primary:#D71920; --accent:#0690A7; --ink:#222; --text:#555; --muted:#8E8E8E;
+  --subtle:#ADADAD; --line:#E5E0D8; --figmaBg:#E7E5FE; --figmaText:#5B5BD6;
+  --gitBg:#FFE5E6; --gitText:#D71920; --warnBg:#FEB912; --warnText:#8A6510;
+  --greenBg:#CDE9DC; --greenText:#0F7A4F; --burgundy:#450105;
+  --dangerBg:#FEF2F2; --dangerText:#DC2626; --dangerBorder:#FCA5A5;
+  --term:#1E1E2E; --termBar:#313244; --termText:#CDD6F4; --termGreen:#A6E3A1;
+  --termBlue:#89B4FA; --termMuted:#7F849C; --termYellow:#F9E2AF;
+  --sans:"PingFang TC","Microsoft JhengHei",Calibri,"Helvetica Neue",sans-serif;
+  --mono:"SF Mono",Consolas,"Roboto Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9d2c9;font-family:var(--sans);color:var(--ink)}
+.slide{
+  width:1280px;height:800px;background:var(--bg);margin:24px auto;position:relative;
+  padding:54px 60px 40px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12);
+}
+.eyebrow{color:var(--primary);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+h1.title{font-size:38px;font-weight:700;color:var(--ink);margin-top:10px;line-height:1.15}
+.subtitle{font-size:17px;font-style:italic;color:var(--muted);margin-top:8px}
+.footer{position:absolute;left:60px;bottom:24px;font-size:11px;color:var(--subtle)}
+.pageno{position:absolute;right:60px;bottom:24px;font-size:11px;color:var(--subtle)}
+.body{margin-top:34px}
+ul{list-style:none}
+li{font-size:18px;color:var(--text);margin:9px 0;padding-left:20px;position:relative;line-height:1.4}
+li::before{content:"•";position:absolute;left:2px;color:var(--muted)}
+li.strong{color:var(--ink);font-weight:700}
+.en{display:block;font-size:.8em;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px;line-height:1.3}
+li .sub{display:block;font-size:15px;color:var(--text);font-weight:400;margin-top:3px;padding-left:16px}
+li .sub::before{content:"–";position:absolute;left:18px;color:var(--subtle)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+.cards{display:flex;gap:20px;margin-top:24px}
+.cards .card{flex:1}
+.pill{display:inline-block;border-radius:18px;padding:6px 16px;font-size:14px;font-weight:700}
+.callout{border-radius:12px;padding:18px 24px;margin-top:22px;font-size:17px;line-height:1.45}
+.cd{font-family:var(--mono)}
+.box-green{background:var(--greenBg);color:var(--greenText)}
+.box-warn{background:var(--warnBg);color:var(--warnText)}
+.box-warnsoft{background:var(--warningBox);border:1px solid var(--warnBg)}
+.box-danger{background:var(--dangerBg);border:1px solid var(--dangerBorder);color:var(--dangerText)}
+.box-section{background:var(--section);color:#fff}
+.box-q{background:var(--question);color:var(--burgundy)}
+.term{background:var(--term);border:1px solid var(--termBar);border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:15px}
+.term .bar{background:var(--termBar);height:34px;display:flex;align-items:center;padding:0 14px;gap:7px}
+.term .dot{width:11px;height:11px;border-radius:50%}
+.term .ttl{color:var(--termMuted);font-size:12px;margin-left:10px}
+.term .bd{padding:16px 20px;color:var(--termText);line-height:1.5;white-space:pre-wrap}
+.ty{color:var(--termYellow)} .tg{color:var(--termGreen)} .tb{color:var(--termBlue)} .tm{color:var(--termMuted)}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:24px;font-size:16px}
+table.cmp th{background:var(--section);color:#fff;padding:12px 16px;font-size:17px;text-align:left}
+table.cmp th:first-child{background:var(--bg)}
+table.cmp td{padding:11px 16px;border:1px solid var(--line);color:var(--text)}
+table.cmp td:first-child{background:#F0E8DC;font-weight:700;color:var(--ink);text-align:center;width:160px}
+table.cmp tr:nth-child(even) td:not(:first-child){background:#FBF7F1}
+table.cmp tr:nth-child(odd) td:not(:first-child){background:#fff}
+.flow{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:50px}
+.flow .step{border-radius:12px;padding:26px 18px;font-size:19px;font-weight:700;text-align:center;min-width:200px}
+.flow .arr{font-size:22px;color:var(--muted)}
+.red{color:var(--primary)} .danger{color:var(--dangerText)} .green{color:var(--greenText)}
+.center{text-align:center}
+.note{font-size:13px;font-style:italic;color:var(--muted);text-align:center;margin-top:14px}
+.pyramid{display:flex;flex-direction:column;align-items:center;gap:8px;margin:30px auto 0}
+.pyramid .lvl{border-radius:10px;padding:14px 26px;font-weight:700;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:space-between;width:100%}
+.pyramid .lvl .label{font-size:13px;font-style:italic;font-weight:400;opacity:.85}
+.lvl-company{background:#7B3F00;width:60%}
+.lvl-dept{background:#A0522D;width:72%}
+.lvl-project{background:#0690A7;width:84%}
+.lvl-personal{background:#D71920;width:96%;box-shadow:0 0 0 3px rgba(215,25,32,.18)}
+.pyramid .dn{font-size:18px;color:var(--muted);margin:-4px 0}
+.cover{background:var(--section);color:#fff;display:flex;flex-direction:column;justify-content:center;padding-left:80px}
+.cover .kicker{color:var(--question);letter-spacing:3px;font-weight:700;font-size:14px}
+.cover h1{font-size:50px;font-weight:700;margin:18px 0 10px;max-width:1000px;line-height:1.15}
+.cover .sub{font-size:20px;font-style:italic;color:var(--subtle)}
+.cover .files{font-family:var(--mono);font-size:16px;color:var(--termBlue);margin-top:22px}
+.divider{background:var(--section);color:#fff;display:flex;flex-direction:column;justify-content:center;padding-left:80px}
+.divider .kicker{color:var(--question);letter-spacing:3px;font-weight:700;font-size:14px}
+.divider h1.title{font-size:60px;color:#fff;margin-top:18px;line-height:1.15;max-width:1000px;font-weight:700}
+.divider .subtitle{font-size:22px;color:var(--subtle);margin-top:6px;font-style:italic}
+.divider .lead{font-size:19px;color:#fff;margin-top:38px;max-width:920px;line-height:1.55}
+.divider .footer,.divider .pageno{color:var(--subtle)}
+/* ---- present mode (one slide at a time) ---- */
+body.present{background:#0b0b0c;overflow:hidden;height:100vh}
+body.present .slide{position:fixed;top:50%;left:50%;margin:0;display:none}
+body.present .slide.active{display:block}
+body.present .slide.cover.active{display:flex}
+.hud{position:fixed;right:16px;bottom:12px;z-index:10;font-family:var(--mono);font-size:13px;
+  color:#fff;background:rgba(0,0,0,.45);padding:4px 10px;border-radius:12px;display:none}
+body.present .hud{display:block}
+.hint{position:fixed;left:16px;bottom:12px;z-index:10;font-size:12px;color:#888;display:none}
+body.present .hint{display:block}
+/* sidebar index */
+.idx{position:fixed;left:0;top:0;height:100vh;width:236px;z-index:9;background:rgba(21,50,66,.97);
+  color:#cdd6f4;overflow:auto;padding:16px 0 24px;display:none;
+  font-family:var(--sans);box-shadow:2px 0 18px rgba(0,0,0,.3)}
+body.present .idx{display:block}
+.idx h4{font-size:10px;letter-spacing:2px;color:#89B4FA;padding:14px 18px 4px;text-transform:uppercase;margin:0}
+.idx a{display:block;padding:6px 18px;font-size:12.5px;color:#cdd6f4;text-decoration:none;cursor:pointer;
+  line-height:1.35;border-left:3px solid transparent}
+.idx a:hover{background:rgba(255,255,255,.06)}
+.idx a.cur{border-left-color:#D71920;background:rgba(255,255,255,.10);font-weight:700;color:#fff}
+.idx .num{color:#7F849C;margin-right:7px;font-family:var(--mono);font-size:11px}
+@media print{.idx{display:none!important}}
+.tip{position:relative;border-bottom:1px dotted #888;cursor:help;font-weight:700;color:var(--accent)}
+.tip:hover .pop,.tip:focus .pop{display:block}
+.pop{display:none;position:absolute;left:0;top:100%;background:var(--term);color:var(--termText);
+  padding:12px 16px;border-radius:8px;font-size:13.5px;font-weight:400;width:340px;z-index:30;
+  margin-top:6px;box-shadow:0 6px 20px rgba(0,0,0,.35);line-height:1.5;font-style:normal}
+.pop::before{content:"";position:absolute;left:18px;top:-6px;border:6px solid transparent;border-bottom-color:var(--term)}
+/* ---- i18n toggle ---- */
+/* zh-only: hide EN supplementals + EN subtitles/sub */
+body.lang-zh .en{display:none}
+body.lang-zh .subtitle{display:none}
+body.lang-zh .cover .sub{display:none}
+/* en-only: hide zh content; swap title↔subtitle */
+body.lang-en .zh{display:none}
+body.lang-en h1.title{display:none}
+body.lang-en .subtitle{
+  font-size:38px !important;font-weight:700 !important;color:var(--ink) !important;
+  font-style:normal !important;margin-top:10px !important;line-height:1.15 !important;
+}
+body.lang-en .cover h1{display:none}
+body.lang-en .cover .sub{
+  font-size:50px !important;font-weight:700 !important;color:#fff !important;
+  font-style:normal !important;margin:18px 0 10px !important;line-height:1.15 !important;
+}
+body.lang-en .en{
+  display:inline !important;
+  font-size:inherit !important;
+  font-style:normal !important;
+  color:inherit !important;
+  font-weight:inherit !important;
+  margin:0 !important;
+  padding:0 !important;
+  line-height:inherit !important;
+  letter-spacing:inherit !important;
+  text-transform:inherit !important;
+}
+.hud{display:flex;gap:8px;align-items:center}
+.hud-sep{opacity:.45}
+.lang-toggle{display:inline-flex;gap:2px;margin-left:4px}
+.lang-toggle button{
+  background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;
+  font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:5px;cursor:pointer;
+  line-height:1.3;
+}
+.lang-toggle button.cur{background:var(--primary);border-color:var(--primary)}
+.lang-toggle button:hover:not(.cur){background:rgba(255,255,255,.15)}
+.term .bd{max-height:560px;overflow-y:auto}
+.term .bd::-webkit-scrollbar{width:8px}
+.term .bd::-webkit-scrollbar-track{background:transparent}
+.term .bd::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:4px}
+.term .bd::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.32)}
+.term .copy{
+  margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.22);
+  color:var(--termMuted);font-family:var(--mono);font-size:10.5px;
+  padding:2px 9px;border-radius:5px;cursor:pointer;line-height:1.3;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.term .copy:hover{background:rgba(255,255,255,.08);color:#fff}
+.term .copy.ok{background:var(--termGreen);color:#1E1E2E;border-color:var(--termGreen)}
+.term .copy.fail{background:#E06C75;color:#fff;border-color:#E06C75}
+@media print{.term .copy{display:none}}
+@media print{
+  body,body.present{background:#fff;overflow:visible;height:auto}
+  body.present .slide{position:static;display:block !important;transform:none !important}
+  body.present .slide.cover.active{display:flex !important}
+  .slide{margin:0;box-shadow:none;page-break-after:always}
+  .hud,.hint{display:none !important}
+  @page{size:1280px 800px;margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<section class="slide cover">
+  <div class="kicker">WEEK 6 · GITHUB FOR DESIGNERS</div>
+  <h1>帶著走的 dotclaude 設定 &amp; AI Model 選擇</h1>
+  <div class="sub">Portable dotclaude config &amp; picking the right AI model</div>
+  <div class="files">環境跨裝置一致 · 用對 model 省一半成本<span class="en">One env across devices · The right model halves the cost</span></div>
+</section>
+
+<!-- TOC -->
+<section class="slide">
+  <div class="eyebrow">AGENDA</div>
+  <h1 class="title">本週內容</h1>
+  <div class="subtitle">What we'll cover</div>
+  <div class="cards body">
+    <div class="card">
+      <span class="pill" style="background:var(--greenBg);color:var(--greenText)">Part 1 · dotclaude 帶著走<span class="en">Part 1 · Portable dotclaude</span></span>
+      <ul style="margin-top:10px;font-size:15px">
+        <li>dotclaude 是什麼、放哪些檔案<span class="en">What dotclaude is, what files it holds</span></li>
+        <li>每個檔案在寫什麼<span class="en">What each file contains</span></li>
+        <li>哪些「不能放」進 git<span class="en">What must stay out of git</span></li>
+        <li>跨裝置同步 SOP<span class="en">Cross-device sync SOP</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="pill" style="background:var(--question);color:var(--burgundy)">Part 2 · AI Model 選擇<span class="en">Part 2 · Picking the AI Model</span></span>
+      <ul style="margin-top:10px;font-size:15px">
+        <li>Opus / Sonnet / Haiku 三層差別<span class="en">Opus / Sonnet / Haiku — the three tiers</span></li>
+        <li>跨品牌怎麼選（Claude / GPT / Gemini / Fable）<span class="en">Cross-brand picking</span></li>
+        <li>快速切換指令<span class="en">Quick-switch commands</span></li>
+        <li>怎麼設定預設 model<span class="en">How to set a default model</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno"></div>
+</section>
+
+<!-- ============================ PART 1 · dotclaude ============================ -->
+
+<!-- #2 概念：.claude vs dotclaude -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 概念<span class="en">PART 1 · CONCEPT</span></div>
+  <h1 class="title">.claude vs dotclaude：為什麼分兩家</h1>
+  <div class="subtitle">Runtime vs source — connected via symlink</div>
+  <div class="body">
+    <p style="font-size:15px;color:var(--text);margin-bottom:12px">
+      <span class="cd">~/.claude/</span> = Claude Code <b style="color:var(--gitText)">runtime working dir</b>（每次對話都會自己寫東西進去）；
+      <span class="cd">~/dotclaude/</span> = 你的 <b style="color:var(--accent)">git source repo</b>（只放你想跨裝置同步的靜態設定）。
+      兩家透過 <span class="tip" tabindex="0">symlink<span class="pop">Symlink = 軟連結，作業系統的「捷徑指標」。<span class="cd">~/.claude/CLAUDE.md</span> 表面看是個檔案，實際內容存在 <span class="cd">~/dotclaude/CLAUDE.md</span>。一檔兩路徑、改一邊兩邊同步。<span class="en">Symlink = soft link, an OS-level shortcut pointer. <span class="cd">~/.claude/CLAUDE.md</span> looks like a file but its content lives in <span class="cd">~/dotclaude/CLAUDE.md</span>. One file, two paths — edit either, both sync.</span></span></span> 連起來。<span class="en"><span class="cd">~/.claude/</span> = Claude Code <b style="color:var(--gitText)">runtime working dir</b> (Claude Code writes to it on every chat); <span class="cd">~/dotclaude/</span> = your <b style="color:var(--accent)">git source repo</b> (only static configs you want synced across devices). Connected via a symlink.</span>
+    </p>
+    <div style="display:flex;gap:12px;align-items:stretch;margin-top:8px">
+      <div style="flex:1;background:#FFF;border:1px solid var(--line);border-radius:10px;padding:12px 16px">
+        <div style="font-size:14px;font-weight:700;color:var(--gitText);margin-bottom:2px">Claude Code 原生工作目錄<span class="en">Claude Code native runtime dir</span></div>
+        <div style="font-size:11.5px;color:var(--muted);font-style:italic;margin-bottom:8px">AI 自己寫的 · Native runtime dir<span class="en">Claude Code writes here · Native runtime dir</span></div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--gitText);font-weight:700;margin-bottom:6px">~/.claude/</div>
+        <ul style="font-family:var(--mono);font-size:12.5px;line-height:1.65;margin:0;list-style:none;padding:0">
+          <li style="color:var(--greenText);padding:0">├─ CLAUDE.md          <span style="color:var(--accent)">→</span></li>
+          <li style="color:var(--greenText);padding:0">├─ settings.json      <span style="color:var(--accent)">→</span></li>
+          <li style="color:var(--greenText);padding:0">├─ skills/            <span style="color:var(--accent)">→</span></li>
+          <li style="color:var(--greenText);padding:0">├─ agents/            <span style="color:var(--accent)">→</span></li>
+          <li style="color:var(--greenText);padding:0">├─ projects/*/memory/ <span style="color:var(--accent)">→</span></li>
+          <li style="color:var(--dangerText);padding:0">├─ projects/*/sessions/ <span style="font-style:italic">本機<span class="en">local</span></span></li>
+          <li style="color:var(--dangerText);padding:0">├─ statsig/ cache/  <span style="font-style:italic">本機<span class="en">local</span></span></li>
+          <li style="color:var(--dangerText);padding:0">├─ todos/ history  <span style="font-style:italic">本機<span class="en">local</span></span></li>
+          <li style="color:var(--dangerText);padding:0">└─ settings.local.json <span style="font-style:italic">本機<span class="en">local</span></span></li>
+        </ul>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 2px">
+        <div style="color:var(--accent);font-size:30px;font-weight:700;font-family:var(--mono);line-height:1">⇄</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:6px;font-weight:700">SYMLINK</div>
+      </div>
+      <div style="flex:1;background:#FFF;border:1px solid var(--line);border-radius:10px;padding:12px 16px">
+        <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:2px">可上 GitHub 的設定源<span class="en">GitHub-versionable config source</span></div>
+        <div style="font-size:11.5px;color:var(--muted);font-style:italic;margin-bottom:8px">你手動編輯 · Versioned source<span class="en">You edit by hand · Versioned source</span></div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px">~/dotclaude/</div>
+        <ul style="font-family:var(--mono);font-size:12.5px;line-height:1.65;margin:0;list-style:none;padding:0">
+          <li style="color:var(--greenText);padding:0">├─ CLAUDE.md          ✓</li>
+          <li style="color:var(--greenText);padding:0">├─ settings.json      ✓</li>
+          <li style="color:var(--greenText);padding:0">├─ skills/            ✓</li>
+          <li style="color:var(--greenText);padding:0">├─ agents/            ✓</li>
+          <li style="color:var(--greenText);padding:0">├─ projects/*/memory/ ✓</li>
+          <li style="color:var(--greenText);padding:0">├─ scripts/           ✓</li>
+          <li style="color:var(--muted);font-style:italic;padding:0">└─ (runtime 垃圾不放<span class="en">no runtime junk</span>)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:12px;gap:14px">
+      <div class="card" style="padding:10px 16px">
+        <span class="pill" style="background:var(--greenBg);color:var(--greenText)">✓ 包進 dotclaude<span class="en">✓ Goes in dotclaude</span></span>
+        <p style="font-size:13px;margin-top:5px;line-height:1.45"><b>你主動編輯的靜態設定</b>——改了才變，跨裝置需一致：CLAUDE.md / settings.json / skills / agents / 個人 memory / scripts。<span class="en"><b>Static configs you actively edit</b> — only change when you do, must stay consistent across devices: CLAUDE.md / settings.json / skills / agents / personal memory / scripts.</span></p>
+      </div>
+      <div class="card" style="padding:10px 16px">
+        <span class="pill" style="background:var(--gitBg);color:var(--gitText)">✗ 不包進<span class="en">✗ Stays out</span></span>
+        <p style="font-size:13px;margin-top:5px;line-height:1.45"><b>Runtime 自動寫</b>的 sessions transcript / cache / todos / per-device override——一直變、含敏感對話、機器特有，整目錄 git 會壞。<span class="en"><b>Runtime-auto-written</b> sessions transcript / cache / todos / per-device override — constantly changing, contains sensitive conversations, machine-specific; git-tracking the whole dir breaks.</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">2</div>
+</section>
+
+<!-- #3 具體做法 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 做法<span class="en">PART 1 · HOW-TO</span></div>
+  <h1 class="title">具體做法：請 Agent 動手 &amp; 檢核</h1>
+  <div class="subtitle">Hand it to the agent, verify the result</div>
+  <div class="body" style="display:flex;gap:18px">
+    <div style="flex:1.1">
+      <div class="term">
+        <div class="bar"><span class="dot" style="background:#E06C75"></span><span class="dot" style="background:#E5C07B"></span><span class="dot" style="background:#98C379"></span><span class="ttl">給 Claude Code 的 prompt<span class="en">Prompt for Claude Code</span></span></div>
+        <div class="bd" style="font-size:13px;line-height:1.55"><span class="zh"><span class="tm"># 給 Claude Code 的完整指令（一次貼完）：</span>
+
+<span class="tb">幫我設定個人 dotclaude config repo。請</span>
+<span class="tb">照下列步驟做。動手前先給我看 plan，</span>
+<span class="tb">我確認後再執行。執行用絕對路徑、</span>
+<span class="tb">每步跑完先 echo 確認再進下一步。</span>
+
+<span class="tm">【1】建資料夾：</span>
+<span class="tg">    mkdir -p ~/dotclaude</span>
+
+<span class="tm">【2】從 ~/.claude/ 把這些搬到 ~/dotclaude/，</span>
+<span class="tm">    原位置用 symlink 接回（絕對路徑）：</span>
+<span class="tg">    mv ~/.claude/CLAUDE.md  ~/dotclaude/</span>
+<span class="tg">    ln -s ~/dotclaude/CLAUDE.md  ~/.claude/CLAUDE.md</span>
+<span class="tm">    其餘同 pattern：settings.json / skills/</span>
+<span class="tm">    agents/ / scripts/ / projects/*/memory/</span>
+
+<span class="tm">【3】寫 ~/dotclaude/.gitignore，含：</span>
+<span class="ty">    .env*  projects/*/sessions/  statsig/</span>
+<span class="ty">    cache/  todos/  .shell-history</span>
+<span class="ty">    settings.local.json  **/node_modules/</span>
+
+<span class="tm">【4】git init + 首次 commit + push：</span>
+<span class="tm">    （前提：先在 terminal 跑 `gh auth login`</span>
+<span class="tm">     登入過 GitHub；&lt;GH帳號&gt; 換成自己的 username）</span>
+<span class="tg">    cd ~/dotclaude &amp;&amp; git init &amp;&amp; git add -A</span>
+<span class="tg">    git commit -m "init: dotclaude config"</span>
+<span class="tg">    gh repo create &lt;GH帳號&gt;/dotclaude \</span>
+<span class="tg">      --private --source=. --push</span>
+
+<span class="tm">【5】完成後告訴我：每個 symlink 的</span>
+<span class="tm">    ls -la 證據、新 repo URL，並用</span>
+<span class="tg">    cd ~/dotclaude</span>
+<span class="tm">    結束本對話。下次要編輯就在 ~/dotclaude</span>
+<span class="tm">    重啟 Claude Code（cwd = dotclaude）。</span></span><span class="en"><span class="tm"># Full prompt for Claude Code (paste once):</span>
+
+<span class="tb">Set up my personal dotclaude config repo.</span>
+<span class="tb">Follow the steps below. Show me the plan</span>
+<span class="tb">first; only act after I confirm. Use</span>
+<span class="tb">absolute paths; echo the result after</span>
+<span class="tb">each step before moving on.</span>
+
+<span class="tm">[1] Create the folder:</span>
+<span class="tg">    mkdir -p ~/dotclaude</span>
+
+<span class="tm">[2] Move these from ~/.claude/ to ~/dotclaude/,</span>
+<span class="tm">    symlink the originals back (absolute paths):</span>
+<span class="tg">    mv ~/.claude/CLAUDE.md  ~/dotclaude/</span>
+<span class="tg">    ln -s ~/dotclaude/CLAUDE.md  ~/.claude/CLAUDE.md</span>
+<span class="tm">    Same pattern for: settings.json / skills/</span>
+<span class="tm">    agents/ / scripts/ / projects/*/memory/</span>
+
+<span class="tm">[3] Write ~/dotclaude/.gitignore with:</span>
+<span class="ty">    .env*  projects/*/sessions/  statsig/</span>
+<span class="ty">    cache/  todos/  .shell-history</span>
+<span class="ty">    settings.local.json  **/node_modules/</span>
+
+<span class="tm">[4] git init + first commit + push:</span>
+<span class="tm">    (Prereq: run `gh auth login` in terminal</span>
+<span class="tm">     first; replace &lt;my-handle&gt; with your</span>
+<span class="tm">     GitHub username)</span>
+<span class="tg">    cd ~/dotclaude &amp;&amp; git init &amp;&amp; git add -A</span>
+<span class="tg">    git commit -m "init: dotclaude config"</span>
+<span class="tg">    gh repo create &lt;my-handle&gt;/dotclaude \</span>
+<span class="tg">      --private --source=. --push</span>
+
+<span class="tm">[5] When done, report: ls -la evidence for</span>
+<span class="tm">    each symlink, the new repo URL, and</span>
+<span class="tg">    cd ~/dotclaude</span>
+<span class="tm">    to finish this chat. For future edits,</span>
+<span class="tm">    restart Claude Code from ~/dotclaude.</span></span></div>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div class="card" style="padding:12px 18px">
+        <span class="pill" style="background:var(--question);color:var(--burgundy)">事後檢核 4 步<span class="en">Post-check: 4 steps</span></span>
+        <ul style="font-size:13.5px;margin-top:8px;line-height:1.45">
+          <li><b>① symlink 真接上<span class="en">① Symlink actually connects</span></b><br><span class="cd" style="font-size:12px">ls -la ~/.claude/CLAUDE.md</span><br>看到 <span class="cd" style="font-size:12px">→ ~/dotclaude/...</span> 箭頭<span class="en">See <span class="cd" style="font-size:12px">→ ~/dotclaude/...</span> arrow</span></li>
+          <li><b>② AI 真讀得到<span class="en">② AI actually reads it</span></b><br>開新對話問「我的 commit 規則？」<br>答得出來 = symlink 方向正確<span class="en">Open a new chat, ask "what's my commit rule?". If it answers = symlink direction is correct.</span></li>
+          <li><b>③ 一邊改兩邊同步<span class="en">③ Edit one side, both sync</span></b><br>在 <span class="cd" style="font-size:12px">~/dotclaude/CLAUDE.md</span> 加一行<br>看 <span class="cd" style="font-size:12px">~/.claude/CLAUDE.md</span> 是否也變<span class="en">Add a line to <span class="cd" style="font-size:12px">~/dotclaude/CLAUDE.md</span>, check if <span class="cd" style="font-size:12px">~/.claude/CLAUDE.md</span> changed too.</span></li>
+          <li><b>④ git status 乾淨<span class="en">④ git status clean</span></b><br>沒 untracked runtime 檔，可 commit + push<span class="en">No untracked runtime files; ready to commit + push.</span></li>
+        </ul>
+      </div>
+      <div class="callout box-danger" style="margin-top:10px;font-size:12.5px;padding:8px 14px;line-height:1.4"><b>不檢核會踩：</b>symlink 方向反了 / AI 找不到設定 / 漏設 .gitignore 把 sessions transcript 一起 push 公開<span class="en"><b>Skip verification, hit these:</b> reversed symlink / AI can't find config / forgotten .gitignore pushes sessions transcript public.</span></div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">3</div>
+</section>
+
+<!-- #3 如何維護 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · DOTCLAUDE</div><!-- already EN -->
+  <h1 class="title">如何維護：定期檢視 &amp; 簡化</h1>
+  <div class="subtitle">Routine review &amp; trim</div>
+  <div class="body">
+    <p style="font-size:16px;color:var(--text);margin-bottom:14px">設定檔會隨時間長大，每加一條規則都覺得「有用」，但檔案膨脹會吃 context、變得難讀、容易被截斷。建議每 1-2 週做一次檢視。<span class="en" style="display:block;color:var(--muted);font-style:italic;font-size:13px;margin-top:2px">Config grows over time. Bloat eats context, hurts readability, risks truncation. Review every 1-2 weeks.</span></p>
+    <div class="cards" style="margin-top:8px">
+      <div class="card">
+        <span class="pill" style="background:var(--greenBg);color:var(--greenText)">① 請 agent 摘要<span class="en">① Ask agent to summarize</span></span>
+        <ul style="font-size:14px;margin-top:10px">
+          <li>「摘要我的 CLAUDE.md，每段一句話」<span class="en">"Summarize my CLAUDE.md, one line per section"</span></li>
+          <li>看摘要能不能複述出你心中的規則<span class="en">Check whether the summary matches your intent</span></li>
+          <li>講不清楚 = 寫得不夠精簡<span class="en">Unclear summary = unclear writing</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill" style="background:var(--question);color:var(--burgundy)">② 檢查重複/過時<span class="en">② Check duplicates / stale</span></span>
+        <ul style="font-size:14px;margin-top:10px">
+          <li>同一規則寫兩次 → 合併<span class="en">Duplicate rules → merge</span></li>
+          <li>過去某次踩雷的個別解法 → 評估還適用嗎<span class="en">One-off lesson → still relevant?</span></li>
+          <li>沒在用的 skill / hook → 移除<span class="en">Unused skill/hook → remove</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="pill" style="background:var(--gitBg);color:var(--gitText)">③ 簡化：抽出來當 ref<span class="en">③ Simplify: extract as ref</span></span>
+        <ul style="font-size:14px;margin-top:10px">
+          <li>某段落變長 → 抽成獨立檔<span class="en">Long section → separate file</span></li>
+          <li>用 <span class="cd">@CODE_BEHAVIOR.md</span> 在 CLAUDE.md 引用<span class="en">Reference via @-import</span></li>
+          <li>主檔回歸精簡、需要才展開<span class="en">Main file stays lean, expands on demand</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout box-section" style="margin-top:18px"><b>實例：</b>我 6/27 把 CLAUDE.md 從 261 行 → 190 行（-27%），把「Coding Conventions」+「Code Behavior」兩段抽成 <span class="cd">CODE_BEHAVIOR.md</span>，主檔用 <span class="cd">@CODE_BEHAVIOR.md</span> 引用——AI 行為不變，主檔清爽很多。<span class="en"><b>Real example:</b> CLAUDE.md 261 → 190 lines (-27%) on 6/27 — extracted Coding Conventions + Code Behavior to <span class="cd">CODE_BEHAVIOR.md</span>, referenced via <span class="cd">@CODE_BEHAVIOR.md</span> in the main file. Same AI behavior, much cleaner main file.</span></div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">3</div>
+</section>
+
+<!-- #4 限制與 gitignore -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 限制<span class="en">PART 1 · CONSTRAINTS</span></div>
+  <h1 class="title">什麼「不能放」進 dotclaude repo</h1>
+  <div class="subtitle">What must stay out of git</div>
+  <div class="body">
+    <table class="cmp">
+      <thead><tr><th>不放的東西<span class="en">What stays out</span></th><th>為什麼<span class="en">Why</span></th><th>放哪<span class="en">Put where</span></th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--dangerText);font-weight:700">.env / token / API key</td><td>外洩 = 帳號被盜、$$ 燒掉<span class="en">Leak = account hijacked, $$ burned</span></td><td>放 <span class="cd">~/Jottacloud/.env.*</span>（雲端、不進 git）<span class="en">In <span class="cd">~/Jottacloud/.env.*</span> (cloud, not git)</span></td></tr>
+        <tr><td>session transcript（projects/*/sessions）</td><td>每天幾百 MB、含對話內容<span class="en">Hundreds of MB/day, contains chats</span></td><td>本機自動產生、別 commit<span class="en">Auto-generated locally; don't commit</span></td></tr>
+        <tr><td>node_modules / __pycache__ / .DS_Store</td><td>每台 OS 不同、bloat repo<span class="en">OS-specific, bloats repo</span></td><td>直接 ignore<span class="en">Just ignore</span></td></tr>
+        <tr><td>個資（email 內容、客戶資料）<span class="en">PII (email content, client data)</span></td><td>repo 可能變 public<span class="en">Repo may become public</span></td><td>留本機或加密儲存<span class="en">Keep local or encrypt</span></td></tr>
+      </tbody>
+    </table>
+    <div class="card" style="margin-top:18px">
+      <span class="pill" style="background:var(--gitBg);color:var(--gitText)">.gitignore 必含三條<span class="en">.gitignore must have 3</span></span>
+      <div class="term" style="margin-top:10px">
+        <div class="bd"><span class="zh"><span class="tg">.env*</span>          <span class="tm"># 所有 env 檔</span>
+<span class="tg">projects/*/sessions/</span>   <span class="tm"># transcript</span>
+<span class="tg">**/node_modules/</span>      <span class="tm"># 依賴目錄</span></span><span class="en"><span class="tg">.env*</span>          <span class="tm"># all env files</span>
+<span class="tg">projects/*/sessions/</span>   <span class="tm"># transcripts</span>
+<span class="tg">**/node_modules/</span>      <span class="tm"># dependency dirs</span></span></div>
+      </div>
+    </div>
+    <div class="callout box-danger"><b>沒設 gitignore 就 push</b>：token 被 GitHub 掃到 → 帳號鎖、key 自動 revoke、要重申請。先設好再 commit。<span class="en"><b>Push without gitignore</b>: GitHub secret-scan catches the token → account locked, key auto-revoked, reapply. Set gitignore before commit.</span></div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">4</div>
+</section>
+
+<!-- #5 跨裝置同步 SOP -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 跨裝置<span class="en">PART 1 · CROSS-DEVICE</span></div>
+  <h1 class="title">換裝置流程</h1>
+  <div class="subtitle">Cross-device setup</div>
+  <div class="body" style="display:flex;gap:18px">
+    <div class="term" style="flex:1;align-self:flex-start">
+      <div class="bar"><span class="dot" style="background:#E06C75"></span><span class="dot" style="background:#E5C07B"></span><span class="dot" style="background:#98C379"></span><span class="ttl">新裝置 prompt — 第一次<span class="en">New device — first time</span></span></div>
+      <div class="bd" style="font-size:12.5px;line-height:1.55"><span class="zh"><span class="tm"># 給 Claude Code 的 prompt（新裝置）：</span>
+
+<span class="tb">我換新裝置了，要從 GitHub 把我的 dotclaude</span>
+<span class="tb">設定 clone 下來、symlink 接回 ~/.claude/。</span>
+<span class="tb">動手前先給 plan，確認後再執行：</span>
+
+<span class="tm">【1】Clone repo 到 home：</span>
+<span class="tg">    gh repo clone &lt;GH帳號&gt;/dotclaude ~/dotclaude</span>
+
+<span class="tm">【2】跑 bootstrap 建 symlink：</span>
+<span class="tg">    bash ~/dotclaude/scripts/bootstrap-symlinks.sh</span>
+<span class="tm">    （此 script 會把 ~/dotclaude/* 接回 ~/.claude/）</span>
+
+<span class="tm">【3】裝必要 CLI（gh、rtk…）：</span>
+<span class="tg">    bash ~/dotclaude/scripts/bootstrap-tools.sh</span>
+
+<span class="tm">【4】驗證每個 symlink：</span>
+<span class="tg">    ls -la ~/.claude/CLAUDE.md</span>
+<span class="tm">    要看到 → ~/dotclaude/CLAUDE.md 箭頭</span>
+
+<span class="tm">【5】完成後告訴我：每個 symlink 的證據</span>
+<span class="tm">    + 提示「下次要編輯先 cd ~/dotclaude</span>
+<span class="tm">    重啟 Claude Code」。</span>
+
+<span class="tm"># 前提：新裝置已裝 Claude Code、gh CLI，</span>
+<span class="tm"># 且跑過 `gh auth login` 登入；&lt;GH帳號&gt;</span>
+<span class="tm"># 換成自己的 GitHub username。</span></span><span class="en"><span class="tm"># Prompt for Claude Code (new device):</span>
+
+<span class="tb">I'm on a new device. Clone my dotclaude</span>
+<span class="tb">repo from GitHub and symlink everything</span>
+<span class="tb">back into ~/.claude/. Show me the plan</span>
+<span class="tb">first; only act after I confirm:</span>
+
+<span class="tm">[1] Clone repo to home:</span>
+<span class="tg">    gh repo clone &lt;my-handle&gt;/dotclaude ~/dotclaude</span>
+
+<span class="tm">[2] Run bootstrap to create symlinks:</span>
+<span class="tg">    bash ~/dotclaude/scripts/bootstrap-symlinks.sh</span>
+<span class="tm">    (links ~/dotclaude/* back to ~/.claude/)</span>
+
+<span class="tm">[3] Install required CLIs (gh, rtk...):</span>
+<span class="tg">    bash ~/dotclaude/scripts/bootstrap-tools.sh</span>
+
+<span class="tm">[4] Verify each symlink:</span>
+<span class="tg">    ls -la ~/.claude/CLAUDE.md</span>
+<span class="tm">    must show → ~/dotclaude/CLAUDE.md arrow</span>
+
+<span class="tm">[5] When done: report each symlink + remind</span>
+<span class="tm">    me to `cd ~/dotclaude` and restart</span>
+<span class="tm">    Claude Code from there next time.</span>
+
+<span class="tm"># Prereq: new device has Claude Code + gh CLI</span>
+<span class="tm"># installed and `gh auth login` has run;</span>
+<span class="tm"># replace &lt;my-handle&gt; with your GH username.</span></span></div>
+    </div>
+    <div class="term" style="flex:1;align-self:flex-start">
+      <div class="bar"><span class="dot" style="background:#E06C75"></span><span class="dot" style="background:#E5C07B"></span><span class="dot" style="background:#98C379"></span><span class="ttl">日常 prompt — A 機 push / B 機 pull<span class="en">Daily — A push / B pull</span></span></div>
+      <div class="bd" style="font-size:12.5px;line-height:1.55"><span class="zh"><span class="tm"># A 機 — 改完設定後對 Claude Code 說：</span>
+
+<span class="tb">幫我看 ~/dotclaude/ 的 git diff、</span>
+<span class="tb">整理出剛剛改了什麼，給我建議的</span>
+<span class="tb">commit message（Conventional Commits</span>
+<span class="tb">格式 feat/fix/chore），我確認後</span>
+<span class="tb">commit + push 到 GitHub。</span>
+
+
+<span class="tm"># B 機 — 開工前對 Claude Code 說：</span>
+
+<span class="tb">幫我去 ~/dotclaude/ git pull 最新版。</span>
+<span class="tb">如果有 conflict 先 stop 給我看，</span>
+<span class="tb">不要自動 merge。</span>
+<span class="tb">pull 完報告：拉了哪些 commit、</span>
+<span class="tb">哪些設定檔變了。</span>
+
+
+<span class="tm"># 兩個都不用 cd / 手打 git 指令、</span>
+<span class="tm"># agent 用絕對路徑處理。</span></span><span class="en"><span class="tm"># Machine A — after editing, tell Claude Code:</span>
+
+<span class="tb">Check git diff in ~/dotclaude/, summarize</span>
+<span class="tb">what changed, suggest a commit message</span>
+<span class="tb">(Conventional Commits: feat / fix / chore).</span>
+<span class="tb">After I confirm, commit + push to GitHub.</span>
+
+
+
+<span class="tm"># Machine B — before starting, tell Claude Code:</span>
+
+<span class="tb">Pull the latest from ~/dotclaude/. If</span>
+<span class="tb">there's a conflict, stop and show me —</span>
+<span class="tb">don't auto-merge. After pull, report:</span>
+<span class="tb">which commits came in and which config</span>
+<span class="tb">files changed.</span>
+
+
+<span class="tm"># Neither requires you to cd or type git</span>
+<span class="tm"># commands; agent uses absolute paths.</span></span></div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">5</div>
+</section>
+
+<!-- ============================ PART 2 · MODEL ============================ -->
+
+<!-- Part 2 · Model — divider -->
+<section class="slide divider">
+  <div class="kicker">PART 2 · MODEL</div>
+  <h1 class="title">AI Model 怎麼挑、怎麼設<span class="en">Picking &amp; Configuring AI Models</span></h1>
+  <div class="subtitle">Tier, brand, hybrid, effort</div>
+  <p class="lead">設定 dotclaude 解決了「環境」一致；接下來解「腦」用對：<b style="color:var(--question)">model + 思考深度 設定</b>（settings.json）→ <b style="color:var(--question)">Claude 三層</b>（Opus / Sonnet / Haiku）→ <b style="color:var(--question)">跨品牌對照</b>（GPT / Gemini）。挑對 model 是省 50% 成本最直接的槓桿。<span class="en">dotclaude solved the environment side; now the brain side: <b style="color:var(--question)">model + effort settings</b> (settings.json) → <b style="color:var(--question)">Claude's three tiers</b> (Opus / Sonnet / Haiku) → <b style="color:var(--question)">cross-brand mapping</b> (GPT / Gemini). Right model = the most direct 50% cost lever.</span></p>
+  <div class="footer">Week 6 · GitHub for Designers</div>
+</section>
+
+<!-- #8 快速切換 + 預設 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · MODEL</div>
+  <h1 class="title">快速切換、設預設 &amp; 思考深度</h1>
+  <div class="subtitle">Switch, set defaults &amp; reasoning effort</div>
+  <div class="body" style="display:flex;gap:24px">
+    <div style="flex:1">
+      <div class="card">
+        <span class="pill" style="background:var(--greenBg);color:var(--greenText)">對話中即時切<span class="en">Switch mid-chat</span></span>
+        <ul style="font-size:15px;margin-top:10px">
+          <li><span class="cd">/model</span> → 從列表挑 Opus / Sonnet / Haiku<span class="en">Pick Opus / Sonnet / Haiku from list</span></li>
+          <li><span class="cd">/fast</span> → 切到 Opus fast mode<span class="en">Switch to Opus fast mode</span></li>
+        </ul>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <span class="pill" style="background:var(--gitBg);color:var(--gitText)">Hybrid mode（設定檔）<span class="en">Hybrid mode (config file)</span></span>
+        <ul style="font-size:15px;margin-top:10px">
+          <li>在 <span class="cd">settings.json</span> 寫 <span class="cd">"model": "opusplan"</span><span class="en">Set <span class="cd">"model": "opusplan"</span> in <span class="cd">settings.json</span></span></li>
+          <li>Opus 規劃 + Sonnet 執行，省 50-70% 成本<span class="en">Opus plans, Sonnet executes — saves 50-70%</span></li>
+          <li>重啟 Claude Code 才生效<span class="en">Restart Claude Code to apply</span></li>
+        </ul>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <span class="pill" style="background:var(--warnBg);color:var(--warnText)">思考深度 effort<span class="en">Reasoning effort</span></span>
+        <ul style="font-size:14.5px;margin-top:10px">
+          <li><b>是什麼</b>：model 在回答前花多少 token 「思考」（chain-of-thought）<span class="en"><b>What:</b> how many tokens the model spends "thinking" before answering</span></li>
+          <li><b>4 段</b>：<span class="cd">low / medium / high / max</span> — 越高越深思、越貴<span class="en"><b>4 levels:</b> <span class="cd">low / medium / high / max</span> — higher = deeper + costlier</span></li>
+          <li><b>怎麼設</b>：<span class="cd">settings.json</span> 加 <span class="cd">"effortLevel": "high"</span><span class="en"><b>How:</b> add <span class="cd">"effortLevel": "high"</span> to <span class="cd">settings.json</span></span></li>
+          <li><b>影響</b>：複雜 spec / debug 用 high；批次小事用 low<span class="en"><b>Impact:</b> high for complex spec / debug; low for batch tasks</span></li>
+        </ul>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div class="term" style="align-self:flex-start">
+        <div class="bar"><span class="dot" style="background:#E06C75"></span><span class="dot" style="background:#E5C07B"></span><span class="dot" style="background:#98C379"></span><span class="ttl">~/dotclaude/settings.json</span></div>
+        <div class="bd" style="font-size:13px;line-height:1.55"><span class="zh"><span class="tm"># 預設 model + 思考深度</span>
+<span class="tg">{</span>
+  <span class="tb">"model"</span>: <span class="ty">"opusplan"</span>,
+  <span class="tb">"effortLevel"</span>: <span class="ty">"high"</span>
+<span class="tg">}</span>
+
+<span class="tm"># model 選項：</span>
+<span class="tm">#   claude-opus-4-7   純 Opus（最強最貴）</span>
+<span class="tm">#   claude-sonnet-4-6 純 Sonnet（日常）</span>
+<span class="tm">#   claude-haiku-4-5  純 Haiku（便宜）</span>
+<span class="tm">#   opusplan          Opus 規劃 + Sonnet 執行</span>
+
+<span class="tm"># effortLevel 思考深度：</span>
+<span class="tm">#   low     淺思考、快、便宜</span>
+<span class="tm">#   medium  預設</span>
+<span class="tm">#   high    深思、慢、貴</span>
+<span class="tm">#   max     最深（spec / 架構討論用）</span></span><span class="en"><span class="tm"># Default model + reasoning effort</span>
+<span class="tg">{</span>
+  <span class="tb">"model"</span>: <span class="ty">"opusplan"</span>,
+  <span class="tb">"effortLevel"</span>: <span class="ty">"high"</span>
+<span class="tg">}</span>
+
+<span class="tm"># model options:</span>
+<span class="tm">#   claude-opus-4-7   pure Opus (strongest, costliest)</span>
+<span class="tm">#   claude-sonnet-4-6 pure Sonnet (daily)</span>
+<span class="tm">#   claude-haiku-4-5  pure Haiku (cheap)</span>
+<span class="tm">#   opusplan          Opus plans + Sonnet executes</span>
+
+<span class="tm"># effortLevel (reasoning depth):</span>
+<span class="tm">#   low     shallow, fast, cheap</span>
+<span class="tm">#   medium  default</span>
+<span class="tm">#   high    deep, slow, expensive</span>
+<span class="tm">#   max     deepest (spec / architecture)</span></span></div>
+      </div>
+      <div class="callout box-warnsoft" style="margin-top:14px;font-size:13.5px;padding:8px 14px"><b>建議搭配：</b><span class="cd">opusplan + high</span>（hybrid model 省 50% + 深思考保品質）。純對話 / 快測試 → 切 <span class="cd">medium</span>。改完 commit + push 同步到其他裝置。<span class="en"><b>Recommended combo:</b> <span class="cd">opusplan + high</span> (hybrid model saves 50% + deep reasoning keeps quality). Pure chat / quick test → drop to <span class="cd">medium</span>. Commit + push after edits to sync.</span></div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">8</div>
+</section>
+
+<!-- #6 Opus/Sonnet/Haiku 三層比較 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · MODEL</div>
+  <h1 class="title">Claude 三層 Model 怎麼選</h1>
+  <div class="subtitle">Picking among Opus / Sonnet / Haiku</div>
+  <p class="note" style="text-align:left;font-size:13px;margin-top:6px"><b>※</b> Fable 5（圖像/影片）走不同 pricing 模式（per image/per second），不在這張的 token-cost 比較內 — 下一張跨品牌再講。<span class="en"><b>Note:</b> Fable 5 (image / video) uses a different pricing model (per image / per second) and isn't in this token-cost comparison — covered in the next slide.</span></p>
+  <div class="body">
+    <table class="cmp">
+      <thead><tr><th>Model</th><th>強項<span class="en">Strengths</span></th><th>適合任務<span class="en">Good for</span></th><th>相對成本<span class="en">Relative cost</span></th></tr></thead>
+      <tbody>
+        <tr><td>Opus 4.8 / 4.7</td><td>深度推理、長 plan、複雜架構<span class="en">Deep reasoning, long plans, complex architecture</span></td><td>spec / 設計討論 / 多檔案重構 / debug 難題<span class="en">spec / design talks / multi-file refactor / hard debug</span></td><td style="color:var(--dangerText);font-weight:700">$$$$</td></tr>
+        <tr><td>Sonnet 4.6</td><td>速度與品質平衡<span class="en">Speed + quality balance</span></td><td>日常編輯 / prototype / 例行 commit / 寫 PR<span class="en">daily edits / prototype / routine commits / PR writing</span></td><td>$$</td></tr>
+        <tr><td>Haiku 4.5</td><td>快、便宜<span class="en">Fast, cheap</span></td><td>簡單查找 / 格式轉換 / 批次跑大量小任務<span class="en">simple lookup / format conversion / batch small tasks</span></td><td style="color:var(--greenText);font-weight:700">$</td></tr>
+      </tbody>
+    </table>
+    <div class="body" style="margin-top:14px">
+    <p style="font-size:14px;color:var(--text);margin-bottom:8px"><b>設計師任務 → 對應 model：</b><span class="en"> Designer tasks → which model:</span></p>
+    <div class="cards" style="gap:12px">
+      <div class="card" style="padding:10px 14px;border-top:3px solid var(--dangerText)">
+        <div style="font-weight:700;color:var(--dangerText);font-size:14px;margin-bottom:6px">Opus　<span style="color:var(--muted);font-weight:400;font-size:12px">$$$$</span></div>
+        <ul style="font-size:12.5px;line-height:1.5;margin:0">
+          <li>寫 design spec / Decision Record<span class="en">Write design spec / DR</span></li>
+          <li>跨 component 的 API / token 系統重整<span class="en">Cross-component API / token rework</span></li>
+          <li>UX flow 複雜邏輯討論<span class="en">Complex UX flow discussions</span></li>
+          <li>onboarding doc / 多檔案 refactor<span class="en">Onboarding docs / multi-file refactor</span></li>
+        </ul>
+      </div>
+      <div class="card" style="padding:10px 14px;border-top:3px solid var(--accent)">
+        <div style="font-weight:700;color:var(--accent);font-size:14px;margin-bottom:6px">Sonnet　<span style="color:var(--muted);font-weight:400;font-size:12px">$$</span></div>
+        <ul style="font-size:12.5px;line-height:1.5;margin:0">
+          <li>改一個 component 的樣式 / 修小 bug<span class="en">Tweak one component / fix small bug</span></li>
+          <li>寫 PR 描述、commit message<span class="en">Write PR description, commit msg</span></li>
+          <li>改 CLAUDE.md 一段、settings.json 加 hook<span class="en">Edit one CLAUDE.md section, add a hook</span></li>
+          <li>整理會議筆記、寫每週 retro<span class="en">Meeting notes, weekly retro</span></li>
+        </ul>
+      </div>
+      <div class="card" style="padding:10px 14px;border-top:3px solid var(--greenText)">
+        <div style="font-weight:700;color:var(--greenText);font-size:14px;margin-bottom:6px">Haiku　<span style="color:var(--muted);font-weight:400;font-size:12px">$</span></div>
+        <ul style="font-size:12.5px;line-height:1.5;margin:0">
+          <li>批次改 N 個 component className<span class="en">Batch rename className across N components</span></li>
+          <li>format JSON / 整理 100 行 log<span class="en">Format JSON / clean 100-line log</span></li>
+          <li>檔名重命名、簡單 lookup<span class="en">Rename files, simple lookup</span></li>
+          <li>把 markdown 表格轉 CSV<span class="en">Markdown table → CSV</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout box-q" style="margin-top:10px;font-size:13px;padding:8px 14px"><b>速查口訣：</b>機械工 → Haiku／一般日常 → Sonnet／要思考 → Opus／視覺素材 → Fable。最划算的 hybrid：在 <span class="cd">~/dotclaude/settings.json</span> 設 <span class="cd">"model": "opusplan"</span>（Opus 規劃 + Sonnet 執行），改完重啟 Claude Code 生效。<span class="en"><b>Shortcut:</b> Mechanical → Haiku · Daily work → Sonnet · Thinking → Opus · Visual assets → Fable. Best hybrid: set <span class="cd">"model": "opusplan"</span> in <span class="cd">~/dotclaude/settings.json</span> (Opus plans, Sonnet executes), restart Claude Code to apply.</span></div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">6</div>
+</section>
+
+<!-- #7 跨品牌比較 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · MODEL</div>
+  <h1 class="title">跨品牌：層級對照 &amp; 適用情境</h1>
+  <div class="subtitle">Cross-brand: tier mapping &amp; when to use</div>
+  <div class="body">
+    <p style="font-size:14px;color:var(--text);margin-bottom:6px"><b>① 三家層級對照</b>（每層找各家對應 model）：<span class="en"> <b>① Tier mapping</b> across three brands:</span></p>
+    <table class="cmp" style="margin-top:6px">
+      <thead><tr>
+        <th>層級<span class="en">Tier</span></th>
+        <th>Claude<br><span style="font-size:11.5px;font-style:italic;color:#fff;opacity:.65;font-weight:400">Anthropic</span></th>
+        <th>GPT<br><span style="font-size:11.5px;font-style:italic;color:#fff;opacity:.65;font-weight:400">OpenAI</span></th>
+        <th>Gemini<br><span style="font-size:11.5px;font-style:italic;color:#fff;opacity:.65;font-weight:400">Google</span></th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="color:var(--dangerText)"><b>旗艦・推理</b><br><span class="en" style="font-size:11px;color:var(--muted);font-style:italic">Top · reasoning</span></td><td>Opus 4.8 / 4.7</td><td>GPT-5 Pro / o3-pro</td><td>Gemini 3 Pro</td></tr>
+        <tr><td style="color:var(--accent)"><b>主力・日常</b><br><span class="en" style="font-size:11px;color:var(--muted);font-style:italic">Daily driver</span></td><td>Sonnet 4.6</td><td>GPT-5 / GPT-4.1</td><td>Gemini 3 Flash</td></tr>
+        <tr><td style="color:var(--greenText)"><b>快・便宜</b><br><span class="en" style="font-size:11px;color:var(--muted);font-style:italic">Fast · cheap</span></td><td>Haiku 4.5</td><td>GPT-5 mini / nano</td><td>Flash Lite / Nano</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="text-align:left;margin-top:8px;font-size:12px"><b>※ 視覺素材：</b>Anthropic <span class="cd">Fable 5</span>（圖像 + 影片）／ OpenAI <span class="cd">DALL-E 3</span>＋<span class="cd">Sora 2</span> ／ Google <span class="cd">Imagen 4</span>＋<span class="cd">Veo 3</span>。走 per-image / per-second pricing，不在上表 token-cost 體系內。<span class="en"><b>Visual assets:</b> Anthropic <span class="cd">Fable 5</span> (image + video) / OpenAI <span class="cd">DALL-E 3</span>＋<span class="cd">Sora 2</span> / Google <span class="cd">Imagen 4</span>＋<span class="cd">Veo 3</span>. Billed per image / per second, outside the token-cost grid above.</span></p>
+    <p style="font-size:14px;color:var(--text);margin-top:14px;margin-bottom:6px"><b>② 各品牌一句話：</b>什麼任務挑誰<span class="en"> <b>② One-liner per brand:</b> when to pick which</span></p>
+    <div class="cards" style="gap:10px">
+      <div class="card" style="padding:8px 14px">
+        <div style="font-weight:700;color:var(--ink);font-size:13.5px">Claude</div>
+        <div style="font-size:12.5px;color:var(--text);margin-top:3px;line-height:1.45">長 context · Coding · agent harness 最成熟 → <b>Claude Code、design spec、多檔案重構</b><span class="en">Long context · coding · most mature agent harness → <b>Claude Code, design spec, multi-file refactor</b></span></div>
+      </div>
+      <div class="card" style="padding:8px 14px">
+        <div style="font-weight:700;color:var(--ink);font-size:13.5px">GPT</div>
+        <div style="font-size:12.5px;color:var(--text);margin-top:3px;line-height:1.45">對話流暢 · 多模態（語音）· 外掛廣 → <b>ChatGPT 對話、語音、Custom GPTs</b><span class="en">Fluent chat · multimodal (voice) · wide plugin store → <b>ChatGPT, voice, Custom GPTs</b></span></div>
+      </div>
+      <div class="card" style="padding:8px 14px">
+        <div style="font-weight:700;color:var(--ink);font-size:13.5px">Gemini</div>
+        <div style="font-size:12.5px;color:var(--text);margin-top:3px;line-height:1.45">超長 context（1M+）· Google 生態 → <b>讀整本書、跨檔案查找、GDrive/GMail</b><span class="en">Ultra-long context (1M+) · Google ecosystem → <b>whole-book reading, cross-file search, GDrive/GMail</b></span></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:10px;font-size:12px">沒有「最好的 model」，只有「適合這個任務的 model」。同一天用 2-3 個品牌很正常。<span class="en"> No single best model — only the right model for the task. Using 2-3 brands in a day is normal.</span></p>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">7</div>
+</section>
+
+<!-- #9 cheatsheet -->
+<section class="slide">
+  <div class="eyebrow">CHEATSHEET</div>
+  <h1 class="title">Week 6 一頁帶走</h1>
+  <div class="subtitle">One-page cheatsheet</div>
+  <div class="cards body" style="margin-top:20px">
+    <div class="card">
+      <span class="pill" style="background:var(--greenBg);color:var(--greenText)">dotclaude 帶著走<span class="en">Portable dotclaude</span></span>
+      <ul style="font-size:14px;margin-top:10px">
+        <li><span class="cd">~/dotclaude</span> = 個人化設定總部<span class="en">Personalization HQ</span></li>
+        <li>核心三檔：CLAUDE.md + settings.json + skills/<span class="en">Core 3: CLAUDE.md / settings.json / skills/</span></li>
+        <li>第一次：clone + bootstrap-symlinks.sh<span class="en">First time: clone + bootstrap</span></li>
+        <li>之後：改一台 push、其他 pull<span class="en">Daily: edit one machine, others pull</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="pill" style="background:var(--gitBg);color:var(--gitText)">.gitignore 必排除<span class="en">.gitignore must exclude</span></span>
+      <ul style="font-size:14px;margin-top:10px">
+        <li class="strong danger"><span class="cd">.env*</span> / token / API key<span class="en">Secrets</span></li>
+        <li><span class="cd">projects/*/sessions/</span> transcript<span class="en">Session transcripts</span></li>
+        <li><span class="cd">node_modules/</span> / cache 目錄<span class="en">Dependencies / caches</span></li>
+        <li>個資 / 客戶資料 / 內部文件<span class="en">PII / client data</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="pill" style="background:var(--question);color:var(--burgundy)">Model 怎麼挑<span class="en">How to pick a model</span></span>
+      <ul style="font-size:14px;margin-top:10px">
+        <li><b>Sonnet</b> 當預設（settings.json）<span class="en">Sonnet as default</span></li>
+        <li>要 plan / debug 難題 → <span class="cd">/model</span> 切 Opus<span class="en">Switch to Opus when planning</span></li>
+        <li>批次小事 → 切 Haiku 省錢<span class="en">Haiku for batch work</span></li>
+        <li>跨品牌不挑邊：Claude 寫 code / Gemini 讀長文 / Fable 做圖<span class="en">Use the right brand per task</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">9</div>
+</section>
+
+
+<div class="hint">← → / 空白鍵翻頁 · 點左/右切換 · F 全螢幕 · P 列印 · L 切語言<span class="en">← → / Space to flip · Click L/R to navigate · F fullscreen · P print · L toggle language</span></div>
+<div class="hud">
+  <span><span id="cur">1</span> / <span id="tot">1</span></span>
+  <span class="hud-sep">·</span>
+  <span class="lang-toggle" role="group" aria-label="Language">
+    <button type="button" data-lang="zh">中</button>
+    <button type="button" data-lang="en">EN</button>
+  </span>
+</div>
+<script>
+(function(){
+  // ---- i18n: wrap zh text/inline-emphasis nodes into <span class="zh"> ----
+  // Preserve language-neutral inline elements (code paths, <br>, <a>, <code>, etc.)
+  function isCodeLike(n){
+    if(!n||n.nodeType!==1) return false;
+    if(n.classList && (n.classList.contains('cd')||n.classList.contains('pill')||n.classList.contains('en')||n.classList.contains('zh'))) return false;
+    var t=n.tagName;
+    return t==='BR'||t==='CODE'||t==='A'||t==='IMG'||t==='HR'||t==='SVG';
+  }
+  function flushWrap(parent, nodes, beforeNode){
+    if(!nodes.length) return;
+    var w=document.createElement('span'); w.className='zh';
+    for(var i=0;i<nodes.length;i++) w.appendChild(nodes[i]);
+    if(beforeNode) parent.insertBefore(w, beforeNode); else parent.appendChild(w);
+  }
+  function wrapParent(p){
+    if(p.querySelector(':scope > .zh')) return;
+    var children=[].slice.call(p.childNodes);
+    var buf=[], anchor=null;
+    for(var k=0;k<children.length;k++){
+      var c=children[k];
+      var isEn = c.nodeType===1 && c.classList && c.classList.contains('en');
+      var isCode = isCodeLike(c);
+      if(isEn || isCode){
+        if(buf.length){ flushWrap(p, buf, c); buf=[]; }
+      } else {
+        if(c.nodeType===3 && !c.textContent.trim()) continue;
+        buf.push(c);
+      }
+    }
+    if(buf.length) flushWrap(p, buf, null);
+  }
+  var enEls = document.querySelectorAll('.en');
+  var parents = new Set ? new Set() : null;
+  if(parents){ for(var x=0;x<enEls.length;x++) parents.add(enEls[x].parentElement); parents.forEach(wrapParent); }
+  else { /* fallback */ var seen=[]; for(var y=0;y<enEls.length;y++){ var pp=enEls[y].parentElement; if(seen.indexOf(pp)<0){ seen.push(pp); wrapParent(pp); } } }
+
+  // ---- toggle handler ----
+  function setLang(l){
+    document.body.classList.remove('lang-zh','lang-en','lang-both');
+    document.body.classList.add('lang-'+l);
+    var btns=document.querySelectorAll('.lang-toggle button');
+    for(var b=0;b<btns.length;b++) btns[b].classList.toggle('cur', btns[b].dataset.lang===l);
+    try{ localStorage.setItem('w6lang', l); }catch(e){}
+  }
+  var saved='zh'; try{ saved = localStorage.getItem('w6lang')||'zh'; }catch(e){}
+  if(saved==='both') saved='zh';
+  setLang(saved);
+  document.querySelectorAll('.lang-toggle button').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); setLang(b.dataset.lang); });
+  });
+  // ---- copy button for every .term ----
+  function getVisibleText(bd){
+    var enChild = bd.querySelector(':scope > .en');
+    var zhChild = bd.querySelector(':scope > .zh');
+    var visible;
+    if(document.body.classList.contains('lang-en') && enChild){
+      visible = enChild;
+    } else if(zhChild){
+      visible = zhChild;
+    } else {
+      visible = bd;
+    }
+    return visible.innerText || visible.textContent || '';
+  }
+  document.querySelectorAll('.term').forEach(function(term){
+    var bar = term.querySelector('.bar');
+    var bd = term.querySelector('.bd');
+    if(!bar || !bd) return;
+    var btn = document.createElement('button');
+    btn.type='button';
+    btn.className='copy';
+    btn.textContent='copy';
+    btn.setAttribute('aria-label','Copy to clipboard');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var text = getVisibleText(bd);
+      var done = function(ok){
+        btn.classList.remove('ok','fail');
+        btn.classList.add(ok?'ok':'fail');
+        btn.textContent = ok?'copied':'failed';
+        setTimeout(function(){
+          btn.classList.remove('ok','fail');
+          btn.textContent='copy';
+        }, 1200);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){done(true)}, function(){done(false)});
+      } else {
+        var ta=document.createElement('textarea');
+        ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(true); }catch(err){ done(false); }
+        document.body.removeChild(ta);
+      }
+    });
+    bar.appendChild(btn);
+  });
+
+  // keyboard shortcut: L cycles
+  window.addEventListener('keydown', function(e){
+    if(e.key==='l'||e.key==='L'){
+      var cur = document.body.classList.contains('lang-en') ? 'en' : 'zh';
+      setLang(cur==='zh'?'en':'zh');
+    }
+  });
+
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var i=0, tot=slides.length;
+  document.getElementById('tot').textContent=tot;
+  var pn=0;
+  slides.forEach(function(sl){ if(!sl.classList.contains('cover')){ pn++; var f=sl.querySelector('.pageno'); if(f) f.textContent=pn; } });
+
+  var idx=document.createElement('nav'); idx.className='idx';
+  var idxLinks=[];
+  function partOf(sl){
+    var e=(sl.querySelector('.eyebrow')||{}).textContent||'';
+    if(/AGENDA/i.test(e)) return 'Agenda';
+    if(/RECAP|FRAMING/i.test(e)) return 'Framing';
+    if(/PART 1/i.test(e)) return 'Part 1 · dotclaude';
+    if(/PART 2/i.test(e)) return 'Part 2 · Model';
+    if(/CHEATSHEET|收尾/i.test(e)) return 'Wrap-up';
+    if(/NEXT WEEK|下週/i.test(e)) return 'Next';
+    return '';
+  }
+  var lastPart=null, cn=0;
+  slides.forEach(function(sl,k){
+    if(sl.classList.contains('cover')) return;
+    cn++;
+    var part=partOf(sl);
+    if(part && part!==lastPart){ var h=document.createElement('h4'); h.textContent=part; idx.appendChild(h); lastPart=part; }
+    var t=((sl.querySelector('.title')||{}).textContent||'').trim();
+    if(t.length>15) t=t.slice(0,15)+'…';
+    var a=document.createElement('a');
+    a.innerHTML='<span class="num">'+cn+'</span>'+t;
+    a.addEventListener('click',function(){ show(k); });
+    idx.appendChild(a); idxLinks[k]=a;
+  });
+  document.body.appendChild(idx);
+  function updateIdx(){ idxLinks.forEach(function(a,k){ if(a) a.classList.toggle('cur',k===i); }); }
+  var SB=236;
+  function fit(){
+    var availW=window.innerWidth-SB;
+    var s=Math.min(availW/1280, window.innerHeight/800);
+    var cx=SB+availW/2;
+    slides.forEach(function(sl){ sl.style.left=cx+'px'; sl.style.top='50%'; sl.style.transform='translate(-50%,-50%) scale('+s+')'; });
+  }
+  function show(n){
+    i=Math.max(0,Math.min(tot-1,n));
+    slides.forEach(function(sl,k){ sl.classList.toggle('active',k===i); });
+    document.getElementById('cur').textContent=i+1;
+    location.hash=i+1;
+    updateIdx();
+  }
+  window.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ show(i+1); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ show(i-1); }
+    else if(e.key==='Home'){ show(0); }
+    else if(e.key==='End'){ show(tot-1); }
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement)document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    else if(e.key==='p'||e.key==='P'){ window.print(); }
+  });
+  window.addEventListener('click',function(e){ if(e.target.closest('.idx,.idxbtn,.term,.hud,.lang-toggle')) return; if(e.clientX < window.innerWidth*0.25) show(i-1); else show(i+1); });
+  window.addEventListener('resize',fit);
+  document.body.classList.add('present');
+  fit();
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  show(isNaN(start)?0:start-1);
+})();
+</script>
+</body>
+</html>
