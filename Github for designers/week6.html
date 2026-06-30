@@ -278,6 +278,34 @@ body.lang-en .en{
   <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno">2</div>
 </section>
 
+<!-- #2b Symlink 截圖示意 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 概念<span class="en">PART 1 · CONCEPT</span></div>
+  <h1 class="title">Symlink 長什麼樣：Finder 示意<span class="en">What a symlink looks like: Finder screenshot</span></h1>
+  <div class="subtitle">~/.claude/CLAUDE.md = Alias → ~/dotclaude/CLAUDE.md</div>
+  <div class="body" style="display:flex;gap:28px;align-items:flex-start;margin-top:16px">
+    <div style="flex:1.5">
+      <img src="/Users/karen_shen/Desktop/symlink.jpg"
+           alt="Finder 顯示 ~/.claude/CLAUDE.md 為 Alias（symlink）"
+           style="width:100%;border-radius:10px;border:1px solid var(--line);box-shadow:0 3px 16px rgba(0,0,0,.12)">
+    </div>
+    <div style="flex:1">
+      <div class="card" style="padding:14px 18px">
+        <span class="pill" style="background:var(--question);color:var(--burgundy)">看哪裡<span class="en">What to look for</span></span>
+        <ul style="font-size:15px;margin-top:10px;line-height:1.65">
+          <li><b>右欄：「Alias」</b>——不是普通檔案，是指標<span class="en">Right panel: "Alias" — pointer, not a file</span></li>
+          <li>大小只有 <b>37 bytes</b>——內容是路徑字串，不是真實資料<span class="en">Only 37 bytes — stores a path string, not real data</span></li>
+          <li>你在 <b>~/.claude/</b> 看到 CLAUDE.md → 點進去讀到的其實是 <b>~/dotclaude/</b> 的內容<span class="en">CLAUDE.md in <span class="cd">~/.claude/</span> → clicking it reads from <span class="cd">~/dotclaude/</span></span></li>
+        </ul>
+      </div>
+      <div class="callout box-green" style="margin-top:14px;font-size:14px;line-height:1.5">
+        <b>一句話：</b>Alias = 捷徑指標。你編輯 <span class="cd">~/dotclaude/CLAUDE.md</span>，Claude Code 在 <span class="cd">~/.claude/CLAUDE.md</span> 讀到同一份內容。<span class="en"><b>One line:</b> Alias = shortcut pointer. Edit <span class="cd">~/dotclaude/CLAUDE.md</span>; Claude Code reads the same content from <span class="cd">~/.claude/CLAUDE.md</span>.</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer">Week 6 · GitHub for Designers</div><div class="pageno"></div>
+</section>
+
 <!-- #3 具體做法 -->
 <section class="slide">
   <div class="eyebrow">PART 1 · 做法<span class="en">PART 1 · HOW-TO</span></div>
