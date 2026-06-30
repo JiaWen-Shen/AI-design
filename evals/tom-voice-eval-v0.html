@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tom Voice Eval — Teams v0</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --card: #1e1e1e;
+      --border: #2c2c2c;
+      --text: #e2e2e2;
+      --subtle: #5a5a5a;
+      --muted: #888;
+      --green: #4ade80;
+      --green-dim: #166534;
+      --red: #f87171;
+      --red-dim: #7f1d1d;
+      --yellow: #fbbf24;
+      --blue: #60a5fa;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 40px 20px 80px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--subtle);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Voice Profile */
+    .voice-profile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+    .voice-profile h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+    .voice-profile p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .trait-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px) { .trait-grid { grid-template-columns: 1fr; } }
+    .trait-col h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .trait-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .trait-col ul li {
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      gap: 8px;
+    }
+    .trait-col ul li .icon { flex-shrink: 0; }
+    .trait-col ul li .example {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--subtle);
+      display: block;
+      margin-top: 1px;
+    }
+
+    /* Section heading */
+    .section-heading {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    /* Case card */
+    .case-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .case-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .case-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--bg);
+      background: var(--muted);
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .case-title {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* Message bubbles */
+    .message-block { margin-bottom: 16px; }
+    .message-label {
+      font-size: 11px;
+      color: var(--subtle);
+      font-family: var(--mono);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .message-incoming {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .message-ai {
+      background: #1a2035;
+      border: 1px solid #2a3550;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    /* Primary gate */
+    .gate {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0 16px;
+    }
+    .gate-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 16px;
+      font-family: var(--sans);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .gate-btn:hover { opacity: 0.85; }
+    .gate-btn.like {
+      border-color: var(--green-dim);
+      color: var(--green);
+    }
+    .gate-btn.like.selected {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .gate-btn.unlike {
+      border-color: var(--red-dim);
+      color: var(--red);
+    }
+    .gate-btn.unlike.selected {
+      background: var(--red-dim);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* Sub-dimensions */
+    .subdims {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .dim-row label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .dim-row label .dim-name { font-weight: 600; }
+    .dim-row label .dim-value {
+      font-family: var(--mono);
+      color: var(--blue);
+    }
+    .dim-row input[type=range] {
+      width: 100%;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+    .dim-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--subtle);
+      margin-top: 2px;
+    }
+
+    /* Text areas */
+    .text-fields { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .text-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--subtle);
+      margin-bottom: 4px;
+    }
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    textarea:focus { border-color: var(--blue); }
+    textarea::placeholder { color: var(--subtle); }
+
+    /* Export */
+    .export-section {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .export-section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .export-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 7px;
+      font-size: 14px;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .export-btn:hover { border-color: var(--blue); }
+    #export-output {
+      margin-top: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    /* Voice confirm */
+    .voice-confirm { margin-top: 16px; }
+    .voice-confirm label { display: block; font-size: 12px; color: var(--subtle); margin-bottom: 4px; }
+    .voice-confirm textarea { min-height: 50px; }
+
+    hr.dim-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Creative Content Generator POC · 2026-06-30</div>
+  <h1>Tom Voice Eval — Teams v0</h1>
+  <div class="subtitle">看 AI 幫你生的回覆，像不像你？</div>
+</div>
+
+<!-- Voice Profile -->
+<div class="voice-profile">
+  <h2>你的語言習慣（從語料萃取）</h2>
+  <p>以下是從你的 Teams 對話中觀察到的語言特徵。<strong>如果有不準的，請在最下面「修正」欄留言。</strong></p>
+  <div class="trait-grid">
+    <div class="trait-col">
+      <h3>✅ 你通常會這樣說</h3>
+      <ul>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            極短反應句，直接不囉嗦
+            <span class="example">「蛤？」「靠」「慢點」「不必緊張」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            輕描淡寫，不積極表態
+            <span class="example">「也許用得著」「還可以接受」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            「啊」語尾，帶隨意感
+            <span class="example">「就工作時用啊」「我哪有空閒啊」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            「不過」轉折，不讓正面停太久
+            <span class="example">「還可以接受...我倒是偶而糾正」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            低調收尾，不以熱情結束
+            <span class="example">「先打住，就醬了」「頂多發圖，不費力」</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div class="trait-col">
+      <h3>❌ AI 最容易在這裡露餡</h3>
+      <ul>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            過度積極熱情
+            <span class="example">「非常有用！」「大幅提升效率！」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            句子補得太完整
+            <span class="example">你說「就工作時用啊，macOS」<br>AI說「我主要在工作情境使用，平台是 macOS」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            感謝型結尾
+            <span class="example">「非常感謝你分享！」「很感激你告訴我」</span>
+          </span>
+        </li>
+        <li>
+          <span class="icon">•</span>
+          <span>
+            結構整齊到像報告
+            <span class="example">「1. ... 2. ... 3. ...」過度條列</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="voice-confirm">
+    <label>這描述準嗎？有不對的地方請寫這裡（選填）</label>
+    <textarea id="voice-feedback" placeholder="例如：「啊」那個我不確定，我好像不常這樣說..."></textarea>
+  </div>
+</div>
+
+<!-- Cases -->
+<div class="section-heading">評分 — 5 個 AI 生成的回覆</div>
+
+<!-- Case A -->
+<div class="case-card" data-case="A">
+  <div class="case-header">
+    <span class="case-label">A</span>
+    <span class="case-title">同事問你在用什麼 AI 工具</span>
+  </div>
+
+  <div class="message-block">
+    <div class="message-label">對方說</div>
+    <div class="message-incoming">你有在用什麼 AI 工具嗎？用起來怎麼樣？</div>
+  </div>
+  <div class="message-block">
+    <div class="message-label">AI 幫你生的回覆</div>
+    <div class="message-ai">有啊！我主要使用 Claude 來協助處理工作文件和日常溝通。效果相當不錯，可以大幅節省時間、提升效率！你有考慮也開始試試看嗎？</div>
+  </div>
+
+  <div class="gate">
+    <button class="gate-btn like" onclick="setGate(this,'A','like')">像我 ✅</button>
+    <button class="gate-btn unlike" onclick="setGate(this,'A','unlike')">不像我 ❌</button>
+  </div>
+
+  <div class="subdims">
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">熱情程度</span>
+        <span class="dim-value" id="A-dim1-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'A','dim1')" />
+      <div class="dim-labels"><span>太熱情</span><span>夠低調</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">長度感</span>
+        <span class="dim-value" id="A-dim2-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'A','dim2')" />
+      <div class="dim-labels"><span>太囉嗦</span><span>剛好</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">語感</span>
+        <span class="dim-value" id="A-dim3-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'A','dim3')" />
+      <div class="dim-labels"><span>AI 味很重</span><span>像平常說話</span></div>
+    </div>
+  </div>
+
+  <hr class="dim-divider">
+  <div class="text-fields">
+    <div class="text-field">
+      <label>最不像的地方（選填）</label>
+      <textarea id="A-unlike" placeholder="例如：感嘆號用太多、最後問句很不像我..."></textarea>
+    </div>
+    <div class="text-field">
+      <label>你會怎麼說？（選填）</label>
+      <textarea id="A-rewrite" placeholder="直接改成你覺得對的版本"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Case B -->
+<div class="case-card" data-case="B">
+  <div class="case-header">
+    <span class="case-label">B</span>
+    <span class="case-title">被問進度</span>
+  </div>
+
+  <div class="message-block">
+    <div class="message-label">對方說</div>
+    <div class="message-incoming">那個東西弄好了嗎？</div>
+  </div>
+  <div class="message-block">
+    <div class="message-label">AI 幫你生的回覆</div>
+    <div class="message-ai">目前仍在處理中，預計今天下午可以完成。若有需要討論的地方，請隨時告知，我會盡快回應。</div>
+  </div>
+
+  <div class="gate">
+    <button class="gate-btn like" onclick="setGate(this,'B','like')">像我 ✅</button>
+    <button class="gate-btn unlike" onclick="setGate(this,'B','unlike')">不像我 ❌</button>
+  </div>
+
+  <div class="subdims">
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">熱情程度</span>
+        <span class="dim-value" id="B-dim1-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'B','dim1')" />
+      <div class="dim-labels"><span>太熱情</span><span>夠低調</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">長度感</span>
+        <span class="dim-value" id="B-dim2-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'B','dim2')" />
+      <div class="dim-labels"><span>太囉嗦</span><span>剛好</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">語感</span>
+        <span class="dim-value" id="B-dim3-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'B','dim3')" />
+      <div class="dim-labels"><span>AI 味很重</span><span>像平常說話</span></div>
+    </div>
+  </div>
+
+  <hr class="dim-divider">
+  <div class="text-fields">
+    <div class="text-field">
+      <label>最不像的地方（選填）</label>
+      <textarea id="B-unlike" placeholder="例如：太正式、「請隨時告知」這種說法我不會用..."></textarea>
+    </div>
+    <div class="text-field">
+      <label>你會怎麼說？（選填）</label>
+      <textarea id="B-rewrite" placeholder="直接改成你覺得對的版本"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Case C -->
+<div class="case-card" data-case="C">
+  <div class="case-header">
+    <span class="case-label">C</span>
+    <span class="case-title">別人問你對某方法的看法</span>
+  </div>
+
+  <div class="message-block">
+    <div class="message-label">對方說</div>
+    <div class="message-incoming">你覺得這個做法有用嗎？</div>
+  </div>
+  <div class="message-block">
+    <div class="message-label">AI 幫你生的回覆</div>
+    <div class="message-ai">我覺得很有幫助！這個方法相當系統化，邏輯清楚，應該可以實際解決問題。非常感謝你的分享，我會認真研究看看的！</div>
+  </div>
+
+  <div class="gate">
+    <button class="gate-btn like" onclick="setGate(this,'C','like')">像我 ✅</button>
+    <button class="gate-btn unlike" onclick="setGate(this,'C','unlike')">不像我 ❌</button>
+  </div>
+
+  <div class="subdims">
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">熱情程度</span>
+        <span class="dim-value" id="C-dim1-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'C','dim1')" />
+      <div class="dim-labels"><span>太熱情</span><span>夠低調</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">長度感</span>
+        <span class="dim-value" id="C-dim2-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'C','dim2')" />
+      <div class="dim-labels"><span>太囉嗦</span><span>剛好</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">語感</span>
+        <span class="dim-value" id="C-dim3-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'C','dim3')" />
+      <div class="dim-labels"><span>AI 味很重</span><span>像平常說話</span></div>
+    </div>
+  </div>
+
+  <hr class="dim-divider">
+  <div class="text-fields">
+    <div class="text-field">
+      <label>最不像的地方（選填）</label>
+      <textarea id="C-unlike" placeholder="例如：「非常感謝」這種說法我完全不會用..."></textarea>
+    </div>
+    <div class="text-field">
+      <label>你會怎麼說？（選填）</label>
+      <textarea id="C-rewrite" placeholder="直接改成你覺得對的版本"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Case D — closer to Tom -->
+<div class="case-card" data-case="D">
+  <div class="case-header">
+    <span class="case-label">D</span>
+    <span class="case-title">同事問你在用什麼 AI 工具（另一個版本）</span>
+  </div>
+
+  <div class="message-block">
+    <div class="message-label">對方說</div>
+    <div class="message-incoming">你有在用什麼 AI 工具嗎？</div>
+  </div>
+  <div class="message-block">
+    <div class="message-label">AI 幫你生的回覆</div>
+    <div class="message-ai">有啊，Claude 為主。還可以接受。</div>
+  </div>
+
+  <div class="gate">
+    <button class="gate-btn like" onclick="setGate(this,'D','like')">像我 ✅</button>
+    <button class="gate-btn unlike" onclick="setGate(this,'D','unlike')">不像我 ❌</button>
+  </div>
+
+  <div class="subdims">
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">熱情程度</span>
+        <span class="dim-value" id="D-dim1-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'D','dim1')" />
+      <div class="dim-labels"><span>太熱情</span><span>夠低調</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">長度感</span>
+        <span class="dim-value" id="D-dim2-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'D','dim2')" />
+      <div class="dim-labels"><span>太囉嗦</span><span>剛好</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">語感</span>
+        <span class="dim-value" id="D-dim3-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'D','dim3')" />
+      <div class="dim-labels"><span>AI 味很重</span><span>像平常說話</span></div>
+    </div>
+  </div>
+
+  <hr class="dim-divider">
+  <div class="text-fields">
+    <div class="text-field">
+      <label>最不像的地方（選填）</label>
+      <textarea id="D-unlike" placeholder="有什麼不對勁？或者這個反而還可以..."></textarea>
+    </div>
+    <div class="text-field">
+      <label>你會怎麼說？（選填）</label>
+      <textarea id="D-rewrite" placeholder="直接改成你覺得對的版本"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Case E — multi-question -->
+<div class="case-card" data-case="E">
+  <div class="case-header">
+    <span class="case-label">E</span>
+    <span class="case-title">被一次問三個問題</span>
+  </div>
+
+  <div class="message-block">
+    <div class="message-label">對方說</div>
+    <div class="message-incoming">你的 AI skill 用起來怎樣？<br>1. 自己滿意嗎？<br>2. 被別人發現是 AI 嗎？<br>3. 用在哪些平台？</div>
+  </div>
+  <div class="message-block">
+    <div class="message-label">AI 幫你生的回覆</div>
+    <div class="message-ai">1. 整體來說可以接受，不過還有改善空間。<br>2. 目前沒有被特別指出，現在大家應該都習慣 AI 潤稿了。<br>3. 主要用在工作的日常溝通上。</div>
+  </div>
+
+  <div class="gate">
+    <button class="gate-btn like" onclick="setGate(this,'E','like')">像我 ✅</button>
+    <button class="gate-btn unlike" onclick="setGate(this,'E','unlike')">不像我 ❌</button>
+  </div>
+
+  <div class="subdims">
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">熱情程度</span>
+        <span class="dim-value" id="E-dim1-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'E','dim1')" />
+      <div class="dim-labels"><span>太熱情</span><span>夠低調</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">長度感</span>
+        <span class="dim-value" id="E-dim2-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'E','dim2')" />
+      <div class="dim-labels"><span>太囉嗦</span><span>剛好</span></div>
+    </div>
+    <div class="dim-row">
+      <label>
+        <span class="dim-name">語感</span>
+        <span class="dim-value" id="E-dim3-val">3</span>
+      </label>
+      <input type="range" min="1" max="5" value="3" oninput="updateDim(this,'E','dim3')" />
+      <div class="dim-labels"><span>AI 味很重</span><span>像平常說話</span></div>
+    </div>
+  </div>
+
+  <hr class="dim-divider">
+  <div class="text-fields">
+    <div class="text-field">
+      <label>最不像的地方（選填）</label>
+      <textarea id="E-unlike" placeholder="例如：「應該都習慣了」這種說法感覺怪怪的..."></textarea>
+    </div>
+    <div class="text-field">
+      <label>你會怎麼說？（選填）</label>
+      <textarea id="E-rewrite" placeholder="直接改成你覺得對的版本"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Export -->
+<div class="export-section">
+  <h2>完成後複製結果，貼回給 Karen</h2>
+  <button class="export-btn" onclick="exportResults()">複製結果 JSON</button>
+  <pre id="export-output"></pre>
+</div>
+
+<script>
+  const state = {
+    A: { gate: null, dim1: 3, dim2: 3, dim3: 3, unlike: '', rewrite: '' },
+    B: { gate: null, dim1: 3, dim2: 3, dim3: 3, unlike: '', rewrite: '' },
+    C: { gate: null, dim1: 3, dim2: 3, dim3: 3, unlike: '', rewrite: '' },
+    D: { gate: null, dim1: 3, dim2: 3, dim3: 3, unlike: '', rewrite: '' },
+    E: { gate: null, dim1: 3, dim2: 3, dim3: 3, unlike: '', rewrite: '' },
+    voiceFeedback: ''
+  };
+
+  function setGate(btn, caseId, val) {
+    const card = btn.closest('.case-card');
+    card.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state[caseId].gate = val;
+  }
+
+  function updateDim(input, caseId, dim) {
+    state[caseId][dim] = parseInt(input.value);
+    document.getElementById(`${caseId}-${dim}-val`).textContent = input.value;
+  }
+
+  function exportResults() {
+    // Collect text areas
+    ['A','B','C','D','E'].forEach(id => {
+      state[id].unlike = document.getElementById(`${id}-unlike`).value;
+      state[id].rewrite = document.getElementById(`${id}-rewrite`).value;
+    });
+    state.voiceFeedback = document.getElementById('voice-feedback').value;
+
+    const output = JSON.stringify({
+      meta: { date: new Date().toISOString().slice(0,10), version: 'tom-voice-eval-v0' },
+      voiceProfileFeedback: state.voiceFeedback,
+      cases: Object.fromEntries(['A','B','C','D','E'].map(id => [id, state[id]]))
+    }, null, 2);
+
+    const el = document.getElementById('export-output');
+    el.textContent = output;
+    el.style.display = 'block';
+
+    navigator.clipboard.writeText(output).then(() => {
+      const btn = document.querySelector('.export-btn');
+      btn.textContent = '已複製 ✓';
+      setTimeout(() => btn.textContent = '複製結果 JSON', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
