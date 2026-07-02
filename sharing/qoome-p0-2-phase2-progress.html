@@ -1,0 +1,653 @@
+<title>P0-2 Phase 2 Recovery — Progress</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ground:   #F5F7FB;
+    --surface:  #FFFFFF;
+    --border:   #DDE3EF;
+    --border-strong: #BEC8DC;
+    --text:     #1C2740;
+    --sub:      #586480;
+    --faint:    #8A96AE;
+    --blue:     #1D5099;
+    --blue-bg:  #EBF1FA;
+    --green:    #1A6B3C;
+    --green-bg: #E8F4EE;
+    --green-stripe: #2B9A58;
+    --amber:    #B26A00;
+    --amber-bg: #FFF4E0;
+    --amber-stripe: #E08A00;
+    --red:      #A82020;
+    --mono:     'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    --sans:     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 28px 20px 60px;
+  }
+
+  .wrap { max-width: 840px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1.5px solid var(--border-strong);
+  }
+  .header-left { display: flex; flex-direction: column; gap: 3px; }
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+  }
+  .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -.02em;
+    text-wrap: balance;
+  }
+  .title span { color: var(--blue); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .03em;
+  }
+  .badge-partial { background: var(--amber-bg); color: var(--amber); border: 1px solid #E8C070; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-amber { background: var(--amber-stripe); }
+  .dot-green { background: var(--green-stripe); }
+
+  /* ── Stats row ── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.04em;
+    line-height: 1;
+  }
+  .stat-num.green { color: var(--green); }
+  .stat-num.amber { color: var(--amber); }
+  .stat-num.blue  { color: var(--blue); }
+  .stat-label { font-size: 11px; color: var(--sub); font-weight: 500; }
+
+  /* ── Chapter cards ── */
+  .chapters { display: flex; flex-direction: column; gap: 14px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 4px 1fr;
+  }
+  .card-stripe { }
+  .card-stripe.green { background: var(--green-stripe); }
+  .card-stripe.amber { background: var(--amber-stripe); }
+  .card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .card-title-group { display: flex; flex-direction: column; gap: 2px; }
+  .card-book { font-size: 11px; color: var(--faint); font-weight: 500; }
+  .card-chapter { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .pill-green { background: var(--green-bg); color: var(--green); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber); }
+  .pill-blue  { background: var(--blue-bg);  color: var(--blue);  }
+
+  .card-data { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  .datum { display: flex; flex-direction: column; gap: 1px; }
+  .datum-label { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; }
+  .datum-value { font-size: 13px; font-family: var(--mono); font-weight: 500; color: var(--text); }
+  .datum-value.green { color: var(--green); }
+  .datum-value.amber { color: var(--amber); }
+
+  .card-evidence {
+    background: var(--ground);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--sub);
+    line-height: 1.55;
+  }
+  .card-evidence strong { color: var(--text); font-weight: 600; }
+
+  .highlight-box {
+    border-left: 3px solid var(--amber-stripe);
+    background: var(--amber-bg);
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 12.5px;
+    color: var(--amber);
+    line-height: 1.5;
+  }
+  .highlight-box strong { color: var(--amber); }
+
+  .verified-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ── Separator ── */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Action list ── */
+  .actions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .actions-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sub);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    background: var(--ground);
+  }
+  .action-row {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .action-row:last-child { border-bottom: none; }
+  .action-num {
+    background: var(--ground);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 16px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .action-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 4px; }
+  .action-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .action-detail { font-size: 12.5px; color: var(--sub); line-height: 1.5; }
+  .action-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .tag-iven { background: #E3EAF8; color: var(--blue); }
+  .tag-karen { background: var(--green-bg); color: var(--green); }
+  .tag-optional { background: #F0F0F0; color: var(--faint); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--ground);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    font-size: 11px;
+    color: var(--faint);
+    text-align: right;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  /* ── Scan context ── */
+  .scan-context {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .scan-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--ground);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sub);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .scan-header-note { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); font-size: 11px; }
+  .scan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  @media (max-width: 580px) { .scan-grid { grid-template-columns: 1fr; } }
+  .scan-col {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .scan-col + .scan-col { border-left: 1px solid var(--border); }
+  .scan-col-title { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .07em; }
+  .book-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+  }
+  .book-name { color: var(--text); flex: 1; min-width: 0; }
+  .book-name .em { color: var(--faint); font-size: 11px; margin-left: 4px; }
+  .book-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+  }
+  .book-count.victim { color: var(--amber); }
+  .audit-flag-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: var(--ground);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .audit-flag-title { font-weight: 700; color: var(--sub); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .audit-flag-detail { color: var(--faint); line-height: 1.5; }
+  .cleared { color: var(--green); font-weight: 700; }
+  .scan-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--ground);
+    font-size: 12px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .scope-shrink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-bg);
+    border: 1px solid #B0DCBF;
+    color: var(--green);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-direction: column; align-items: flex-start; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <span class="eyebrow">Qoome · P0-2 Phase 2</span>
+      <h1 class="title">空章節 Recovery — <span>執行進度</span></h1>
+    </div>
+    <span class="badge badge-partial">
+      <span class="dot dot-amber"></span>
+      1 / 2 章完成
+    </span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num green">1</span>
+      <span class="stat-label">已 recovery（archived_empty）</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num amber">1</span>
+      <span class="stat-label">待 Iven 處理（需 GDrive PDF）</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num blue">4</span>
+      <span class="stat-label">Codex review 🔴 已修（plan gate PASS）</span>
+    </div>
+  </div>
+
+  <!-- Scan context -->
+  <div class="section-label">Phase 1 全平台掃描結果（為何只有 2 章）</div>
+
+  <div class="scan-context">
+    <div class="scan-header">
+      U5 調查 — Iven SQL #4 / #4b-final / #5 坐實（2026-06-26）
+      <span class="scan-header-note">原始擔憂：49 本書 × 平均受害章數 = 可能幾百章</span>
+    </div>
+
+    <div class="scan-grid">
+      <div class="scan-col">
+        <div class="scan-col-title">清查書目（全部 clean）</div>
+
+        <div class="book-row">
+          <span class="book-name">HARRISONS Principles <span class="em">Part 1</span></span>
+          <span class="book-count">216 / 216 ✓</span>
+        </div>
+        <div class="book-row">
+          <span class="book-name">HARRISONS Principles <span class="em">Part 2</span></span>
+          <span class="book-count">94 / 94 ✓</span>
+        </div>
+        <div class="book-row">
+          <span class="book-name">朱文峰 中醫診斷學講稿</span>
+          <span class="book-count">75 / 75 ✓</span>
+        </div>
+        <div class="book-row">
+          <span class="book-name">其餘 46 本書<span class="em">（含 dr-lin / dr-ben 書庫）</span></span>
+          <span class="book-count">0 victim ✓</span>
+        </div>
+
+        <div class="audit-flag-row">
+          <span class="audit-flag-title">原 audit 疑似受害章節（已排除）</span>
+          <span class="audit-flag-detail">
+            HARRISONS ch162 / ch167 / ch205 / ch209 / ch214 等<br>
+            → U5 SQL #4 確認全部 <span class="cleared">processing_status = completed</span><br>
+            → full_text 正常、非受害，audit 誤判排除
+          </span>
+        </div>
+      </div>
+
+      <div class="scan-col">
+        <div class="scan-col-title">實際受害章節（SQL #5 坐實）</div>
+
+        <div class="book-row">
+          <span class="book-name">Human Nutrition <span class="em">ch23 "Index"</span></span>
+          <span class="book-count victim">src_len = 13</span>
+        </div>
+        <div class="book-row">
+          <span class="book-name">幹細胞免疫學 <span class="em">ch3 化療放療差異</span></span>
+          <span class="book-count victim">src_len = 40</span>
+        </div>
+
+        <div class="audit-flag-row" style="margin-top:4px;">
+          <span class="audit-flag-title">發現方式</span>
+          <span class="audit-flag-detail">
+            inventory SQL：<code>full_text &lt; 50 chars AND processing_status = 'completed'</code><br>
+            掃 49 本書全平台 → 精確命中 2 row，無漏報<br>
+            Iven SQL #5 baseline 驗證 ✓，Karen agent REST API 再驗 ✓
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scan-footer">
+      <span>全平台無活體 upstream extract 失敗——HARRISONS / 朱文峰 chapter_index 零斷號</span>
+      <span class="scope-shrink">scope 收斂 10×：預估「數百章」→ 實際 2 章</span>
+    </div>
+  </div>
+
+  <!-- Chapter cards -->
+  <div class="section-label">章節狀態</div>
+
+  <div class="chapters">
+
+    <!-- Row 1 — DONE -->
+    <div class="card">
+      <div class="card-stripe green"></div>
+      <div class="card-body">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-book">Human Nutrition · ch23</span>
+            <span class="card-chapter">Index（索引頁）</span>
+          </div>
+          <span class="status-pill pill-green">
+            <span class="dot dot-green"></span>
+            archived_empty
+          </span>
+        </div>
+
+        <div class="card-data">
+          <div class="datum">
+            <span class="datum-label">Triage 判定</span>
+            <span class="datum-value green">genuinely-empty</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">src_len</span>
+            <span class="datum-value">13 chars</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">Page range</span>
+            <span class="datum-value">p.491–491（單頁）</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">DB 更新時間</span>
+            <span class="datum-value">2026-07-02 04:47 UTC</span>
+          </div>
+        </div>
+
+        <div class="card-evidence">
+          <strong>full_text preview：</strong><code>"Index\n\nD\ndire"</code>（字面索引頁殘影）<br>
+          Sibling chapter word_count：3150–8100；本章：0<br>
+          processing_status → <code>archived_empty</code>，RPC filter 仍擋（不在 retrieval 集合）
+          <br><br>
+          <span class="verified-tag">✓ REST PATCH + GET 雙驗證</span> — 無需 Iven 額外操作
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2 — PENDING -->
+    <div class="card">
+      <div class="card-stripe amber"></div>
+      <div class="card-body">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-book">幹細胞免疫學（第一章）· ch3</span>
+            <span class="card-chapter">1-2 化療與放射療法的差異性</span>
+          </div>
+          <span class="status-pill pill-amber">
+            <span class="dot dot-amber"></span>
+            待 R1 / R2 / R3
+          </span>
+        </div>
+
+        <div class="card-data">
+          <div class="datum">
+            <span class="datum-label">Triage 判定</span>
+            <span class="datum-value amber">extraction-failed</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">src_len</span>
+            <span class="datum-value">40 chars</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">Page range</span>
+            <span class="datum-value">p.3–3（單頁）</span>
+          </div>
+          <div class="datum">
+            <span class="datum-label">Sibling avg word_count</span>
+            <span class="datum-value">1063（本章 = 0）</span>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          <strong>⚠ 關鍵發現：</strong>full_text 不是 extraction noise，是<strong>刻意填的 placeholder</strong>：<br>
+          <code>（化學治療與放射線治療詳細文字與副作用說明，略）</code><br>
+          ETL 當時有人手動填「略」略過。R1 re-run extractor 不一定有用——<strong>需要先看 PDF page 3 真實內容</strong>。
+        </div>
+
+        <div class="card-evidence">
+          <strong>PDF 來源：</strong>Google Drive（Iven 帳號持有）<br>
+          file_id：<code>1-gyNRXJCZmlQOqKCHtgHT9Vqf7rTsZ7w</code><br>
+          原始檔名：<code>幹細胞免疫學-第一章_防癌／抗癌新趨勢.pdf</code><br><br>
+          <strong>Karen 無 GDrive 存取權</strong>——需由 Iven 開啟 page 3 確認後執行 R1/R2/R3。
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Iven actions -->
+  <div class="section-label">Iven 待辦</div>
+
+  <div class="actions">
+    <div class="actions-header">按順序執行 — Row 2 recovery</div>
+
+    <div class="action-row">
+      <div class="action-num">1</div>
+      <div class="action-body">
+        <span class="action-title">
+          <span class="action-tag tag-iven">Iven</span>
+          開 GDrive PDF，看 page 3 真實內容
+        </span>
+        <span class="action-detail">
+          連結（需 Iven 帳號）：<code>drive.google.com/file/d/1-gyNRXJCZmlQOqKCHtgHT9Vqf7rTsZ7w/view</code><br>
+          確認：page 3 是否有可提取的中文段落？<br>
+          · 有文字 → 繼續 Step 2（R1 或直接 R3 manual paste）<br>
+          · 純圖表/掃描 → 跳 R2 Mistral OCR
+        </span>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="action-num">2</div>
+      <div class="action-body">
+        <span class="action-title">
+          <span class="action-tag tag-iven">Iven</span>
+          R1：n8n 觸發 Chapter Reprocessing
+        </span>
+        <span class="action-detail">
+          n8n admin：<code>n8n.srv795039.hstgr.cloud</code><br>
+          target：<code>doc_id = df339289-7553-4a9e-8a54-d0a072e53d21</code>，<code>chapter_index = 3</code><br>
+          成功條件：full_text ≥ 200 chars + 含化療／放射關鍵詞
+        </span>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="action-num">3</div>
+      <div class="action-body">
+        <span class="action-title">
+          <span class="action-tag tag-iven">Iven</span>
+          R1 失敗 → R2 Mistral OCR；R2 失敗 → R3 手動 paste
+        </span>
+        <span class="action-detail">
+          取得 full_text 後，填入 <code>exec/p0-2-phase2/03-r1-retry.sql</code> 的 <code>$NEW_FULL_TEXT</code> 執行寫入<br>
+          R2 cost estimate：~$0.01–0.03 / page（Mistral OCR）
+        </span>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="action-num">4</div>
+      <div class="action-body">
+        <span class="action-title">
+          <span class="action-tag tag-iven">Iven</span>
+          n8n 觸發 chapter_processor 重跑 → 跑 acceptance SQL
+        </span>
+        <span class="action-detail">
+          等 <code>processing_status = completed</code>，summary / embedding / graph 生成後，<br>
+          在 Supabase Dashboard 跑 <code>exec/p0-2-phase2/06-acceptance.sql</code>——所有 CHECK 應 PASS
+        </span>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="action-num">5</div>
+      <div class="action-body">
+        <span class="action-title">
+          <span class="action-tag tag-optional">Optional</span>
+          建 backup table（Supabase Dashboard）
+        </span>
+        <span class="action-detail">
+          Row 1 已完成但無 backup table（REST API 不能 CREATE TABLE）<br>
+          執行 <code>exec/p0-2-phase2/02-archived-empty.sql</code> Step 2a 補建（可省略，風險低）
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>codex-review gate: <strong style="color:var(--green)">PASS</strong> · commit <code>0286da2</code> · 2026-07-02</span>
+    <span>spec: <code>qoome-workspace/architecture/p0-fulltext-guard-fix-phase2-recovery-plan-2026-06-27.md</code></span>
+  </div>
+
+</div>
