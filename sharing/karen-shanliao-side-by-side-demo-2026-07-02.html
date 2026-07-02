@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karen 原文 × 山料體改寫 對照 Demo</title>
+<style>
+  :root {
+    --bg: #fefcf8;
+    --paper: #ffffff;
+    --paper-card: #fffefb;
+    --ink: #2a2a2a;
+    --ink-soft: #4a4a4a;
+    --ink-mute: #7a7a7a;
+    --line: #e8e3d4;
+    --line-soft: #f1ede0;
+    --accent: #7c3d6a;
+    --accent-soft: #f0e6ef;
+    --warn: #c25a2d;
+    --warn-soft: #f5e6d8;
+    --good: #4a7a55;
+    --good-soft: #e5ede6;
+    --info: #4a6a8a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", sans-serif;
+    background: var(--bg); color: var(--ink); margin: 0; padding: 0;
+    line-height: 1.75; font-size: 15px;
+  }
+  header {
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 22px 28px; box-shadow: var(--shadow);
+  }
+  header h1 { font-size: 20px; margin: 0 0 4px; font-weight: 700; color: var(--accent); }
+  header .meta { color: var(--ink-mute); font-size: 12.5px; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 8px 28px 80px; }
+
+  section { margin-top: 44px; }
+  section > h2 {
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); border-bottom: 2px solid var(--accent-soft);
+    padding-bottom: 8px; margin-bottom: 18px;
+  }
+
+  /* ---- 簡介 ---- */
+  .intro-card {
+    background: var(--paper-card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px 24px; box-shadow: var(--shadow);
+  }
+  .intro-card p { margin: 0 0 12px; color: var(--ink-soft); }
+  .intro-card p:last-child { margin-bottom: 0; }
+  .intro-goal {
+    display: inline-block; margin-top: 4px; padding: 4px 10px;
+    background: var(--accent-soft); color: var(--accent); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  /* ---- 做法流程 ---- */
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; margin-bottom: 20px;
+  }
+  .pipeline .step {
+    flex: 1 1 140px; background: var(--paper-card); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 14px; font-size: 13px; color: var(--ink-soft);
+  }
+  .pipeline .step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+    color: #fff; font-size: 11px; font-weight: 700; margin-bottom: 8px;
+  }
+  .pipeline .arrow { display: flex; align-items: center; color: var(--ink-mute); font-size: 18px; }
+
+  .anchor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  @media (max-width: 640px) { .anchor-grid { grid-template-columns: 1fr; } }
+  .anchor-box {
+    background: var(--paper-card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .anchor-box h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent); }
+  .anchor-box ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .anchor-box li { margin-bottom: 5px; }
+
+  /* ---- 比對 ---- */
+  .compare-card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); margin-bottom: 28px; overflow: hidden;
+  }
+  .compare-card .title-bar {
+    background: var(--line-soft); padding: 10px 18px; font-weight: 700; font-size: 14px;
+    color: var(--ink); border-bottom: 1px solid var(--line);
+  }
+  .compare-cols { display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px) { .compare-cols { grid-template-columns: 1fr; } }
+  .compare-col { padding: 18px 20px; font-size: 14.5px; }
+  .compare-col.original { border-right: 1px solid var(--line); background: #fbfaf6; }
+  @media (max-width: 720px) { .compare-col.original { border-right: none; border-bottom: 1px solid var(--line); } }
+  .compare-col.rewrite { background: var(--paper); }
+  .col-label {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 10px; display: block;
+  }
+  .col-label.original { color: var(--ink-mute); }
+  .col-label.rewrite { color: var(--accent); }
+  .compare-col p { margin: 0 0 10px; color: var(--ink-soft); white-space: pre-wrap; }
+  .compare-col.rewrite p { color: var(--ink); }
+  .hashtags { color: var(--accent); font-size: 13px; margin-top: 6px; }
+
+  .stats-bar {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px;
+    background: var(--line-soft); border-top: 1px solid var(--line);
+  }
+  .stat-chip {
+    font-size: 12px; padding: 3px 9px; border-radius: 20px; background: var(--paper);
+    border: 1px solid var(--line); color: var(--ink-soft);
+  }
+  .stat-chip b { color: var(--accent); }
+
+  .rubric-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0; }
+  .rubric-table th, .rubric-table td {
+    padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line);
+  }
+  .rubric-table th { color: var(--ink-mute); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .rubric-table td.score { font-weight: 700; color: var(--accent); text-align: center; }
+  .rubric-note { padding: 14px 18px 18px; }
+
+  footer { max-width: 900px; margin: 40px auto 60px; padding: 0 28px; color: var(--ink-mute); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Karen 原文 × 山料體改寫 對照 Demo</h1>
+  <div class="meta">Creative Content Generator POC · 2026-07-02 · 本機預覽版（未部署）</div>
+</header>
+
+<main>
+
+  <section>
+    <h2>簡介</h2>
+    <div class="intro-card">
+      <p>這份 demo 把 <b>Karen 的原始隨筆</b>（來源：<code>5_Write/</code>，較長的反思型散文）跟<b>經過「山料體」prompt 改寫後的 Threads 短篇</b>並排放在一起，讓你直接看見「同一個人的想法」在兩種寫作型態下的差異。</p>
+      <p>目的不是要證明哪個比較好，而是驗證一件事：<b>能不能用一套可重複的方法，把一個人原本的思考脈絡（觀察 → 推論 → punch）搬進另一種文體形式，還讓讀者覺得「這仍然是她」</b>。</p>
+      <span class="intro-goal">用途：作為套用到 Dr.Albert 語料前的方法論驗證</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>做法與過程</h2>
+
+    <div class="pipeline">
+      <div class="step"><span class="num">1</span><br>蒐集 Karen 原文（<code>5_Write/</code> 反思散文，300-600 字）</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="num">2</span><br>抽取「Karen Voice DNA」：論證流程 + punch 句型 + 括號碎念習慣</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="num">3</span><br>套「山料體」表層 form spec：短句比例、標點使用頻率、結尾禁問句</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="num">4</span><br>Rewrite 成 130-180 字 Threads 短篇</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="num">5</span><br>Self-rubric 打分 + Karen ship gate 覆核</div>
+    </div>
+
+    <p style="color:var(--ink-soft); font-size:13.5px;">改寫 prompt 由兩組 anchor 組成——一組保留「這仍然是 Karen 在說話」的內核，一組控制「讀起來像山料體」的外層形式：</p>
+
+    <div class="anchor-grid">
+      <div class="anchor-box">
+        <h3>Anchor A — Karen Voice DNA（內核，必保留）</h3>
+        <ul>
+          <li>論證 flow 固定三段：觀察 → 推論 → punch，不可換金句串接</li>
+          <li>結尾必須是 hidden cost / reframe，句型如「你以為 X，其實 Y」</li>
+          <li>中段至少 1 處括號碎念（自嘲 / hedge / 補資訊）</li>
+          <li>Hedge 詞分散用「或許 / 好像 / 大概」，避免全部收斂到「其實」</li>
+          <li>觀察姿態，禁「你應該」「我們必須」等 imperative 語氣</li>
+          <li>保留原文的對立面 nuance，不能為了精簡而抹平</li>
+        </ul>
+      </div>
+      <div class="anchor-box">
+        <h3>Anchor B — 山料體 Form Spec（外層，20-25% 混入）</h3>
+        <ul>
+          <li>短句（≤25字）佔 25-35%，中長句（25-60字）佔 55-65%</li>
+          <li>「其實」全篇限 0-1 次；「——」全篇限 1-2 次</li>
+          <li>禁排比三句式、禁《》書名號</li>
+          <li>結尾必須是 punch，禁問句收尾、禁 generic 正能量結論</li>
+          <li>總字數壓在 130-180 字（不含 hashtag），1-3 個短段</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>比對結果</h2>
+
+    <!-- 溝通難 -->
+    <div class="compare-card">
+      <div class="title-bar">溝通難</div>
+      <div class="compare-cols">
+        <div class="compare-col original">
+          <span class="col-label original">Karen 原文（5_Write/溝通難.md，節錄）</span>
+          <p>關於溝通，很多人有一個誤解，認為經過一兩次掏心掏肺地促膝長談，所有誤會都會冰釋，心結都會打開，問題從此神奇地迎刃而解。</p>
+          <p>當你經歷過一些有效的關係，你會發現：有效的溝通通常不是一次兩次、一句兩句，彷彿把自己的想法全部攤開，丟給對方，對方就有理解的能力，以及諒解的義務。</p>
+          <p>溝通最難的地方在於了解彼此最深處最真心的想法，唯有所有的牌都亮出來，雙方「一起」的解法才有意義。但這卻是最難的，很多時候，連當事人都不是刻意隱瞞，而是有些問題，不經過沉澱、咀嚼、反覆檢視，連當事人自己都不清楚問題在哪。</p>
+        </div>
+        <div class="compare-col rewrite">
+          <span class="col-label rewrite">山料體改寫（V1，130-180字）</span>
+          <p>很多人對「溝通」有個誤解——以為一次掏心掏肺，所有心結都能打開。</p>
+          <p>但有效的溝通難的從來不是技巧。難的是雙方願意、且能夠，把最深處的真實想法亮出來（包括當事人對自己的想法，常常都還沒搞清楚）。</p>
+          <p>當你覺得「對方溝通不來」的時候，或許我們高估的，是自己對自己的了解。</p>
+          <p class="hashtags">#flying_k_s #溝通</p>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <span class="stat-chip">字數 <b>~158</b></span>
+        <span class="stat-chip">「其實」 <b>0</b></span>
+        <span class="stat-chip">「——」 <b>1</b></span>
+        <span class="stat-chip">括號碎念 <b>1（中段）</b></span>
+        <span class="stat-chip">短句比 <b>~30%</b></span>
+      </div>
+      <table class="rubric-table">
+        <tr><th>flow</th><th>punch</th><th>parens</th><th>temp（觀察姿態）</th><th>depth</th></tr>
+        <tr><td class="score">4</td><td class="score">4</td><td class="score">4</td><td class="score">4</td><td class="score">4</td></tr>
+      </table>
+      <div class="rubric-note" style="font-size:12.5px; color:var(--ink-mute);">punch：「或許我們高估的，是自己對自己的了解」——把「溝通技巧」的討論 reframe 到「對自我的認知」，屬 second-order 推論。</div>
+    </div>
+
+    <!-- 不要妥協 -->
+    <div class="compare-card">
+      <div class="title-bar">不要妥協</div>
+      <div class="compare-cols">
+        <div class="compare-col original">
+          <span class="col-label original">Karen 原文（5_Write/不要妥協.md，節錄／polish 版）</span>
+          <p>不要輕易妥協。人生在世，很多時候我們不得不妥協，但要清楚知道，妥協是要付出代價的。</p>
+          <p>妥協不只是退一步，也不只是退讓或放棄。那只是表面。真正的代價在於，在妥協之後，你為了讓自己接受現實的結果，會主動或被動地調整自己的想法。這其中捨棄掉的自我才是最昂貴的代價。</p>
+          <p>妥協本質上是一種付出。它縮減了目標，削弱了慾望。為了讓退讓變得合理，你會重新校正對事情的看法，甚至無意間提高了對這件事的重要性的認知，付出建構了愛，而這樣的愛，特別讓人割捨不下。</p>
+        </div>
+        <div class="compare-col rewrite">
+          <span class="col-label rewrite">山料體改寫（V1，130-180字）</span>
+          <p>不要輕易妥協。在不得不退讓的時候，要清楚：付出的代價，從來不在那一次退讓本身。</p>
+          <p>真正貴的，是你為了讓自己接受退讓的結果，會無意間調整對這件事的評價、放大它的份量（這就是認知失調最隱微的地方）。</p>
+          <p>付出建構了愛——越付出越愛、越愛越放不開。</p>
+          <p class="hashtags">#flying_k_s #認知失調</p>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <span class="stat-chip">字數 <b>~163</b></span>
+        <span class="stat-chip">「其實」 <b>0</b></span>
+        <span class="stat-chip">「——」 <b>1</b></span>
+        <span class="stat-chip">括號碎念 <b>1（中段）</b></span>
+        <span class="stat-chip">短句比 <b>~28%</b></span>
+      </div>
+      <table class="rubric-table">
+        <tr><th>flow</th><th>punch</th><th>parens</th><th>temp</th><th>depth</th></tr>
+        <tr><td class="score">4</td><td class="score">5</td><td class="score">4</td><td class="score">4</td><td class="score">5</td></tr>
+      </table>
+      <div class="rubric-note" style="font-size:12.5px; color:var(--ink-mute);">risk：punch 句「付出建構了愛」直引原文金句，Karen 可能覺得「太像自己原句」而非重新 reframe——需真人覆核是否算 ship。</div>
+    </div>
+
+    <!-- ego -->
+    <div class="compare-card">
+      <div class="title-bar">ego</div>
+      <div class="compare-cols">
+        <div class="compare-col original">
+          <span class="col-label original">Karen 原文（5_Write/ego.md，節錄）</span>
+          <p>很多人習慣把自我的邊界畫得太大，因此處處充滿了防備與攻擊性。是的，你的工作代表了一部分的你，你的穿著品味代表了一部分的你，乃至於你的家鄉、你的偶像、你的政治認同⋯都包含了一部分的你，但那些都不是你。</p>
+          <p>所以不要一聽到對於這些事情的批評就立刻氣到跳腳⋯人有歸屬感很好，但是真的不需要把「自己」與任何外在的事物都畫上等號，急著在沒有必要的時候跳出來捍衛這些事情，一如捍衛你的自尊一樣。</p>
+          <p>你有想過反過來的話，這些你捍衛的對象也會一樣捍衛你嗎？你生氣到底是為了什麼？是不容許自己認同的東西被批評？還是不容許自己被批評？</p>
+        </div>
+        <div class="compare-col rewrite">
+          <span class="col-label rewrite">山料體改寫（V1，130-180字）</span>
+          <p>很多人習慣把自我的邊界畫得太大——工作被批、政治立場被質疑、家鄉被嫌，每一刀都像砍在自己身上。</p>
+          <p>那些都包含了一部分的你，但都不是你（這個區分，比想像中難）。</p>
+          <p>你以為你在捍衛自己，其實是把人生力氣，花在保護那些並不會、也不能保護你的東西。</p>
+          <p class="hashtags">#flying_k_s #邊界</p>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <span class="stat-chip">字數 <b>~150</b></span>
+        <span class="stat-chip">「其實」 <b>1</b></span>
+        <span class="stat-chip">「——」 <b>1</b></span>
+        <span class="stat-chip">括號碎念 <b>1（中段）</b></span>
+        <span class="stat-chip">短句比 <b>~32%</b></span>
+      </div>
+      <table class="rubric-table">
+        <tr><th>flow</th><th>punch</th><th>parens</th><th>temp</th><th>depth</th></tr>
+        <tr><td class="score">4</td><td class="score">5</td><td class="score">4</td><td class="score">4</td><td class="score">4</td></tr>
+      </table>
+      <div class="rubric-note" style="font-size:12.5px; color:var(--ink-mute);">punch：「你以為 X，其實是 Y」——hidden cost reframe 模板命中最準的一篇。原文的兩個反問句在改寫中被收斂成一句直接的 reframe。</div>
+    </div>
+
+    <p style="font-size:13px; color:var(--ink-mute);">評分為 self-rubric 自估（1-5 分），非真人 blind eval 結果。真人 ship gate 待 Karen 逐篇覆核，來源：<code>outputs/v1-threads-2026-06-30.md</code> §3。</p>
+  </section>
+
+</main>
+
+<footer>
+  Source: <code>5_Write/溝通難.md</code> · <code>5_Write/不要妥協.md</code> · <code>5_Write/ego.md</code> ×
+  <code>creative-content-generator/outputs/v1-threads-2026-06-30.md</code>　|　本機預覽，未部署、未 commit。
+</footer>
+
+</body>
+</html>
