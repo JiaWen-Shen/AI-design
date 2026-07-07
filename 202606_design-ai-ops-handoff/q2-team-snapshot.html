@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q2 2026 Design Engineer Team — Contribution Matrix</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif; }
+  .karen-col   { background: #eff6ff; border-left: 3px solid #2563eb; }
+  .michael-col { background: #fef2f2; border-left: 3px solid #dc2626; }
+  .stanley-col { background: #f0fdf4; border-left: 3px solid #16a34a; }
+  .karen-text   { color: #2563eb; }
+  .michael-text { color: #dc2626; }
+  .stanley-text { color: #16a34a; }
+  table.matrix { width: 100%; border-collapse: collapse; }
+  table.matrix th { background: #1e293b; color: white; padding: 12px 10px; font-size: 12px; text-align: left; font-weight: 600; }
+  table.matrix th.karen-h   { background: #2563eb; }
+  table.matrix th.michael-h { background: #dc2626; }
+  table.matrix th.stanley-h { background: #16a34a; }
+  table.matrix td { padding: 12px 10px; vertical-align: top; border-bottom: 1px solid #e2e8f0; font-size: 12.5px; line-height: 1.5; }
+  table.matrix td.repo-cell { background: #f8fafc; font-weight: 600; }
+  table.matrix tr.scope-divider td { background: #1e293b; color: white; font-weight: 600; font-size: 11px; padding: 6px 10px; letter-spacing: 0.5px; }
+  .count { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 700; font-family: ui-monospace, monospace; }
+  .count-k { background: #dbeafe; color: #1e40af; }
+  .count-m { background: #fee2e2; color: #991b1b; }
+  .count-s { background: #dcfce7; color: #166534; }
+  .empty { color: #cbd5e1; font-style: italic; font-size: 11px; }
+  .na { color: #cbd5e1; font-style: italic; font-size: 11px; }
+  ul.tight { margin: 4px 0 0 0; padding-left: 14px; }
+  ul.tight li { margin-bottom: 2px; }
+  .pattern-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .pattern-table th { background: #fee2e2; color: #991b1b; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #fca5a5; }
+  .pattern-table th.dim { background: #f8fafc; color: #475569; }
+  .pattern-table td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid #fee2e2; }
+  .pattern-table td.dim-cell { background: #f8fafc; font-weight: 600; color: #475569; width: 18%; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+  <!-- Header -->
+  <header class="mb-6">
+    <div class="text-xs text-slate-500 mb-1">Design AI Ops · Pre-handoff briefing</div>
+    <h1 class="text-3xl font-bold text-slate-900">Q2 2026 Design Engineer Team — Contribution Matrix</h1>
+    <p class="text-slate-600 mt-2 leading-relaxed text-sm">
+      掃描 <code class="bg-slate-200 px-1.5 py-0.5 rounded">github.com/trendlife-general</code> 全 org +
+      <code class="bg-slate-200 px-1.5 py-0.5 rounded">github.com/JiaWen-Shen</code> 部門分享相關 repo，2026-03-01 ~ 2026-07-07。
+      列出三人在每個 repo 的具體貢獻。
+    </p>
+  </header>
+
+  <!-- Update since 6/18 -->
+  <section class="mb-8 bg-slate-100 border-2 border-slate-300 p-5 rounded-lg">
+    <h2 class="text-lg font-bold text-slate-900 mb-2">🔄 Update since 6/18</h2>
+    <ul class="list-disc list-inside space-y-1.5 text-sm text-slate-700">
+      <li><strong>新增總量</strong>：Karen +20（119 → 139）、Michael +46（1,274 → 1,320）、Stanley +120（1,000 → 1,120）。</li>
+      <li><strong>新 repo 出現活動</strong>：<code>HIE-AI-Ops</code>（trendlife-general，6/23 建立，AIUX unit 協作層）目前只有 Karen 動過（6 commits：bootstrap + 4 個 PR merge），Michael / Stanley 尚無 commit。</li>
+      <li>Michael 首次進 <code>vxd-skill</code>（原本 0 commits，這次 1 commit — installer review fix #126），跨進 Stanley 主場的視覺工程 repo。</li>
+      <li>Stanley 這波最大量集中在 <code>hie-rei</code> 的 <code>design-handoff-web</code>（79 commits，6/25–7/06 mobile/viewer UI 密集迭代）與 <code>vxd-skill</code> VXD Workflow Installer v1.1→v1.2 ship（28 commits）。</li>
+      <li><strong>6/3-style 平行造輪子重演檢查</strong>：Karen 與 Michael 這個窗口唯一重疊的 repo 仍是 <code>hie-rei</code>，兩人 6/22 同一天都有 commit——但檔案完全不重疊（Karen 動 <code>.claude/scripts</code> telemetry infra，Michael 動 <code>design-handoff-2026July</code> wording 內容）。<strong>本窗口未發現重演</strong>。</li>
+    </ul>
+  </section>
+
+  <!-- Top-line numbers -->
+  <section class="mb-8 grid grid-cols-3 gap-4">
+    <div class="p-4 bg-white rounded-lg border-l-4 border-blue-600">
+      <div class="text-xs karen-text font-semibold tracking-wide">KAREN SHEN</div>
+      <div class="text-xs text-slate-500 mb-1">流程層架構師 · 雙帳號（work + personal）</div>
+      <div class="text-3xl font-bold text-slate-900">139 <span class="text-sm font-normal text-slate-500">commits · 11 repos</span></div>
+      <div class="text-xs text-slate-400 mt-1">tmemu 62 · JiaWen-Shen 77</div>
+    </div>
+    <div class="p-4 bg-white rounded-lg border-l-4 border-red-600">
+      <div class="text-xs michael-text font-semibold tracking-wide">MICHAEL FU</div>
+      <div class="text-xs text-slate-500 mb-1">內容層系統工程師 · <span class="text-red-600 font-semibold">雙 git identity</span></div>
+      <div class="text-3xl font-bold text-slate-900">1,320 <span class="text-sm font-normal text-slate-500">combined · 8 repos</span></div>
+      <div class="text-xs text-slate-400 mt-1">tmemu 802 · gmail 518</div>
+    </div>
+    <div class="p-4 bg-white rounded-lg border-l-4 border-green-600">
+      <div class="text-xs stanley-text font-semibold tracking-wide">STANLEY TUNG</div>
+      <div class="text-xs text-slate-500 mb-1">視覺層守門員</div>
+      <div class="text-3xl font-bold text-slate-900">1,120 <span class="text-sm font-normal text-slate-500">net · 5 repos</span></div>
+    </div>
+  </section>
+
+  <!-- Contribution Matrix -->
+  <section class="mb-8">
+    <h2 class="text-xl font-bold text-slate-900 mb-3">📊 貢獻矩陣（repo × 人）</h2>
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th style="width:16%;">Repo</th>
+            <th class="karen-h" style="width:28%;">Karen <span class="font-normal opacity-80">(139)</span></th>
+            <th class="michael-h" style="width:28%;">Michael <span class="font-normal opacity-80">(1,320)</span></th>
+            <th class="stanley-h" style="width:28%;">Stanley <span class="font-normal opacity-80">(1,120)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="scope-divider"><td colspan="4">▸ trendlife-general org（團隊正式交付）</td></tr>
+
+          <!-- hie-rei -->
+          <tr>
+            <td class="repo-cell"><code>hie-rei</code><div class="text-xs font-normal text-slate-500 mt-1">主設計交付 prototype</div></td>
+            <td class="karen-col">
+              <span class="count count-k">20</span> <span class="text-xs text-slate-500">（17 + 3 new）</span>
+              <ul class="tight">
+                <li>safety-net hooks（pre-commit / pre-push 防呆）</li>
+                <li>branch-cleanup hooks（stale 分支管理）</li>
+                <li>merge-conflict 歸因機制</li>
+                <li><strong>design-context skill</strong>（PR #418 merged）</li>
+                <li><strong>design-pr-review skill</strong>（已 ship hie-rei）</li>
+                <li>team-skill-telemetry bootstrap（PR #434 merged）</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li><strong>telemetry bootstrap + git-hook trigger 落地</strong>（PR #577，讓 team skill telemetry 真正開始收資料）</li>
+                <li>skill bloat diet（PR #565，session-start payload 裁減 + lint）</li>
+                <li>CLAUDE.md 精簡（PR #690，拆成 routing index + ops/docs 檔）</li>
+              </ul>
+            </td>
+            <td class="michael-col">
+              <span class="count count-m">428</span> <span class="text-xs text-slate-500">（417 + 11 new；tmemu 223 + gmail 194）</span>
+              <ul class="tight">
+                <li><strong>UX writing 系統審查 × 11 區塊</strong>：SSO/login、chat、chat-executor（行事曆/門鎖/地圖/遠端）、settings、settingProtections、popup、sidemenu、familyGraph、onboarding、chat-extension、omni-war-room</li>
+                <li>每區塊四件套：逐畫面 review + flow-synthesis + propagation-decision + stakeholder-summary</li>
+                <li>pretool hooks（pretool-secrets-guard / pretool-branch-name / pretool-pr-create-rebase）</li>
+                <li>conflict-route.sh、auto-sync.sh、session-ledger.sh、classify-diff-hunk.sh</li>
+                <li>change-notification.yml CI workflow</li>
+                <li>team-roles.toml registry</li>
+                <li>skill-telemetry transcript reshape（PR #434 共同主導）</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>§2B single-feature enabled variant（get-started member onboarding，PR #578/#579，en-US canonical sync）</li>
+                <li>Pinned Chat 名稱「Kaleida」跨 May→July handoff 對齊（PR #585）</li>
+                <li>§4.0 Pinned Chat Welcome Message 區塊（PR #588）</li>
+                <li>elder age band 65→62 onboarding demo fix（PR #674）</li>
+              </ul>
+            </td>
+            <td class="stanley-col">
+              <span class="count count-s">607</span> <span class="text-xs text-slate-500">（528 + 79 new）</span>
+              <ul class="tight">
+                <li><strong>Figma-capture 注入 155 個 view</strong>（1 commit / 155 files，工程級規模）</li>
+                <li>TLDS icon swap（散落 icon 收斂回 canonical）</li>
+                <li>SVG / mask-image pattern 統一</li>
+                <li>responsive SSO layout</li>
+                <li>Lottie 動畫整合</li>
+                <li>figma-preprocess.js（CI 端 flex-map 生成）</li>
+                <li>html-to-figma skill rewrite（30+ documented pitfalls）</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li><strong>design-handoff-web 密集 UI 迭代</strong>（6/25–7/06，79 commits）：mobile polish、TLDS token 對齊、viewer 系統（image/PDF previewer + motion）、settings/sidemenu overhaul、chip-row fade</li>
+                <li>kw-flyout / kw-topbar / scrollbar token 修正</li>
+              </ul>
+            </td>
+          </tr>
+
+          <!-- vxd-skill -->
+          <tr>
+            <td class="repo-cell"><code>vxd-skill</code><div class="text-xs font-normal text-slate-500 mt-1">TLDS 視覺層 skill / Figma writeback</div></td>
+            <td class="karen-col"><div class="empty">— 0 commits —</div></td>
+            <td class="michael-col">
+              <span class="count count-m">1</span> <span class="text-xs text-slate-500">（新出現，6/19–7/07）</span>
+              <ul class="tight">
+                <li>installer review fix（PR #126 unresolved findings address）</li>
+              </ul>
+            </td>
+            <td class="stanley-col">
+              <span class="count count-s">397</span> <span class="text-xs text-slate-500">（369 + 28 new）</span>
+              <ul class="tight">
+                <li>TLDS token compliance audit</li>
+                <li>canonical token migration（散落 token 統一）</li>
+                <li>html-to-figma plugin v1.1.x（雙向 writeback）</li>
+                <li>dark mode remediation</li>
+                <li>brand color pipeline</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li><strong>VXD Workflow Installer v1.1.0 → v1.2.0 ship</strong>（start-day/end-day skill 整合 harness + auto-learning loop）</li>
+                <li>icon sync 73→86（Figma sync，PR #118）</li>
+                <li>short-film-director skill 新增（PR #125）</li>
+                <li>installer 修正（MCP config path、doc drift、stale skill bundles，PR #126 + followups PR #127）</li>
+              </ul>
+            </td>
+          </tr>
+
+          <!-- TrendLife-UX-design-team -->
+          <tr>
+            <td class="repo-cell"><code>TrendLife-UX-design-team</code><div class="text-xs font-normal text-slate-500 mt-1">Umbrella monorepo</div></td>
+            <td class="karen-col">
+              <span class="count count-k">26</span>
+              <ul class="tight">
+                <li>submodule 版本 pin 與整合</li>
+                <li>worklog 驅動的 governance docs</li>
+                <li>cross-team 對齊文檔</li>
+              </ul>
+            </td>
+            <td class="michael-col">
+              <span class="count count-m">403</span> <span class="text-xs text-slate-500">（tmemu 336 + gmail 67）</span>
+              <ul class="tight">
+                <li><strong>AI engagement governance v1 / v2 / v3</strong>（多版本治理規範迭代）</li>
+                <li>naming proposals（命名規範提案）</li>
+                <li><strong>3 月新增：RBAC roles.json + rbac-gate.sh hook</strong>（PreToolUse RBAC enforcement）</li>
+                <li><strong>3 月新增：portable git hooks + auto-install via SessionStart</strong></li>
+                <li><strong>3 月新增：observable logging</strong>（7 個 hook script 結構化 logging + JSONL handler）</li>
+                <li><strong>3 月新增：team member onboarding scaffolding</strong>（CLAUDE.md 注入機制、新成員 Sparda Wei scaffold）</li>
+                <li><strong>3 月新增（gmail）：design-walkthrough skill + VPN onboarding pipeline POC</strong></li>
+                <li><strong>3 月新增（gmail）：VPN onboarding 跨角色規範</strong>（UXD / VXD / UXW spec）</li>
+                <li><strong>3 月新增（gmail）：P1 methodology transfers</strong>（mkt / uxd / vxd / dev 角色方法論 + toolkit framework）</li>
+              </ul>
+            </td>
+            <td class="stanley-col">
+              <span class="count count-s">110</span> <span class="text-xs text-slate-500">net（97 + 13 new；原始 521，扣 270 submodule bump + 154 merge PR）</span>
+              <ul class="tight">
+                <li>cross-repo TLDS 對齊（vxd-skill ↔ hie-rei 視覺一致性）</li>
+                <li>visual governance 文檔</li>
+                <li>3 月：bash 3.2 portability fix（pre-commit hook 相容性）</li>
+                <li class="text-slate-500">（另有 270 個 mechanical submodule bump + 154 個 merge PR pointer，已扣除）</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>vxd submodule bump 追蹤 installer v1.1.0 全版本（PR #257–#261，含 icon sync / slides template / description optimize / v1.11.0）</li>
+              </ul>
+            </td>
+          </tr>
+
+          <!-- REI-Project -->
+          <tr>
+            <td class="repo-cell"><code>REI-Project</code><div class="text-xs font-normal text-slate-500 mt-1">內容策略 / AI engagement 治理</div></td>
+            <td class="karen-col">
+              <span class="count count-k">1</span>
+              <ul class="tight"><li>輕度觸碰</li></ul>
+            </td>
+            <td class="michael-col">
+              <span class="count count-m">251</span> <span class="text-xs text-slate-500">（235 + 16 new）</span>
+              <ul class="tight">
+                <li><strong>persona constitution</strong>（AI 人格規範）</li>
+                <li>memory-privacy spec</li>
+                <li>CT framework（content taxonomy）</li>
+                <li>citation hygiene（引用規範 — 每個文案決策都附 Apple 3.1.1 / governance contract 出處）</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>single-feature Path A enabled confirmations（EN + zh-TW + ja-JP 三語，PR #230/#231）</li>
+                <li>§4.0 Pinned Chat Welcome generative contract + manifest 佈線（PR #235）</li>
+                <li>SOUL governance 修正：VA-08 proactive posture、VA-04 onboarding-nudge carve-out（PR #236/#237）</li>
+                <li>family-framing ladders engine 化（PR #238）</li>
+                <li>elder eval band 75–84 → 75+ 修正（PR #245）</li>
+              </ul>
+            </td>
+            <td class="stanley-col">
+              <span class="count count-s">2</span>
+              <ul class="tight"><li>輕度觸碰</li></ul>
+            </td>
+          </tr>
+
+          <!-- style-manual-for-conversational-ai -->
+          <tr>
+            <td class="repo-cell"><code>style-manual-for-conversational-ai</code><div class="text-xs font-normal text-slate-500 mt-1">對話式 AI 的文體規範</div></td>
+            <td class="karen-col"><div class="empty">— 0 commits —</div></td>
+            <td class="michael-col">
+              <span class="count count-m">61</span>
+              <ul class="tight"><li>對話式 AI 文體 / style guide 撰寫（4 月起開始）</li></ul>
+            </td>
+            <td class="stanley-col"><div class="empty">— 0 commits —</div></td>
+          </tr>
+
+          <!-- ux-atelier -->
+          <tr>
+            <td class="repo-cell"><code>ux-atelier</code><div class="text-xs font-normal text-slate-500 mt-1">Skill marketplace / harness</div></td>
+            <td class="karen-col"><div class="empty">— 0 commits —</div></td>
+            <td class="michael-col">
+              <span class="count count-m">125</span> <span class="text-xs text-slate-500">（幾乎全 gmail 107）</span>
+              <ul class="tight">
+                <li><strong>rei-wording-review skill v1.2.0</strong>（核心產出）</li>
+                <li>兩階段管線：階段一零 LLM 成本 deterministic engine、階段二 register-aware AI-slop 偵測</li>
+                <li>en / zh-TW / ja 三語支援</li>
+                <li>給「用 coding agent 生文案的 UXD」上線前把關</li>
+                <li>poka-yoke hardening：19 個失效模式 → 17 個防呆</li>
+              </ul>
+            </td>
+            <td class="stanley-col"><div class="empty">— 0 commits —</div></td>
+          </tr>
+
+          <!-- hie-testing -->
+          <tr>
+            <td class="repo-cell"><code>hie-testing</code><div class="text-xs font-normal text-slate-500 mt-1">HIE 測試基礎建設</div></td>
+            <td class="karen-col">
+              <span class="count count-k">1</span>
+              <ul class="tight"><li>輕度觸碰</li></ul>
+            </td>
+            <td class="michael-col">
+              <span class="count count-m">28</span>
+              <ul class="tight">
+                <li>regression test 撰寫</li>
+                <li>gamification 系統 2 天爆完（9 quests + 5 achievements + 雙語）</li>
+              </ul>
+            </td>
+            <td class="stanley-col">
+              <span class="count count-s">4</span>
+              <ul class="tight"><li>輕度觸碰</li></ul>
+            </td>
+          </tr>
+
+          <!-- preview-hub-gui -->
+          <tr>
+            <td class="repo-cell"><code>preview-hub-gui</code><div class="text-xs font-normal text-slate-500 mt-1">Mockup 上傳 GUI POC</div></td>
+            <td class="karen-col">
+              <span class="count count-k">8</span>
+              <ul class="tight">
+                <li><strong>從零打造 POC</strong></li>
+                <li>Mockup → Preview Hub upload UI</li>
+                <li>給設計師直接用的工具</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="empty">— 0 commits —</div></td>
+            <td class="stanley-col"><div class="empty">— 0 commits —</div></td>
+          </tr>
+
+          <!-- trendlife-writers-handbook -->
+          <tr>
+            <td class="repo-cell"><code>trendlife-writers-handbook</code><div class="text-xs font-normal text-slate-500 mt-1">UX writing 指南</div></td>
+            <td class="karen-col"><div class="empty">— 0 commits —</div></td>
+            <td class="michael-col">
+              <span class="count count-m">23</span> <span class="text-xs text-slate-500">（5 + 18 new）</span>
+              <ul class="tight">
+                <li>writing guideline 更新</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>wording-review skill 從 ux-atelier transplant 進來（5-step migration + subskills 搬遷，PR #4）</li>
+                <li>ai-agent UI pattern 文件（agentic copy conventions，PR #5）</li>
+                <li><strong>rei-governance plugin</strong> 從零搭（manifest + SessionStart onboarding check，PR #6）</li>
+              </ul>
+            </td>
+            <td class="stanley-col"><div class="empty">— 0 commits —</div></td>
+          </tr>
+
+          <!-- HIE-AI-Ops -->
+          <tr>
+            <td class="repo-cell"><code>HIE-AI-Ops</code><div class="text-xs font-normal text-slate-500 mt-1">AIUX unit 協作層（6/23 新建）</div></td>
+            <td class="karen-col">
+              <span class="count count-k">6</span> <span class="text-xs text-slate-500">（新 repo，6/19–7/07）</span>
+              <ul class="tight">
+                <li><strong>從零建立</strong>（6/23 initial commit + README）</li>
+                <li>context-handoff-prompt / opusplan-onboard-prompt docs（PR #1、#2）</li>
+                <li>model-config 1M context window onboarding（PR #3）</li>
+                <li>skip-check-and-report onboarding（PR #4）</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="empty">— 0 commits —</div></td>
+            <td class="stanley-col"><div class="empty">— 0 commits —</div></td>
+          </tr>
+
+          <tr class="scope-divider"><td colspan="4">▸ JiaWen-Shen（Karen 個人帳號 — 部門分享 / 教學層）</td></tr>
+
+          <!-- AI-design -->
+          <tr>
+            <td class="repo-cell"><code>AI-design</code><div class="text-xs font-normal text-slate-500 mt-1">部門教學 + skill 育成倉</div></td>
+            <td class="karen-col">
+              <span class="count count-k">54</span> <span class="text-xs text-slate-500">（44 + 10 new）</span>
+              <ul class="tight">
+                <li><strong>「GitHub for Designers」週課程</strong>（Week 1–6 deck）：Claude Design × Code Q&A、Git vocab、PR review、merge conflict、GitHub for AI × Git、CLAUDE.md + memory、agent harness</li>
+                <li><strong>design-context skill</strong> 起源 → 同步 hie-rei PR #418</li>
+                <li><strong>design-pr-review skill</strong> 7 commits codex 對抗硬化 → ship hie-rei PR #385</li>
+                <li>team-skill-telemetry Ops intro deck</li>
+                <li>claude-code-daily-flow package（給同事共用的 session flow）</li>
+                <li>teach-me skill（RTX Spark 曼報式教學模板）</li>
+                <li>RDsec → C4E migration agent playbook</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>C4E model switch goal-prompt + effortLevel=high 設定</li>
+                <li>Week6 deck 重寫（dotclaude config + AI model picking，含 symlink screenshot + cover slide 補完）</li>
+                <li>tom-voice-eval-v0（Teams voice eval page）</li>
+                <li>Qoome P0-2 Phase 2 recovery progress page；Karen 原文 x 山料體改寫對照 demo</li>
+                <li>GH Pages <code>.nojekyll</code> fix</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="na">— 個人 repo n/a —</div></td>
+            <td class="stanley-col"><div class="na">— 個人 repo n/a —</div></td>
+          </tr>
+
+          <!-- worklog -->
+          <tr>
+            <td class="repo-cell"><code>worklog</code><div class="text-xs font-normal text-slate-500 mt-1">公開 worklog</div></td>
+            <td class="karen-col">
+              <span class="count count-k">10</span> <span class="text-xs text-slate-500">（9 + 1 new）</span>
+              <ul class="tight">
+                <li>月度工作摘要（2026-02 ~ 05）含 token 用量 + cost</li>
+                <li>對 stakeholder 公開的透明度文件</li>
+                <li style="list-style:none;" class="mt-2 pt-1 border-t border-slate-200 text-[10px] uppercase tracking-wide text-slate-400">6/19–7/07 新增</li>
+                <li>2026年6月 worklog + usage cumulative chart</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="na">— 個人 repo n/a —</div></td>
+            <td class="stanley-col"><div class="na">— 個人 repo n/a —</div></td>
+          </tr>
+
+          <!-- hie-team-building-2026 -->
+          <tr>
+            <td class="repo-cell"><code>hie-team-building-2026</code><div class="text-xs font-normal text-slate-500 mt-1">GH Pages mirror</div></td>
+            <td class="karen-col">
+              <span class="count count-k">6</span>
+              <ul class="tight">
+                <li>從 tmemu 同步 PR 到 GH Pages 部署</li>
+                <li>團建提案 + 投票頁（7/23 出遊）</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="na">— 個人 repo n/a —</div></td>
+            <td class="stanley-col"><div class="na">— 個人 repo n/a —</div></td>
+          </tr>
+
+          <!-- claude-hooks -->
+          <tr>
+            <td class="repo-cell"><code>claude-hooks</code><div class="text-xs font-normal text-slate-500 mt-1">公開個人 tooling（同事可用）</div></td>
+            <td class="karen-col">
+              <span class="count count-k">4</span>
+              <ul class="tight">
+                <li>Claude Code Telegram 通知 hook（stop / idle）</li>
+                <li>smart idle detection（10s suppress）</li>
+                <li>test-gate timestamp hook + robust test-pass 偵測</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="na">— 個人 repo n/a —</div></td>
+            <td class="stanley-col"><div class="na">— 個人 repo n/a —</div></td>
+          </tr>
+
+          <!-- claude-code-cheatsheet -->
+          <tr>
+            <td class="repo-cell"><code>claude-code-cheatsheet</code><div class="text-xs font-normal text-slate-500 mt-1">公開速查表</div></td>
+            <td class="karen-col">
+              <span class="count count-k">3</span>
+              <ul class="tight">
+                <li>Custom skills、sd0x-dev-flow、codex plugin 速查表</li>
+                <li>列印版 PDF</li>
+              </ul>
+            </td>
+            <td class="michael-col"><div class="na">— 個人 repo n/a —</div></td>
+            <td class="stanley-col"><div class="na">— 個人 repo n/a —</div></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-slate-400 mt-2">
+      ※ Karen 個人帳號（<code>JiaWen-Shen</code>）已排除個人專案，只列部門分享 / 教學 / 工具相關。<br>
+      ※ Michael 數字為 <code>michael-fu_tmemu</code>（GH login）+ <code>michaelfu1984@gmail.com</code>（unlinked git config）合計。API 顯示為兩個不同作者。
+    </p>
+  </section>
+
+  <!-- Karen pipeline -->
+  <section class="mb-8 bg-blue-50 border-2 border-blue-200 p-5 rounded-lg">
+    <h2 class="text-lg font-bold text-blue-900 mb-2">🔗 Karen 雙帳號的「R&D → Delivery」管線</h2>
+    <p class="text-sm text-slate-700 mb-3">兩個帳號不是分裂，是同一條 workflow 的兩段：</p>
+    <div class="bg-white p-3 rounded font-mono text-xs leading-relaxed">
+      <span class="karen-text font-semibold">JiaWen-Shen/AI-design</span>（個人 / 公開 / GH Pages）<br>
+      &nbsp;&nbsp;↓ 教學 deck + skill 原型 + codex adversarial review<br>
+      <span class="karen-text font-semibold">karen-shen_tmemu/&lt;skill&gt;</span>（中繼）<br>
+      &nbsp;&nbsp;↓ sync script<br>
+      <span class="karen-text font-semibold">trendlife-general/hie-rei</span>（團隊正式 ship）<br>
+      &nbsp;&nbsp;↓ PR #418 design-context / #385 design-pr-review / #434 telemetry
+    </div>
+    <p class="text-sm text-slate-700 mt-3">
+      <strong>個人帳號 66 commits（AI-design 為主）= R&D + 教學層</strong>；<strong>tmemu 53 commits = ship 層</strong>。
+      整理時，Karen 的真實貢獻是 119 commits（個人占 55%），不是 GitHub Org 看到的 53。
+    </p>
+  </section>
+
+  <!-- Michael identity pattern -->
+  <section class="mb-8 bg-red-50 border-2 border-red-200 p-5 rounded-lg">
+    <h2 class="text-lg font-bold text-red-900 mb-2">🆔 Michael 雙 git identity ≠ bug，是兩個 phase 分機器</h2>
+    <p class="text-sm text-slate-700 mb-3">
+      <code>michael-fu_tmemu</code>（GH login 對得到）vs <code>michaelfu1984@gmail.com</code>（GH 對不到，孤兒 commit）—
+      不是設定錯亂，掃 518 個 gmail commits 後 pattern 非常清楚：
+    </p>
+
+    <div class="bg-white rounded overflow-hidden">
+      <table class="pattern-table">
+        <thead>
+          <tr>
+            <th class="dim">維度</th>
+            <th style="background:#fef2f2;color:#991b1b;">gmail identity（個人機）— build phase</th>
+            <th style="background:#f8fafc;color:#475569;">tmemu identity（工作機）— operate phase</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="dim-cell">工作性質</td>
+            <td>repo 從零搭、skill harness、CI、tone-and-voice spec authoring、plugin marketplace</td>
+            <td>copy alignment、locale propagation、stakeholder war-room 同步、UX writing 逐畫面 review</td>
+          </tr>
+          <tr>
+            <td class="dim-cell">典型 commit</td>
+            <td>
+              <code class="text-xs">feat: add 10 toolkit skills as local copies</code><br>
+              <code class="text-xs">feat: import hooks tree (15 hooks)</code><br>
+              <code class="text-xs">feat: poka-yoke hooks for workflow enforcement</code>
+            </td>
+            <td>
+              <code class="text-xs">wording(get-started): align CDLP/optimal sibling copy to war-room</code><br>
+              <code class="text-xs">fix: align chat-onboardingNameError rendered surfaces</code><br>
+              <code class="text-xs">🌐 add CDLP intro to zh-TW &amp; ja-JP</code>
+            </td>
+          </tr>
+          <tr>
+            <td class="dim-cell">節奏</td>
+            <td>高密度 burst — 2-3 小時 10-20 commits，1-2 天蓋整個系統（TrendLife monorepo 1 週、ux-atelier 16 天）</td>
+            <td>線性 PR-per-change，每天小幅迭代</td>
+          </tr>
+          <tr>
+            <td class="dim-cell">時間</td>
+            <td>常有 03:00–05:00 +08:00、週末（TrendLife bootstrap 週末 37%）</td>
+            <td>標準工時 12:00–20:00 +08:00</td>
+          </tr>
+          <tr>
+            <td class="dim-cell">commit message 風格</td>
+            <td>抽象 — 引 CXT ticket、framework、hierarchy</td>
+            <td>具體 — 提 Catherine / Heather / war-room direction</td>
+          </tr>
+          <tr>
+            <td class="dim-cell">代表性 repo</td>
+            <td><code>TrendLife-UX-design-team</code>（整個 bootstrap）<br><code>ux-atelier</code>（整個 plugin harness）<br><code>REI-Project</code>（tone-and-voice spec authoring）</td>
+            <td><code>hie-rei</code>（產品 view 文案 review）<br><code>style-manual-for-conversational-ai</code><br><code>trendlife-writers-handbook</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 p-3 bg-red-100 rounded text-sm text-slate-700">
+      <strong class="text-red-900">為什麼這事直接連到「token 爆掉」：</strong>
+      個人機（gmail config）= Claude Code 主力，蓋整套 plugin / harness / spec — 自然吃 token。tmemu（工作機）跑 copy review 反而 token 少。
+      所以「Michael token 用很兇」對應到的工作其實是「他在個人機上用 Claude Code 蓋整套 design engineering 基礎建設」— 這是 design technologist 角色 build phase 的結構性成本。
+    </div>
+
+    <div class="mt-3 p-3 bg-amber-100 rounded text-sm text-slate-700">
+      <strong class="text-amber-900">統計盲點警告：</strong>
+      GitHub contribution graph、team dashboard、任何只用 GH login 算的工具，都看不到那 518 個 gmail commits（占他總量 <strong>41%</strong>）。
+      包括這個 ux-atelier 整套 Claude Code plugin、TrendLife-UX-design-team 整個 repo bootstrap、REI-Project tone-and-voice spec 全是。
+      <strong>如果只看 GitHub UI 評估 Michael 的工作，會嚴重低估。</strong>
+    </div>
+  </section>
+
+  <!-- Parallel wheel-building -->
+  <section class="mb-8 bg-white p-5 rounded-lg border-2 border-orange-300">
+    <h2 class="text-lg font-bold text-orange-900 mb-2">🔴 重疊檔案 — Karen ↔ Michael 平行造輪子事件</h2>
+    <p class="text-sm text-slate-700 mb-3">
+      掃描 Karen / Michael 自 2026-03-01 起直接 author 過的 commit（<strong>已排除 PR 互審 / merge commits</strong>，那是健康協作），交集出 1 個明確的紅旗 cluster：
+    </p>
+
+    <div class="bg-orange-50 border border-orange-300 rounded p-4 mb-3">
+      <div class="text-sm font-semibold text-orange-900 mb-2">📍 2026-06-03 · <code>hie-rei/.claude/scripts/</code> · 4 個檔案同日被兩人各自重寫</div>
+      <ul class="text-sm tight">
+        <li><code>aggregate.py</code></li>
+        <li><code>log-skill-event.sh</code></li>
+        <li><code>push-with-retry.sh</code></li>
+        <li><code>weekly-sync.sh</code></li>
+      </ul>
+      <table class="w-full mt-3 text-xs" style="border-collapse:collapse;">
+        <thead>
+          <tr style="background:#fed7aa;">
+            <th class="text-left p-2">時間 (UTC)</th>
+            <th class="text-left p-2">作者</th>
+            <th class="text-left p-2">Commit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#dbeafe;">
+            <td class="p-2 font-mono">06-03 03:59</td>
+            <td class="p-2"><strong class="karen-text">Karen</strong></td>
+            <td class="p-2"><code>a699f0e</code> feat(telemetry): enable team skill usage tracking</td>
+          </tr>
+          <tr style="background:#fee2e2;">
+            <td class="p-2 font-mono">06-03 06:22</td>
+            <td class="p-2"><strong class="michael-text">Michael</strong></td>
+            <td class="p-2"><code>5b685b2</code> refactor(telemetry): derive skill+hook usage from transcripts, publish to telemetry branch</td>
+          </tr>
+          <tr style="background:#fee2e2;">
+            <td class="p-2 font-mono">06-03 16:57</td>
+            <td class="p-2"><strong class="michael-text">Michael</strong></td>
+            <td class="p-2"><code>f5119be</code> fix(telemetry): poka-yoke hardening</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-slate-700 mt-3">
+        <strong>時間軸：</strong>Karen 早上 03:59 bootstrap 整套 telemetry script。
+        <strong>2.5 小時後</strong>，Michael 一個 <code>refactor:</code> commit 把同樣 4 個檔案<strong>整套架構重寫</strong>（改成 transcript-derived），
+        commit message <strong>未引用 Karen 的工作</strong>。同日下午再 fix 一次。
+      </p>
+      <p class="text-xs text-slate-700 mt-2">
+        <strong>判讀：</strong>不是 fork-and-extend（Michael 沒 ref Karen），不是 PR 互審。兩人各自有一套 telemetry 架構 spec — Karen 的 event-log 派 vs Michael 的 transcript-derive 派 — 在同一天落地到同樣 4 個檔案。
+      </p>
+    </div>
+
+    <div class="bg-green-50 border border-green-300 rounded p-3 mb-3">
+      <div class="text-sm font-semibold text-green-900 mb-1">🟢 <code>hie-rei/.claude/settings.json</code> — 健康的 fork-and-extend</div>
+      <p class="text-xs text-slate-700">
+        Michael 從 4 月起累積 8+ commits 是這檔案主 owner，Karen 6/3 加 telemetry hook 註冊。順序是 Karen 延伸 Michael 既有結構，非平行重寫。
+      </p>
+    </div>
+
+    <div class="bg-slate-50 border border-slate-300 rounded p-3">
+      <div class="text-sm font-semibold text-slate-700 mb-1">⚪ <code>TrendLife-UX-design-team</code> — 無重疊</div>
+      <p class="text-xs text-slate-700">
+        Karen 工作集中在 subtree / submodule / git-operation-guide，Michael 集中在 <code>.claude/hooks/</code> 與 projects/rei 設計 artifact。同 repo 不同層，無平行造輪子。
+      </p>
+    </div>
+
+    <div class="mt-4 p-3 bg-amber-100 rounded text-sm text-slate-700">
+      <strong class="text-amber-900">📌 給 Karen 跟 Michael 的對話起手：</strong>
+      6/3 的 telemetry 雙人事件需要明確 ownership — 是 Karen 的 bootstrap 被刻意取代（事先協調過），還是 Michael 不知道 Karen 已經開始？
+      接下來 telemetry script 是 event-log 派還是 transcript-derive 派要拍板，再加上接 Michael 即將要做的 CI 整合 — 一個人主責、另一人 review。
+    </div>
+  </section>
+
+  <!-- Cross-pollination -->
+  <section class="mb-8 bg-white p-5 rounded-lg border border-slate-200">
+    <h2 class="text-lg font-bold text-slate-900 mb-3">🔀 三人交接面</h2>
+    <div class="space-y-2 text-sm">
+      <div class="p-3 bg-slate-50 rounded">
+        <strong>Karen ↔ Michael</strong>（strong, in <code>hie-rei</code> + <code>TrendLife-UX-design-team</code> infra 層）—
+        Karen 蓋平台（design-pr-review / telemetry PR #418, #434），Michael 在上面擴展 hooks / conflict-route / auto-sync / RBAC / observable logging。Michael commit 直接 ref「Karen #1/#2/#4 nits」、「Karen visual handoff」。Fork-and-extend，<strong>近期有重疊風險</strong>（兩人都在做 git hook / pre-commit infra）。
+      </div>
+      <div class="p-3 bg-slate-50 rounded">
+        <strong>Michael ↔ Stanley</strong>（strong, in <code>hie-rei</code> view 檔案層）—
+        兩人改同樣 HTML view 檔案。Stanley figma-capture 注入（1 commit / 155 files）創 infra，Michael 的 wording spec 套用其上。5/5–5/8、5/14–5/15 同步 sprint 模式。
+      </div>
+      <div class="p-3 bg-slate-50 rounded">
+        <strong>Karen ↔ Stanley</strong>（minimal）— 重疊低，職責切分健康。
+      </div>
+    </div>
+  </section>
+
+  <!-- Key findings for manager -->
+  <section class="mb-8 bg-amber-50 border-2 border-amber-200 p-5 rounded-lg">
+    <h2 class="text-lg font-bold text-amber-900 mb-3">💡 Management Insights</h2>
+    <ol class="list-decimal list-inside space-y-2 text-sm text-slate-700">
+      <li><strong>主管「三人三層」框架基本成立</strong> — Karen 流程 / Michael 內容 / Stanley 視覺，三層接得起來。</li>
+      <li><strong>「444 hie-rei」數字</strong>：API 可驗證為 <strong>417</strong>（tmemu 223 + gmail 194）。差 27 大概是 local <code>git log</code> 算法差異。</li>
+      <li><strong>Karen 真實貢獻量是 119（個人 + 工作合計），不是 53</strong> — 個人帳號 AI-design 倉是部門教學 + skill 育成地，所有 ship 到 hie-rei 的 skill 都先在這裡硬化。</li>
+      <li><strong>Michael 41% 的工作不在 GitHub Org 統計裡</strong> — 雙身份的 gmail 那 518 commits 涵蓋整個 ux-atelier plugin、TrendLife-UX-design-team bootstrap、REI-Project tone-and-voice spec authoring。<strong>用 GH UI 評估會嚴重低估</strong>。</li>
+      <li><strong>Michael 3 月已開始做 infra（RBAC / portable hooks / observable logging）</strong> — 跟 Karen 的 design-pr-review / telemetry 平台高度同向，<strong>兩人在 git hook infra 平行造輪子可能從 3 月就開始</strong>。</li>
+      <li><strong>Stanley 規模需要重新看</strong> — TrendLife-UX-design-team net 從原估 239 修正為 97（扣除 270 submodule bump + 154 merge PR）。但他 vxd-skill 獨立 repo 仍是工程級規模，已超出「視覺守門員」框架。</li>
+      <li><strong>Michael token 用很兇對應到的是 build-phase 結構性成本</strong>：
+        <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+          <li>個人機跑 Claude Code 蓋整套 plugin / harness — build phase 本來就吃 token</li>
+          <li>跨 7 repo context switching</li>
+          <li>跟 Karen 在 hooks / infra 層平行造輪子（3 月以來持續，6/3 telemetry 派別事件是最明顯一次）</li>
+        </ul>
+      </li>
+      <li><strong>Q2 角色重新切分：edge research × application landing</strong>（取代主管原版「三人三層守門員」）
+        <div class="mt-2 p-3 bg-white rounded border border-amber-300">
+          <p class="text-sm text-slate-700 mb-3">
+            主管原版「Karen 流程守門 / Michael 文案守門 / Stanley 視覺守門」每人切一個 check point — 框架成立但<strong>沒對到工作型態的不對稱</strong>。
+            數據顯示 Michael 41% 工作（gmail identity）是 build-phase（repo bootstrap、plugin harness、tone-and-voice spec authoring），Karen 119 commits 中 66 在 R&D-to-Delivery pipeline（AI-design → tmemu → hie-rei）。
+            真實的 role asymmetry 是「<strong>build / explore phase</strong>」對「<strong>land / adopt phase</strong>」，不是 dimension（流程 / 內容 / 視覺）。
+          </p>
+
+          <div class="bg-slate-50 p-3 rounded font-mono text-xs leading-loose mb-3">
+            <span class="michael-text font-semibold">Michael ─ edge research</span>（lab）<br>
+            &nbsp;&nbsp;探索最新 framework / 蓋 prototype harness / authoring 新 spec<br>
+            &nbsp;&nbsp;↓ handoff artifact（POC + spec / lab-ready skill）<br>
+            <span class="karen-text font-semibold">Karen ─ application landing</span>（factory）<br>
+            &nbsp;&nbsp;判斷採用 / 整理成教學 / sync 到 hie-rei → ship 給全團隊<br>
+            <span class="text-slate-400">─────────────</span><br>
+            <span class="stanley-text font-semibold">Stanley ─ visual layer vertical owner</span><br>
+            &nbsp;&nbsp;不做 research，自有獨立 application layer（vxd-skill）handle 視覺工程<br>
+            &nbsp;&nbsp;Michael 視覺相關 research 落地給 Stanley，workflow/skill 相關落地給 Karen
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="font-semibold michael-text">Michael — edge research lead（design technologist mandate）</div>
+              <ul class="list-disc list-inside ml-3 mt-1 text-slate-700">
+                <li>主場：<code>ux-atelier</code>（plugin marketplace + harness）、<code>REI-Project</code>（spec authoring）、跨 repo POC</li>
+                <li>產出：framework / prototype / lab-ready skill。<strong>不期待每個都 ship</strong>，token 投資對應的是探索路徑數量</li>
+                <li>角色 framing：「<strong>你蓋 lab，我蓋 factory</strong>」— 對團隊講的時候避免「research vs production」這種上下感</li>
+                <li>Handoff artifact 三選一：POC + 1 頁 spec / 可拋棄 prototype（不期待你接）/ lab-ready skill（自己 dogfood 過）</li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="font-semibold karen-text">Karen — application landing owner（adoption gate）</div>
+              <ul class="list-disc list-inside ml-3 mt-1 text-slate-700">
+                <li>主場：<code>AI-design</code>（教學 + 育成）→ <code>karen-shen_tmemu/&lt;skill&gt;</code>（中繼）→ <code>hie-rei</code>（ship）pipeline</li>
+                <li>產出：onboarding 教材、ship 到 hie-rei 的 skill、設計師用得到的 tool（preview-hub-gui）</li>
+                <li>對 Michael 的 research 是 <strong>adoption gate</strong>：✅ 採用走 sync pipeline / 🅿️ 觀察留 ux-atelier 標 experimental / ❌ 明確 reject</li>
+                <li>Token 投資對應的是 ship 出去的 skill 數量，跟 Michael 不同 ratio，要分開看</li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="font-semibold stanley-text">Stanley — visual layer vertical owner</div>
+              <ul class="list-disc list-inside ml-3 mt-1 text-slate-700">
+                <li>主場：<code>vxd-skill</code>（TLDS Figma writeback 工具）、<code>hie-rei</code> 視覺批次處理</li>
+                <li>不做 edge research（commit pattern 是 surgical execution 不適合 burst-mode 探索）</li>
+                <li>Michael 視覺相關 research 落地給他；Karen 的 workflow infra 不影響他</li>
+                <li>Q2 推 vxd-skill 給 VXD 全團隊用，跟 Karen 的 AI-design onboarding 互不干涉</li>
+              </ul>
+            </div>
+
+            <div class="pt-3 border-t border-amber-200">
+              <div class="font-semibold text-amber-900 mb-2">▸ 護欄三條（防止這個切法又變回 6/3 telemetry 事件）</div>
+              <ul class="list-disc list-inside ml-3 mt-1 text-slate-700 space-y-1">
+                <li><strong>Handoff artifact 明確</strong>：Michael 不直接 push code 給 Karen 接，先交 POC / spec / lab-ready，Karen 判斷</li>
+                <li><strong>Karen 是 adoption gate</strong>：edge research 不自動落地，由她判斷該採用 / 觀察 / reject — 防止 ux-atelier backlog 堆 200 件壓垮 application layer</li>
+                <li><strong>每週 30 分鐘 infra sync（Karen ↔ Michael）</strong>：純技術同步「我在動什麼」，三人 biweekly sync 走戰略層 — 技術衝突在 weekly 抓出來，不要等 biweekly 才撞</li>
+              </ul>
+            </div>
+
+            <div class="pt-3">
+              <div class="font-semibold text-amber-900 mb-1">▸ 對主管的 framing</div>
+              <p class="text-slate-700">
+                這個切法直接接「creative technologist」mandate — Michael 已經自發長出 design technologist 工作型態（gmail identity 41% commits 都是 build-phase），Karen 正式 own application layer 把他的探索變成全團隊的基礎建設。三人三層的 dimension 切分（流程 / 內容 / 視覺）改成 phase 切分（lab → factory），衝突點（6/3 telemetry 事件）直接消失。
+              </p>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="text-xs text-slate-400 mt-8 pt-6 border-t border-slate-200">
+    產出時間：2026-07-07 · 資料窗口：2026-03-01 ~ 2026-07-07 · 來源：GitHub Search Commits API
+  </footer>
+
+</div>
+</body>
+</html>
