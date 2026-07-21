@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>design-pr-review × Michael's pr-review — Team Discussion</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e5e5e0;
+    --ok: #2f7d57;
+    --pending: #b88a2f;
+    --neutral-bg: #f0f0eb;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    padding: 40px 28px 60px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header { margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .meta span::before { content: "·"; margin: 0 8px; opacity: 0.4; }
+  .meta span:first-child::before { content: ""; margin: 0; }
+
+  h2 { font-size: 16px; font-weight: 600; margin: 32px 0 10px; }
+  h2 .ok { color: var(--ok); }
+  h2 .pending { color: var(--pending); }
+  h2 .deferred { color: var(--muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--neutral-bg);
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  td.id {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td code, p code {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 12.5px;
+    padding: 1px 5px;
+    background: var(--neutral-bg);
+    border-radius: 3px;
+  }
+  td ul { margin: 0; padding-left: 18px; }
+  td ul li { margin-bottom: 2px; }
+
+  .stat {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 12px;
+    background: var(--neutral-bg);
+    padding: 10px 12px;
+    border-radius: 4px;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 8px 0 4px;
+  }
+
+  p { margin: 0 0 8px; }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>design-pr-review × Michael's pr-review</h1>
+  <div class="meta">
+    <span>Karen</span>
+    <span>2026-05-26</span>
+    <span>Branch <code>karen/chore/safety-net-hooks</code></span>
+  </div>
+</header>
+
+<h2><span class="ok">✅</span> Integrated</h2>
+<table>
+<thead>
+<tr><th>#</th><th>項目</th><th>做了什麼</th><th>影響的檔案</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td class="id">#1</td>
+  <td>跨域檔案偵測</td>
+  <td>偵測 PR 是否動到 <code>.claude/hooks/</code> / <code>.github/workflows/</code> / <code>.claude/skills/</code> → 設 <code>tier=infra-mixed</code> → skill abort，告訴設計師「找 RD review」</td>
+  <td class="id">scope-tier.sh<br>SKILL.md</td>
+</tr>
+<tr>
+  <td class="id">#3</td>
+  <td>LLM never downgrade</td>
+  <td>明文寫進 Critical Rules：<code>violations.json</code> 過濾到當前 cluster 的每筆 finding 都必須 enumerate，LLM 不能 pre-filter / sample / 自判 false positive。唯一合法 skip 是設計師說的，且要留 reasoning trail。</td>
+  <td class="id">SKILL.md</td>
+</tr>
+<tr>
+  <td class="id">#4</td>
+  <td>Conflict marker 偵測 + agent 協助 resolve</td>
+  <td>
+    抓檔案內 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> 殘留，Stage 1 早期 surface（不埋在 cluster 走查）。三選項：
+    <ul>
+      <li>A. agent 秀兩邊內容、設計師選保留哪邊、agent 清標記</li>
+      <li>B. 找 RD 處理</li>
+      <li>C. 留 comment 給作者，標 🔴 Important</li>
+    </ul>
+    A 有 4 種 fallback 條件自動降級到 B（標記殘缺 / 巢狀 / ≥3 區塊 / 編輯後 HTML 不平衡）
+  </td>
+  <td class="id">auto-detect-violations.sh<br>SKILL.md</td>
+</tr>
+<tr>
+  <td class="id">#5</td>
+  <td>Draft / DO NOT MERGE 偵測 + convention</td>
+  <td>
+    <strong>Skill 端：</strong>偵測 PR 是否 GitHub draft、title/body 是否有 <code>DO NOT MERGE:</code> 前綴。不問「要不要 review」，只設定 review tone 預期。
+    <br><br>
+    <strong>CLAUDE.md 端：</strong>新增 section「PR States — Draft / DO NOT MERGE」（插在 Workflow › Phase 2 與 Role 之間），三條共識：
+    <ul>
+      <li><strong>Draft PR</strong>（GitHub 內建）— 收 early feedback，GitHub 自動擋 merge button + auto-merge。Reviewer 照常 review，tone 偏「給方向」而非 sign-off。作者按 Ready-for-review 才 ship。</li>
+      <li><strong><code>DO NOT MERGE:</code> 前綴</strong> — PR ready 但卡外部因素。格式 <code>DO NOT MERGE: 正常標題 (卡什麼)</code>，例如 <code>DO NOT MERGE: chat header refresh (waiting on PM-128)</code>。Reviewer 照常 review + comment。作者解卡後拿掉前綴。</li>
+      <li><strong>兩個都沒設 = 正常 PR</strong>，auto-merge 是故意的。想延後 merge 必須設訊號，不要靠在某處留 comment 拜託別人別 merge。</li>
+    </ul>
+    為什麼補：原本 CLAUDE.md 沒明文，draft / DNM 的「意義」沒團隊共識，skill 偵測到時無法 reference 任何規定。
+  </td>
+  <td class="id">scope-tier.sh<br>SKILL.md<br>hie-rei CLAUDE.md</td>
+</tr>
+<tr>
+  <td class="id">#8</td>
+  <td>Fixture mode（離線測試）</td>
+  <td><code>scope-tier.sh</code> 加 <code>--fixture &lt;json&gt;</code> arg（自動帶 <code>TEST_MODE=1</code>），不打 <code>gh pr view</code> / <code>gh pr diff</code>，直接從 fixture JSON 讀 PR 元資料 + loc。可離線跑 regression test、CI 不需 GitHub token。</td>
+  <td class="id">scope-tier.sh</td>
+</tr>
+<tr>
+  <td class="id">#9</td>
+  <td>統一 <code>[SCRIPT:]</code> log 格式</td>
+  <td>
+    <code>scope-tier.sh</code> 和 <code>auto-detect-violations.sh</code> 結尾固定 print 5 行 stderr block：<code>event / status / decision / reason / action</code>。stdout 維持原本的 JSON output，不混淆。
+    <ul>
+      <li>scope-tier 依 tier 分支 action：infra-mixed → 「告訴設計師找 RD」；正常 → 「進 Stage 0.5」</li>
+      <li>auto-detect 依 conflict-marker 數分支 action：&gt;0 → 「Stage 1.2 early-surface」；0 → 「進 Stage 3d 走查」</li>
+    </ul>
+    Hooks 或未來 subagent 可機械解析。
+  </td>
+  <td class="id">scope-tier.sh<br>auto-detect-violations.sh</td>
+</tr>
+</tbody>
+</table>
+
+<h2><span class="pending">🟡</span> Needs Discussion</h2>
+<table>
+<thead>
+<tr><th>#</th><th>議題</th><th>現況 / 數據</th><th>選項</th></tr>
+</thead>
+<tbody>
+
+<tr>
+  <td class="id">D1</td>
+  <td>CHANGELOG.md 未動是否要 nudge</td>
+  <td>
+    CLAUDE.md 寫「always」，最近 10 個 merge PR 只有 1 個動 CHANGELOG：
+    <div class="stat">0 | #321 peter/flow/cdlp-android
+0 | #320 peter/flow/cdlp-android
+1 | #319 shuhan/visual/darkweb-monitor  ←
+0 | #318 mei/content/subscription
+0 | #317 mei/chore/split-release
+0 | #316 mei/content/subscription
+0 | #315 mei/content/subscription
+0 | #314 peter/fix/cdlp-settings
+0 | #313 peter/flow/cdlp-scamcheck
+0 | #312 peter/flow/cdlp-setting
+
+10% 遵守率</div>
+  </td>
+  <td>
+    <ul>
+      <li><strong>A.</strong> 保留 always 規則，硬 enforce（commit hook + CI + skill）</li>
+      <li><strong>B.</strong> 改成 release-prep 規則（CHANGELOG 只在 release-cut 寫）</li>
+      <li><strong>C.</strong> 整個拿掉，靠 commit log + PR body</li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td class="id">D4</td>
+  <td>PR body template「Why」section 是否要 enforce</td>
+  <td>
+    <code>.github/PULL_REQUEST_TEMPLATE.md</code> 有 4 個 section（🎯 Why / 📋 What / ✅ Verification / ⚠️ Reviewer notes）。<code>merge-pr-body.sh</code> 只自動填 What。Why / Verification 靠作者寫。最近 10 個 merge PR：
+    <div class="stat">用 template 結構       9/10 (90%)
+Why section 有實質內容  0/10 (0%)
+What 有內容           9/10 (auto-fill)
+特殊：PR #321 完全沒用 template</div>
+    Why 空白對 design reviewer 影響最大 — 看不到作者意圖，只能靠讀 diff 推。
+  </td>
+  <td>
+    <ul>
+      <li><strong>A.</strong> 硬 enforce — <code>merge-pr-body.sh</code> 在 Why 空白時 reject / hook 擋 push。配套要教大家寫 Why。</li>
+      <li><strong>B.</strong> 接受現況，skill 不檢查。設計師讀 diff 推意圖。</li>
+      <li><strong>C.</strong> 改 template — 把 Why 拿掉留 What + Verification，承認團隊不寫 Why 是事實。</li>
+    </ul>
+    <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">跟 D1 同性質（policy 寫但 practice ≈ 0），建議綁一起討論。</p>
+  </td>
+</tr>
+
+<tr>
+  <td class="id">D2</td>
+  <td>Draft / DO NOT MERGE convention 文字確認</td>
+  <td>
+    新 section 已加進 CLAUDE.md。重點：
+    <ul>
+      <li>Draft = 收 early feedback，GitHub 自動擋 merge，reviewer tone 偏給方向</li>
+      <li><code>DO NOT MERGE: 標題 (卡什麼)</code> = ready 但卡外部，reviewer 照常 review</li>
+      <li>兩個都沒設 = 正常 PR，auto-merge 是故意的</li>
+    </ul>
+  </td>
+  <td>
+    <ul>
+      <li>文字可接受嗎？</li>
+      <li>格式 <code>DO NOT MERGE:</code>（大寫 + 冒號 + 空格）團隊 OK 嗎？還是用 <code>[DNM]</code> / <code>🚧</code>？</li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td class="id">D3</td>
+  <td>整合範圍是否需 sign-off</td>
+  <td>#1 / #3 / #4 / #5 已實作完，未 commit。CLAUDE.md 變更在 branch <code>karen/chore/safety-net-hooks</code>。</td>
+  <td>
+    <ul>
+      <li>Owner（Karen）決定即可？</li>
+      <li>還是要團隊先看過再 commit？</li>
+    </ul>
+  </td>
+</tr>
+
+</tbody>
+</table>
+
+<footer>
+<p>Skill：<code>~/dotclaude/skills/design-pr-review/</code> · CLAUDE.md：<code>~/Jottacloud/vibe/hie-rei/CLAUDE.md</code></p>
+</footer>
+
+</div>
+</body>
+</html>

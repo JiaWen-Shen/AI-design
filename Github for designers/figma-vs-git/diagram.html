@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Figma vs Git</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px;
+  }
+  .container { width: 100%; max-width: 860px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .header span { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+
+  /* Panel */
+  .panel {
+    border-radius: 16px;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .panel-figma { background: #fff8f6; border: 1.5px solid #fcd3c4; }
+  .panel-git   { background: #f7f7f7; border: 1.5px solid #d0d0d0; }
+
+  /* Node */
+  .node {
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 18px;
+    min-width: 160px;
+    min-height: 72px;
+  }
+  .node-figma { background: #fff0eb; border: 2px solid #F24E1E; }
+  .node-github { background: #f0f0f0; border: 2px solid #24292f; }
+  .node-local  { background: #fff; border: 2px solid #8a8a8a; min-width: 110px; min-height: 60px; }
+
+  .node-title { font-size: 12px; font-weight: 600; }
+  .node-title-figma { color: #F24E1E; }
+  .node-title-github { color: #24292f; }
+  .node-title-local  { color: #555; }
+  .node-sub { font-size: 10px; color: #aaa; }
+
+  /* Arrows row */
+  .arrows { display: flex; gap: 40px; }
+  .arrow-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .arrow-label { font-size: 10px; color: #aaa; white-space: nowrap; margin: 1px 0; }
+
+  /* Users row */
+  .users { display: flex; gap: 32px; }
+  .user { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .user-avatar {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .user-avatar-figma { background: #fff0eb; border: 1.5px solid #f7c5b5; }
+  .user-avatar-git   { background: #ebebeb; border: 1.5px solid #c0c0c0; }
+  .user-label { font-size: 11px; color: #888; }
+
+  /* Local row */
+  .local-users { display: flex; gap: 24px; }
+  .local-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+  /* Insight bar */
+  .insights { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+  .insight {
+    text-align: center; font-size: 13px;
+    border-radius: 10px; padding: 10px 16px;
+  }
+  .insight-figma { background: #fff0eb; border: 1px solid #fcd3c4; color: #c03800; }
+  .insight-git   { background: #f0f0f0; border: 1px solid #d0d0d0; color: #333; }
+  .insight strong { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="grid">
+
+    <!-- FIGMA HEADER -->
+    <div class="header">
+      <svg width="20" height="30" viewBox="0 0 38 57" fill="none">
+        <path d="M19 28.5C19 23.25 23.25 19 28.5 19C33.75 19 38 23.25 38 28.5C38 33.75 33.75 38 28.5 38C23.25 38 19 33.75 19 28.5Z" fill="#1ABCFE"/>
+        <path d="M0 47.5C0 42.25 4.25 38 9.5 38H19V47.5C19 52.75 14.75 57 9.5 57C4.25 57 0 52.75 0 47.5Z" fill="#0ACF83"/>
+        <path d="M19 0V19H28.5C33.75 19 38 14.75 38 9.5C38 4.25 33.75 0 28.5 0H19Z" fill="#FF7262"/>
+        <path d="M0 9.5C0 14.75 4.25 19 9.5 19H19V0H9.5C4.25 0 0 4.25 0 9.5Z" fill="#F24E1E"/>
+        <path d="M0 28.5C0 33.75 4.25 38 9.5 38H19V19H9.5C4.25 19 0 23.25 0 28.5Z" fill="#A259FF"/>
+      </svg>
+      <span>Figma</span>
+    </div>
+
+    <!-- GIT HEADER -->
+    <div class="header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#24292f">
+        <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+      </svg>
+      <span>Git / GitHub</span>
+    </div>
+
+    <!-- FIGMA PANEL -->
+    <div class="panel panel-figma">
+      <!-- Cloud node -->
+      <div class="node node-figma">
+        <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+          <path d="M22 9h-1.5A9 9 0 1010 19h12a6 6 0 000-12z" fill="#F24E1E" fill-opacity="0.55"/>
+        </svg>
+        <span class="node-title node-title-figma">Figma Cloud</span>
+        <span class="node-sub">唯一一份</span>
+      </div>
+
+      <!-- Bidirectional arrows -->
+      <div class="arrows">
+        <div class="arrow-col">
+          <span class="arrow-label">自動即時同步</span>
+          <svg width="16" height="36" viewBox="0 0 16 36" fill="none">
+            <path d="M8 32L8 4M8 4L4 10M8 4L12 10M8 32L4 26M8 32L12 26" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="arrow-col">
+          <span class="arrow-label">自動即時同步</span>
+          <svg width="16" height="36" viewBox="0 0 16 36" fill="none">
+            <path d="M8 32L8 4M8 4L4 10M8 4L12 10M8 32L4 26M8 32L12 26" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div class="users">
+        <div class="user">
+          <div class="user-avatar user-avatar-figma">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" fill="#F24E1E" fill-opacity="0.7"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#F24E1E" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="user-label">設計師 A</span>
+        </div>
+        <div class="user">
+          <div class="user-avatar user-avatar-figma">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" fill="#F24E1E" fill-opacity="0.7"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#F24E1E" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="user-label">設計師 B</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GIT PANEL -->
+    <div class="panel panel-git">
+      <!-- GitHub remote node -->
+      <div class="node node-github">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#24292f">
+          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span class="node-title node-title-github">GitHub Remote</span>
+        <span class="node-sub">共享中心</span>
+      </div>
+
+      <!-- Push / Pull arrows -->
+      <div class="arrows">
+        <div class="arrow-col">
+          <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+            <path d="M8 16L8 2M8 2L4 7M8 2L12 7" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="arrow-label">push ↑</span>
+          <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+            <path d="M8 2L8 16M8 16L4 11M8 16L12 11" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="arrow-label">pull ↓</span>
+        </div>
+        <div class="arrow-col">
+          <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+            <path d="M8 16L8 2M8 2L4 7M8 2L12 7" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="arrow-label">push ↑</span>
+          <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+            <path d="M8 2L8 16M8 16L4 11M8 16L12 11" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="arrow-label">pull ↓</span>
+        </div>
+      </div>
+
+      <!-- Local + Users -->
+      <div class="local-users">
+        <div class="local-col">
+          <div class="node node-local">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="13" rx="2" stroke="#666" stroke-width="1.8"/>
+              <path d="M8 20h8M12 16v4" stroke="#666" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="node-title node-title-local">Local 副本</span>
+          </div>
+          <div class="user">
+            <div class="user-avatar user-avatar-git">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" fill="#555" fill-opacity="0.7"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="user-label">開發者 A</span>
+          </div>
+        </div>
+        <div class="local-col">
+          <div class="node node-local">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="13" rx="2" stroke="#666" stroke-width="1.8"/>
+              <path d="M8 20h8M12 16v4" stroke="#666" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="node-title node-title-local">Local 副本</span>
+          </div>
+          <div class="user">
+            <div class="user-avatar user-avatar-git">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" fill="#555" fill-opacity="0.7"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="user-label">開發者 B</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Insight bar -->
+  <div class="insights">
+    <div class="insight insight-figma">所有人編輯<strong>同一份</strong>雲端檔案</div>
+    <div class="insight insight-git">每個人有<strong>自己的副本</strong>，改完再合併</div>
+  </div>
+</div>
+</body>
+</html>
