@@ -1,0 +1,617 @@
+<title>Git 同步機制化 — 審閱稿</title>
+<style>
+  :root{
+    --bg:#f6f2ea;
+    --surface:#ffffff;
+    --surface-2:#efe8d8;
+    --text:#1c2127;
+    --text-muted:#5b6672;
+    --border:#ddd4c0;
+    --accent:#9c5a28;
+    --accent-soft:#f0dfc7;
+    --good:#3f7d5c;
+    --good-soft:#dcece2;
+    --warn:#a97a1f;
+    --warn-soft:#f3e6c6;
+    --critical:#a13d24;
+    --critical-soft:#f5ddd4;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --serif-cjk: "Songti TC", "STSong", "Noto Serif TC", serif;
+    --sans-cjk: "PingFang TC", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c;
+    --surface:#1a2029;
+    --surface-2:#212934;
+    --text:#e8e3d8;
+    --text-muted:#8b96a3;
+    --border:#2a3038;
+    --accent:#d99a54;
+    --accent-soft:#3a2c1a;
+    --good:#6fb590;
+    --good-soft:#1c2e26;
+    --warn:#e0b158;
+    --warn-soft:#332a17;
+    --critical:#e2735a;
+    --critical-soft:#33201a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c;
+      --surface:#1a2029;
+      --surface-2:#212934;
+      --text:#e8e3d8;
+      --text-muted:#8b96a3;
+      --border:#2a3038;
+      --accent:#d99a54;
+      --accent-soft:#3a2c1a;
+      --good:#6fb590;
+      --good-soft:#1c2e26;
+      --warn:#e0b158;
+      --warn-soft:#332a17;
+      --critical:#e2735a;
+      --critical-soft:#33201a;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans-cjk);
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-soft); }
+
+  .page{
+    max-width:920px;
+    margin:0 auto;
+    padding:72px 32px 120px;
+  }
+  .wide{ max-width:1080px; }
+
+  /* ── Header ───────────────────────────────────── */
+  header.masthead{
+    max-width:920px;
+    margin:0 auto;
+    padding:56px 32px 0;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    display:inline-block;
+    width:22px; height:1px;
+    background:var(--accent);
+  }
+  h1{
+    font-family:var(--serif-cjk);
+    font-weight:600;
+    font-size:clamp(1.9rem, 2.6vw + 1rem, 2.7rem);
+    line-height:1.3;
+    margin:0;
+    text-wrap:balance;
+    letter-spacing:0.01em;
+  }
+  .subtitle{
+    color:var(--text-muted);
+    font-size:1.02rem;
+    max-width:62ch;
+    margin:0;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:8px;
+    font-family:var(--mono);
+    font-size:0.78rem;
+    color:var(--text-muted);
+  }
+  .meta-chip{
+    border:1px solid var(--border);
+    border-radius:3px;
+    padding:3px 9px;
+    background:var(--surface);
+  }
+  .status-chip{
+    border:1px solid var(--accent);
+    color:var(--accent);
+    border-radius:3px;
+    padding:3px 9px;
+    font-weight:600;
+  }
+
+  hr.rule{
+    border:0;
+    border-top:1px solid var(--border);
+    margin:48px 0;
+  }
+
+  /* ── Section scaffolding ──────────────────────── */
+  section{ margin-bottom:56px; }
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .section-num{
+    font-family:var(--mono);
+    font-size:0.85rem;
+    color:var(--accent);
+    font-variant-numeric:tabular-nums;
+  }
+  h2{
+    font-family:var(--serif-cjk);
+    font-size:1.44rem;
+    font-weight:600;
+    margin:0;
+    text-wrap:balance;
+  }
+  h3{
+    font-family:var(--sans-cjk);
+    font-size:1.05rem;
+    font-weight:700;
+    margin:0 0 10px;
+  }
+  p{ margin:0 0 16px; max-width:66ch; }
+  .lede{ font-size:1.06rem; color:var(--text-muted); max-width:66ch; }
+
+  code, .code{
+    font-family:var(--mono);
+    font-size:0.86em;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:0.1em 0.42em;
+    white-space:nowrap;
+  }
+
+  /* ── Layered incident cards (real sequence → numbered) ── */
+  .layer-stack{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--border);
+  }
+  .layer{
+    background:var(--surface);
+    padding:22px 26px;
+    display:grid;
+    grid-template-columns:44px 1fr;
+    gap:18px;
+  }
+  .layer-index{
+    font-family:var(--mono);
+    font-size:1.3rem;
+    color:var(--accent);
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+    padding-top:2px;
+  }
+  .layer h3{ margin-bottom:6px; }
+  .layer p{ margin-bottom:0; color:var(--text-muted); max-width:60ch; }
+  .layer p + p{ margin-top:10px; }
+  .layer .finding{
+    color:var(--text);
+  }
+
+  /* ── Callout ──────────────────────────────────── */
+  .callout{
+    border-left:3px solid var(--critical);
+    background:var(--critical-soft);
+    border-radius:0 8px 8px 0;
+    padding:18px 22px;
+    margin:20px 0;
+  }
+  .callout.good{ border-left-color:var(--good); background:var(--good-soft); }
+  .callout.warn{ border-left-color:var(--warn); background:var(--warn-soft); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout-label{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:700;
+    display:block;
+    margin-bottom:8px;
+  }
+  .callout.critical .callout-label, .callout .callout-label{ color:var(--critical); }
+  .callout.good .callout-label{ color:var(--good); }
+  .callout.warn .callout-label{ color:var(--warn); }
+
+  /* ── Diagram card ─────────────────────────────── */
+  .diagram-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:8px;
+    overflow-x:auto;
+  }
+  .diagram-card pre.mermaid{
+    margin:0;
+    min-width:640px;
+  }
+  .lane-legend{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    margin:16px 2px 0;
+    font-family:var(--mono);
+    font-size:0.78rem;
+    color:var(--text-muted);
+  }
+  .lane-legend span{ display:inline-flex; align-items:center; gap:8px; }
+  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+  /* ── Two-lane responsibility split ───────────────── */
+  .lanes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  @media (max-width:720px){ .lanes{ grid-template-columns:1fr; } }
+  .lane{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:22px 24px;
+    background:var(--surface);
+  }
+  .lane-tag{
+    font-family:var(--mono);
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:3px;
+    display:inline-block;
+    margin-bottom:14px;
+  }
+  .lane.mech .lane-tag{ background:var(--good-soft); color:var(--good); }
+  .lane.judge .lane-tag{ background:var(--warn-soft); color:var(--warn); }
+  .lane ul{ margin:0; padding-left:1.2em; color:var(--text-muted); }
+  .lane li{ margin-bottom:8px; }
+  .lane li::marker{ color:var(--text-muted); }
+  .lane li b{ color:var(--text); font-weight:600; }
+
+  /* ── File table ───────────────────────────────── */
+  .file-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.92rem;
+  }
+  .file-table th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+    padding:0 14px 10px;
+    border-bottom:1px solid var(--border);
+  }
+  .file-table td{
+    padding:14px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  .file-table tr:last-child td{ border-bottom:none; }
+  .tag{
+    font-family:var(--mono);
+    font-size:0.68rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:3px;
+    white-space:nowrap;
+    font-weight:700;
+  }
+  .tag.new{ background:var(--good-soft); color:var(--good); }
+  .tag.edit{ background:var(--warn-soft); color:var(--warn); }
+  .file-table td.path{ font-family:var(--mono); font-size:0.85em; }
+  .file-table td.desc{ color:var(--text-muted); }
+
+  /* ── Verification checklist ──────────────────── */
+  .verify-list{ display:flex; flex-direction:column; gap:14px; }
+  .verify-item{
+    display:grid;
+    grid-template-columns:32px 1fr;
+    gap:16px;
+    padding:16px 18px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+  }
+  .verify-num{
+    font-family:var(--mono);
+    color:var(--accent);
+    font-size:0.95rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .verify-item p{ margin:0; color:var(--text-muted); max-width:64ch; }
+  .verify-item b{ color:var(--text); }
+
+  footer{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 32px 80px;
+    color:var(--text-muted);
+    font-size:0.85rem;
+    font-family:var(--mono);
+  }
+</style>
+
+<header class="masthead">
+  <span class="eyebrow">審閱稿 · Plan for review</span>
+  <h1>Git 同步機制化 v2</h1>
+  <p class="subtitle">從「靠我記得讀文件」變成「session start 就自動查」——同步查核走 script，repo 清單維護走 skill。</p>
+  <div class="meta-row">
+    <span class="meta-chip">2026-07-26</span>
+    <span class="meta-chip">C機 · TW-KARENSHEN</span>
+    <span class="status-chip">待 Karen 核准</span>
+  </div>
+</header>
+
+<div class="page">
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>事故現場：三層疊在一起的漏洞</h2>
+    </div>
+    <p class="lede">C機開工這次漏掉 dotclaude 落後 10 commits、qoome 底下 6 個 nested repo 落後 remote。往下追，問題不是單一原因，是三層疊加。</p>
+
+    <div class="layer-stack">
+      <div class="layer">
+        <div class="layer-index">01</div>
+        <div>
+          <h3>我自己沒讀文件就動手</h3>
+          <p>看到「開工」沒去讀 <code>start-work-flow.md</code>，直接土法動手，範圍縮到目前 cwd（qoome-content-factory）。</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-index">02</div>
+        <div>
+          <h3>唯一機制上保證會跑的東西，本來就不查 remote</h3>
+          <p class="finding"><code>daily-flow-inject.sh</code>（比對「開工/早安/briefing」字串觸發）只呼叫 <code>today-touched.sh</code> / <code>wip-detector.sh</code>——兩支都只查本機 dirty / unpushed，<b>從不 <code>git fetch</code></b>。</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-index">03</div>
+        <div>
+          <h3>repo 探索範圍本身有洞</h3>
+          <p class="finding"><code>check-sync.sh</code> 用 <code>for dir in "$VIBE_DIR"/*/</code>（只看第一層）；<code>today-touched.sh</code>/<code>wip-detector.sh</code> 用 <code>find -maxdepth 2</code>。兩者都看不到 <code>qoome/</code> 底下再巢狀一層的 9 個獨立 repo——因為 <code>qoome/</code> 自己也是一個 repo，形成「container repo 裡面包 repo」的結構。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-label">意外發現的死碼</span>
+      <p><code>~/dotclaude/scripts/auto-pull.sh</code> 其實早就掛在 SessionStart hook 上（<code>settings.json</code> matcher <code>startup</code>），但它判斷「vibe 是不是 git repo」那段（<code>if [ -d "$VIBE/.git" ]</code>）自 2026-07-21 vibe 拆成純資料夾之後就恆為假——這支既有的「開工自動同步」邏輯，已經靜默失效超過一個月。</p>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>新設計：機制流程圖</h2>
+    </div>
+    <p class="lede">依 Karen 指示調整：不排程、不靠 launchd；改成「每次 session start 自動觸發」，同步本身是機械式 script，repo 清單維護則需要判斷，交給 skill。</p>
+
+    <div class="diagram-card">
+<pre class="mermaid">
+flowchart TD
+    A["Claude Code session 啟動"] --> B{{"SessionStart hook<br/>auto-pull.sh"}}
+
+    subgraph MECH["機械層 · Script — 每次 session start 都跑"]
+        direction TB
+        C["Part A — dotclaude<br/>乾淨才 pull；dirty 改 fetch-only 並回報落後數"]
+        D["Part C — check-sync.sh<br/>--repos-file repo-registry.txt"]
+        E["每個 repo 平行 fetch + behind<br/>外層 timeout 12s 保底"]
+        P["Part D — audit-registry.sh<br/>--summary-json（純本機 find，不連網）"]
+        Q["registry 漏登記 / 路徑消失<br/>計數 > 0？"]
+        F["彙整成 additionalContext"]
+        D --> E --> F
+        P --> Q -->|是| F
+    end
+
+    B --> C --> F
+    B --> D
+    B --> P
+    F --> G["Karen 一開 session<br/>就看到落後 / dirty 清單<br/>+ registry drift 提醒（如果有）"]
+
+    G -. 看到提醒才觸發 .-> H
+
+    subgraph JUDGE["判斷層 · Skill — 被叫到才跑，不排程"]
+        direction TB
+        H["Karen：盤點 repo 清單"] --> I["audit-registry.sh<br/>遞迴 discover 全部 repo"]
+        I --> J{{"diff vs<br/>repo-registry.txt"}}
+        J -->|有 repo 未登記| K["列候選新增<br/>問 Karen 收不收"]
+        J -->|登記路徑已消失| L["列候選移除<br/>問 Karen 刪不刪"]
+        K --> M["更新 repo-registry.txt"]
+        L --> M
+    end
+
+    N["開新專案 flow"] -. 自動 append .-> M
+    M -. 下次 session 讀到 .-> D
+
+    style MECH fill:#00000000,stroke:#3f7d5c,stroke-width:1.5px
+    style JUDGE fill:#00000000,stroke:#a97a1f,stroke-width:1.5px
+</pre>
+    </div>
+    <div class="lane-legend">
+      <span><span class="swatch" style="background:var(--good)"></span>機械層：確定性執行，人不用介入</span>
+      <span><span class="swatch" style="background:var(--warn)"></span>判斷層：需要人 / agent 判斷才動清單</span>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>職責兩分：Script 管執行，Skill 管清單</h2>
+    </div>
+    <div class="lanes">
+      <div class="lane mech">
+        <span class="lane-tag">Script</span>
+        <ul>
+          <li><b>check-sync.sh --repos-file</b> 讀固定清單，不做探索判斷</li>
+          <li>沿用既有 <code>process_repo()</code>：remote / fetch+behind / unpushed / dirty / gitignore / zombie 全套</li>
+          <li>每個 repo 背景平行跑，各自寫暫存 JSON，<code>wait</code> 後 <code>jq -s</code> 合併</li>
+          <li>單一 repo fetch 失敗（帳號沒切對）只記一行，不中斷整批</li>
+          <li>登記路徑若已不存在 → 標記「registry 有髒路徑」，但不擅自修改清單</li>
+          <li><b>Part D 新增</b>：<code>audit-registry.sh --summary-json</code> 純本機 find（不連網），每次都跑，drift 計數 &gt; 0 就在 <code>additionalContext</code> 補一行提醒</li>
+        </ul>
+      </div>
+      <div class="lane judge">
+        <span class="lane-tag">Skill</span>
+        <ul>
+          <li><b>audit-registry.sh</b>（無 flag 版）遞迴 discover 真實存在的 repo，跟清單做完整 diff</li>
+          <li>發現「有 repo 沒登記」——可能是新專案，也可能是不小心巢狀出來的 <code>.git</code>，兩種情況都需要人判斷</li>
+          <li>發現「登記了但路徑消失」——列為候選移除，問過才刪</li>
+          <li>掛勾 <code>new-project-flow.md</code>：建新專案時自動 append，不用等手動盤點</li>
+          <li>明確不排週期性自動跑——被叫到才跑、或看到 Part D 提醒才跑</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout good" style="margin-top:20px;">
+      <span class="callout-label">為什麼銜接 new-project-flow 之後還要留 Part D</span>
+      <p>new-project-flow 銜接只擋得住「照流程建專案」這條路徑；擋不住手動 <code>git init</code>、忘記走流程、複製別人專案這類意外。Part D 的 discovery 是純本機檔案系統操作，成本接近零，所以讓它每次 session start 都跑，當作銜接失靈時的保底——即使某次真的漏登記，下次開 session 也會被動提醒，不會無限期 silent drift。</p>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>修改檔案清單</h2>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="file-table">
+        <thead>
+          <tr><th>檔案</th><th>動作</th><th>內容</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="path">skills/sync-health-check/repo-registry.txt</td>
+            <td><span class="tag new">新增</span></td>
+            <td class="desc">種子清單，一行一個絕對路徑；放 dotclaude 底下天生跨裝置同步</td>
+          </tr>
+          <tr>
+            <td class="path">skills/sync-health-check/lib-discover.sh</td>
+            <td><span class="tag new">新增</span></td>
+            <td class="desc"><code>discover_repos()</code> 從 check-sync.sh 抽出來共用，避免兩處各寫一份</td>
+          </tr>
+          <tr>
+            <td class="path">skills/sync-health-check/audit-registry.sh</td>
+            <td><span class="tag new">新增</span></td>
+            <td class="desc">跑 discovery，跟 registry 做 diff，只列候選不自動改；<code>--summary-json</code> 模式給 Part D 當輕量計數用</td>
+          </tr>
+          <tr>
+            <td class="path">skills/sync-health-check/check-sync.sh</td>
+            <td><span class="tag edit">修改</span></td>
+            <td class="desc">加 <code>--repos-file</code> 模式 + 平行化 fetch + source lib-discover.sh</td>
+          </tr>
+          <tr>
+            <td class="path">skills/sync-health-check/SKILL.md</td>
+            <td><span class="tag edit">修改</span></td>
+            <td class="desc">補「Repo 清單維護」段落，說明 on-demand 觸發時機</td>
+          </tr>
+          <tr>
+            <td class="path">dotclaude/scripts/auto-pull.sh</td>
+            <td><span class="tag edit">修改</span></td>
+            <td class="desc">死 Part B → 活 Part C；Part A 補 dirty 時 fetch-only 回報</td>
+          </tr>
+          <tr>
+            <td class="path">dotclaude/settings.json</td>
+            <td><span class="tag edit">修改</span></td>
+            <td class="desc">該 SessionStart hook timeout 8 → 15，給平行 fetch 留空間</td>
+          </tr>
+          <tr>
+            <td class="path">memory/new-project-flow.md</td>
+            <td><span class="tag edit">修改</span></td>
+            <td class="desc">Type 1 / Type 3 登記步驟加一行：同時 append registry</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>驗證方式</h2>
+    </div>
+    <div class="verify-list">
+      <div class="verify-item">
+        <div class="verify-num">1</div>
+        <p><b>種子清單：</b>對空 registry 跑一次 <code>audit-registry.sh</code>，確認能列出目前所有實際 repo（含 qoome 巢狀 9 個），拿這份輸出當初始 <code>repo-registry.txt</code>。</p>
+      </div>
+      <div class="verify-item">
+        <div class="verify-num">2</div>
+        <p><b>效能：</b><code>check-sync.sh --json --repos-file repo-registry.txt</code> 實測秒數，跟內層 12s timeout 比對，確認平行化真的有效。</p>
+      </div>
+      <div class="verify-item">
+        <div class="verify-num">3</div>
+        <p><b>行為：</b>手動跑 <code>auto-pull.sh</code>，確認 <code>additionalContext</code> 裡有 registry 掃描摘要；找一個故意落後的 repo 驗證抓得到 behind。</p>
+      </div>
+      <div class="verify-item">
+        <div class="verify-num">4</div>
+        <p><b>Drift 偵測：</b>臨時在 vibe 下建一個假 repo，跑 <code>audit-registry.sh</code> 確認「有 repo 沒登記」分支正確觸發，測完清乾淨。</p>
+      </div>
+      <div class="verify-item">
+        <div class="verify-num">5</div>
+        <p><b>timeout 排序：</b>確認 <code>settings.json</code> 外層 timeout（15）永遠大於 script 內層 timeout（12）。</p>
+      </div>
+      <div class="verify-item">
+        <div class="verify-num">6</div>
+        <p><b>文件：</b>檢查 <code>new-project-flow.md</code> 新增那行是否清楚、跟既有登記步驟銜接合理。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>已知限制</h2>
+    </div>
+    <div class="callout warn">
+      <span class="callout-label">Gh 多帳號脆弱性</span>
+      <p><code>iven-qoome</code> org 系列 repo 走 HTTPS + gh credential helper，帳號沒切對就 403/404。背景 fetch 撞到只記錄失敗，不會自動切帳號。長期建議改 SSH multi-account alias，但不塞進本次範圍。</p>
+    </div>
+    <div class="callout warn">
+      <span class="callout-label">每次 session 都有延遲</span>
+      <p>不管這次要不要碰 git，每個 session 開場都會多花幾秒做同步檢查——這是 Karen 明確要的行為（「每次 session start 就自動觸發」），是已知取捨，不是 bug。</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  git-sync-mechanization-v2 · plan file: ~/.claude/plans/compiled-roaming-truffle.md
+</footer>
