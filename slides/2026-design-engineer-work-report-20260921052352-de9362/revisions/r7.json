@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-design-engineer-work-report",
+  "revision": 7,
+  "status": "draft",
+  "title": "Untitled internal deck",
+  "language": "zh-TW",
+  "languages": [
+    "zh-TW"
+  ],
+  "languageSource": "user",
+  "userLanguage": "zh-TW",
+  "aspectRatio": "16:9",
+  "contentReview": "optimize",
+  "outputTargets": [
+    "html",
+    "pdf",
+    "pptx"
+  ],
+  "sources": [
+    {
+      "id": "src-2026q1-q3-work",
+      "type": "md",
+      "path": "../../../../../../../Vaults/JW/JW_cloud/1_TM/2026Q1~Q3 work.md",
+      "title": "2026 個人工作彙報",
+      "ingestedAt": "2026-09-21T05:23:52.127Z"
+    }
+  ],
+  "assets": [],
+  "slides": [],
+  "sourceLanguage": "zh-TW",
+  "audience": "MKT 主管",
+  "occasion": "MKT 主管內部會議",
+  "purpose": "呈現 Design Engineer 的個人貢獻，以及其形成的團隊可持續能力",
+  "desiredAction": "納入 reorg 評估，理解設計部門內部仍承擔的工具、流程與專案工作",
+  "durationMinutes": 10
+}

@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-design-engineer-work-report",
+  "revision": 14,
+  "status": "draft",
+  "title": "2026 Q1~Q3 work review - Karen Shen",
+  "language": "en",
+  "languages": [
+    "en"
+  ],
+  "languageSource": "user",
+  "userLanguage": "zh-TW",
+  "aspectRatio": "16:9",
+  "contentReview": "optimize",
+  "outputTargets": [
+    "html",
+    "pdf",
+    "pptx"
+  ],
+  "sources": [
+    {
+      "id": "src-2026q1-q3-work",
+      "type": "md",
+      "path": "../../../../../../../Vaults/JW/JW_cloud/1_TM/2026Q1~Q3 work.md",
+      "title": "2026 個人工作彙報",
+      "ingestedAt": "2026-09-21T05:23:52.127Z"
+    }
+  ],
+  "assets": [],
+  "slides": [
+    {
+      "id": "s-01-cover",
+      "order": 1,
+      "role": "Opening",
+      "title": "2026 Q1–Q3 Work Review",
+      "layout": "cover",
+      "content": {
+        "subtitle": "Karen Shen · Design Engineer"
+      },
+      "notes": "Open with the scope of this review: work recorded through September 21, focused on organizational contribution rather than a task inventory.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-001",
+        "src-2026q1-q3-work-008"
+      ]
+    },
+    {
+      "id": "s-02-role",
+      "order": 2,
+      "role": "Role overview",
+      "title": "Design Engineer: make design repeatable",
+      "layout": "statement",
+      "content": {
+        "statement": "I turn design judgment into shared AI and MKT systems.",
+        "eyebrow": "Beyond individual deliverables"
+      },
+      "notes": "Frame the role as an organizational bridge: turning design knowledge into systems that others can use.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-002",
+        "src-2026q1-q3-work-007"
+      ]
+    },
+    {
+      "id": "s-03-two-bridges",
+      "order": 3,
+      "role": "Operating model",
+      "title": "The role operates through two bridges",
+      "layout": "architecture",
+      "content": {
+        "eyebrow": "Design Engineer scope"
+      },
+      "data": {
+        "layers": [
+          {
+            "label": "Bridge 01 · Designers ↔ AI workflow",
+            "nodes": [
+              "Training & adoption",
+              "Context & review",
+              "Access & operations"
+            ]
+          },
+          {
+            "label": "Bridge 02 · Visual Designers ↔ MKT",
+            "nodes": [
+              "Design language",
+              "Content templates",
+              "Asset delivery & evaluation"
+            ]
+          }
+        ]
+      },
+      "notes": "Introduce the two operating lines first. The following slides show how each bridge produced reusable capabilities rather than isolated experiments.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-002"
+      ]
+    },
+    {
+      "id": "s-04-designers-ai",
+      "order": 4,
+      "role": "Bridge 01",
+      "title": "Internal education: build a shared AI operating language",
+      "layout": "table",
+      "content": {
+        "eyebrow": "Designers ↔ AI workflow · Education"
+      },
+      "notes": "This is the education layer of the Designers-to-AI bridge. The goal was to create a shared operating language before asking designers to adopt new tools or workflows.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-003",
+        "src-2026q1-q3-work-005"
+      ],
+      "data": {
+        "headers": [
+          "Project",
+          "Contribution",
+          "Repository"
+        ],
+        "rows": [
+          [
+            "AI-design",
+            "Six-week Git / AI curriculum, 31-slide sharing, Demo Day",
+            "github.com/JiaWen-Shen/AI-design"
+          ],
+          [
+            "team-claude-code-1hr-cache",
+            "Bilingual setup, verification, and rollout package",
+            "github.com/karen-shen_tmemu/team-claude-code-1hr-cache"
+          ],
+          [
+            "HIE-AI-Ops",
+            "Onboarding and shared collaboration guidance",
+            "github.com/trendlife-general/HIE-AI-Ops"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "s-05-designers-ai-evidence",
+      "order": 5,
+      "role": "Bridge 01 evidence",
+      "title": "Internal tools: turn adoption into reliable operating capacity",
+      "layout": "table",
+      "content": {
+        "eyebrow": "Designers ↔ AI workflow · Tools"
+      },
+      "data": {
+        "headers": [
+          "Project",
+          "Evidence / responsibility",
+          "Repository"
+        ],
+        "rows": [
+          [
+            "design-pr-review · HIE-REI",
+            "5 review cycles; 40/40 E2E checks",
+            "github.com/trendlife-general/hie-rei"
+          ],
+          [
+            "design-context",
+            "Reference sync and design-context loading",
+            "github.com/karen-shen_tmemu/design-context"
+          ],
+          [
+            "HIE-AI-Ops",
+            "Health check, handoff, squad sync, and operating safeguards",
+            "github.com/trendlife-general/HIE-AI-Ops"
+          ],
+          [
+            "dotclaude",
+            "AI access, profiles, and cross-runtime instruction sharing",
+            "github.com/JiaWen-Shen/dotclaude"
+          ]
+        ]
+      },
+      "notes": "This is the tools layer: design-pr-review, design-context, AI access management, health checks, and handoff safeguards make adoption dependable after education has established the shared language.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-003"
+      ]
+    },
+    {
+      "id": "s-07-visual-mkt-evidence",
+      "order": 6,
+      "role": "Bridge 02 evidence",
+      "title": "Visual Designers ↔ MKT: research, templates, and delivery assets",
+      "layout": "table",
+      "content": {
+        "eyebrow": "Visual Designers ↔ MKT"
+      },
+      "data": {
+        "headers": [
+          "Project",
+          "Evidence / contribution",
+          "Repository"
+        ],
+        "rows": [
+          [
+            "MKT template refinement",
+            "85 images; 14 trilingual survey cards; design-language synthesis",
+            "github.com/trendlife-general/marketing-harness"
+          ],
+          [
+            "social-media-gen / UI templates",
+            "9 documented mockup templates and guided generation flow",
+            "github.com/trendlife-general/vxd-skill"
+          ],
+          [
+            "insta-eval-poc",
+            "Blind evaluation and stakeholder feedback mechanism",
+            "github.com/JiaWen-Shen/insta-eval-poc"
+          ],
+          [
+            "Figma export",
+            "75 verified assets exported from 4 production Figma sources",
+            "github.com/trendlife-general/marketing-harness"
+          ]
+        ]
+      },
+      "notes": "Show the sequence behind MKT delivery: 85 images and 14 survey cards informed the design language; template guidance made that language reusable; the Figma export tool delivered 75 verified production assets.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-004"
+      ]
+    },
+    {
+      "id": "s-08-shared-assets",
+      "order": 7,
+      "role": "Organization-level assets",
+      "title": "Internal sharing and tools compound the value of each project",
+      "layout": "table",
+      "content": {
+        "eyebrow": "Reusable assets, with ownership visible"
+      },
+      "data": {
+        "headers": [
+          "Project",
+          "Representative output",
+          "Repository"
+        ],
+        "rows": [
+          [
+            "AI-design",
+            "Git / AI curriculum and internal sharing materials",
+            "github.com/JiaWen-Shen/AI-design"
+          ],
+          [
+            "HIE-AI-Ops",
+            "Shared tools, onboarding, and team operations",
+            "github.com/trendlife-general/HIE-AI-Ops"
+          ],
+          [
+            "open-design-eval",
+            "Platform evaluation, token ledger, and rollout planning",
+            "github.com/karen-shen_tmemu/open-design-eval"
+          ],
+          [
+            "TLDS deck pipeline",
+            "Design-system-based presentation delivery",
+            "github.com/sparda-wei_tmemu/tl-cd-template"
+          ]
+        ]
+      },
+      "notes": "Make internal work visible. Sharing and tools are leverage: they reduce repeated explanation, standardize quality, and allow design capability to travel between projects and teams.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-005"
+      ]
+    },
+    {
+      "id": "s-09-active-portfolio",
+      "order": 8,
+      "role": "Current responsibilities",
+      "title": "The portfolio remains active: platform, pipeline, and operating responsibility",
+      "layout": "table",
+      "content": {
+        "eyebrow": "In-flight work"
+      },
+      "data": {
+        "headers": [
+          "Workstream",
+          "Current focus",
+          "Why it matters"
+        ],
+        "rows": [
+          [
+            "Open Design evaluation",
+            "Platform POC and self-hosted rollout plan",
+            "A scalable, governed AI design environment"
+          ],
+          [
+            "TLDS deck pipeline",
+            "Design system routing, assembly, and verification",
+            "Brand-consistent presentation output"
+          ],
+          [
+            "MKT content supply",
+            "Template metadata and upstream synchronization",
+            "Reliable content creation and delivery"
+          ],
+          [
+            "AI environment operations",
+            "Access, profiles, skills, and runtime compatibility",
+            "Continuity across users and devices"
+          ],
+          [
+            "HIE-REI diagnosis",
+            "Context loading and handoff alignment",
+            "Clearer design-to-delivery collaboration"
+          ]
+        ]
+      },
+      "notes": "These are not future ideas; they are active responsibilities with explicit next steps. This is important for reorg evaluation because the work includes continuing platform and operations ownership.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-006"
+      ]
+    },
+    {
+      "id": "s-10-reorg",
+      "order": 9,
+      "role": "Closing",
+      "title": "Retain the bridge",
+      "layout": "closing",
+      "content": {
+        "statement": "Design Engineering makes AI and MKT delivery reliable, scalable, and governed.",
+        "eyebrow": "For reorganization evaluation"
+      },
+      "notes": "Close with the reorganization lens: the function owns the systems that make design capability scalable.",
+      "assetRefs": [],
+      "sourceRefs": [
+        "src-2026q1-q3-work-007",
+        "src-2026q1-q3-work-006"
+      ]
+    }
+  ],
+  "sourceLanguage": "zh-TW",
+  "audience": "MKT 主管",
+  "occasion": "MKT 主管內部會議",
+  "purpose": "呈現 Design Engineer 的個人貢獻，以及其形成的團隊可持續能力",
+  "desiredAction": "納入 reorg 評估，理解設計部門內部仍承擔的工具、流程與專案工作",
+  "durationMinutes": 10
+}

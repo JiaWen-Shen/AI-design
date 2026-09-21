@@ -1,0 +1,73 @@
+{
+  "sourceId": "src-2026q1-q3-work",
+  "type": "md",
+  "source": "/Users/karen_shen/Vaults/JW/JW_cloud/1_TM/2026Q1~Q3 work.md",
+  "createdAt": "2026-09-21T05:23:52.127Z",
+  "detectedLanguage": "zh-TW",
+  "segments": [
+    {
+      "id": "src-2026q1-q3-work-001",
+      "order": 1,
+      "title": "2026 個人工作彙報",
+      "excerpt": "# 2026 個人工作彙報 **彙報期間：** 2026/02/01–2026/09/21（截至目前） **職稱：** Design Engineer",
+      "path": "source/segments/src-2026q1-q3-work-001.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-002",
+      "order": 2,
+      "title": "工作執掌",
+      "excerpt": "## 工作執掌 Design Engineer 的角色，是把設計端的需求、素材與判斷方式，轉換成可被 AI、工具與協作流程穩定使用的系統；同時也把生成能力轉成可由視覺設計與 MKT 團隊採用、檢驗與延伸的交付。 1. **Bridge Designers ↔ AI workflow**：為設計師建立 AI 工作流程、工具、知識脈絡、訓練與協作治理，讓 AI 能實際進入日常設計工作。 2. **Bridge Visual Designers ↔ MKT**：把視覺設計系統、範本與素材流程轉成 MKT 可使用的內容生產與驗證機制，並以回饋持續收斂品質。 > ",
+      "path": "source/segments/src-2026q1-q3-work-002.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-003",
+      "order": 3,
+      "title": "一、Bridge Designers ↔ AI workflow",
+      "excerpt": "## 一、Bridge Designers ↔ AI workflow ### 1. 設計師 AI / Git 協作內訓與教材系統 **Duration：** 2026/04–2026/08 **題目：** 從 Git 與 repository 基礎，到 Claude Code、模型設定與跨裝置協作的設計師 AI 工作方法。 **大綱：** - 建立 GitHub for UI Designers 系列：Git 與 Figma 的對照、branch / fork、remote / local、PR review、衝突處理與安全復原。 - 製作 Claud",
+      "path": "source/segments/src-2026q1-q3-work-003.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-004",
+      "order": 4,
+      "title": "二、Bridge Visual Designers ↔ MKT",
+      "excerpt": "## 二、Bridge Visual Designers ↔ MKT ### 1. MKT Template Refinement 與設計語言收斂 **Duration：** 2026/06–2026/07 **題目：** 以 benchmark、匿名偏好測試與設計師判讀，協助 MKT 建立可共識化的視覺內容方向。 **大綱：** - 以品牌 moodboard 建立 2×2 風格分佈，檢視內部區域帳號在情緒與媒材上的分歧。 - 建立三語 swipe survey，將品牌素材去識別後收集結構化偏好與理由。 - 將量化與質化回饋整合為分析頁，保留每一項視覺",
+      "path": "source/segments/src-2026q1-q3-work-004.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-005",
+      "order": 5,
+      "title": "三、今年的內部分享與共用工具",
+      "excerpt": "## 三、今年的內部分享與共用工具 ### 內部分享 / 教材 | 主題 | 期間 | 產出 | |---|---:|---| | GitHub for UI Designers / Vibe Coding 系列 | 4–6 月 | Week 1–6 教材：Git 基礎、協作架構、PR / conflict、跨裝置與 context workflow | | Claude Design 與 Claude Code 使用界線 | 4 月 | 31 頁分享與 Q&A 準備 | | 模型設定、帳號遷移與 prompt cache | 6 月 | 雙語互動指南、",
+      "path": "source/segments/src-2026q1-q3-work-005.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-006",
+      "order": 6,
+      "title": "四、專案交付與目前在手項目",
+      "excerpt": "## 四、專案交付與目前在手項目 ### 已完成或已交付的專案 | 專案 | Duration | 大綱 / 交付 | |---|---:|---| | Client UI Mockup | 3/01–4/27 | 多角色情境與功能概念的 UI mockup、設計規範、多人協作 PR / handoff 流程；3 月主力，記錄 **167 commits**。 | | Team offsite 投票與決策頁 | 6/08–6/22 | 兩案比較 deck、預算 / 行程與公開雙語投票頁，協助約 17 人團隊完成決策。 | | 設計團隊 onboardin",
+      "path": "source/segments/src-2026q1-q3-work-006.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-007",
+      "order": 7,
+      "title": "工作成果總結",
+      "excerpt": "## 工作成果總結 今年的工作主軸，從「教設計師如何使用 AI」逐步擴展為兩條可持續運作的橋接線： - 對設計師，建立可被採用的 AI 工作方式：教材、context、review、access、同步與交接流程都能有明確工具與驗證。 - 對視覺設計與 MKT，建立可被評估與迭代的內容供給鏈：從品牌研究、偏好資料、設計語言，到模板、素材匯出、生成 orchestrator 與設計系統 pipeline。 因此工作成果不只是一批工具或簡報，而是把設計判斷轉為能在團隊中重複使用、追蹤與持續改善的機制。",
+      "path": "source/segments/src-2026q1-q3-work-007.md",
+      "notes": false
+    },
+    {
+      "id": "src-2026q1-q3-work-008",
+      "order": 8,
+      "title": "資料來源與範圍",
+      "excerpt": "## 資料來源與範圍 - 主要來源：2026 年每日工作摘要（3/31–9/21，共 127 份）。 - 補充來源：個人 worklog 的 2026/02–08 月頁面，用於補足早期專案期間與已彙整的 commit / 交付資料。 - 不納入：與上述職務無直接關聯的個人專案。",
+      "path": "source/segments/src-2026q1-q3-work-008.md",
+      "notes": false
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-design-engineer-work-report",
+  "revision": 0,
+  "status": "draft",
+  "title": "Untitled internal deck",
+  "language": "zh-TW",
+  "languages": [
+    "zh-TW"
+  ],
+  "languageSource": "user",
+  "userLanguage": "zh-TW",
+  "aspectRatio": "16:9",
+  "contentReview": "pending",
+  "outputTargets": [
+    "html",
+    "pdf",
+    "pptx"
+  ],
+  "sources": [],
+  "assets": [],
+  "slides": []
+}

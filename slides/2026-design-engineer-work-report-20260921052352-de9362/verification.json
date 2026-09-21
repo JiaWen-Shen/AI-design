@@ -1,0 +1,11 @@
+{
+  "revision": 33,
+  "checkedAt": "2026-09-21T07:39:15.877Z",
+  "passed": true,
+  "failedSlideIds": [],
+  "errors": [],
+  "artifacts": {
+    "screenshots": "verification/screenshots",
+    "contactSheet": "verification/contact-sheet.html"
+  }
+}
