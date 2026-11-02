@@ -21,15 +21,15 @@
 
 set -eu
 
-SRC="$HOME/Jottacloud/vibe/AI-design/design-pr-review"
-DST="$HOME/Jottacloud/vibe/hie-rei/.claude/skills/design-pr-review"
+SRC="$HOME/Jottacloud/vibe/TM-workspace/AI-design/design-pr-review"
+DST="$HOME/Jottacloud/vibe/TM-workspace/HIE/.claude/skills/design-pr-review"
 
 APPLY=false
 [[ "${1:-}" == "--apply" ]] && APPLY=true
 
 if [ ! -d "$DST" ]; then
-  echo "ERROR: hie-rei skill folder not found: $DST" >&2
-  echo "Expected hie-rei cloned at $HOME/Jottacloud/vibe/hie-rei/" >&2
+  echo "ERROR: HIE skill folder not found: $DST" >&2
+  echo "Expected HIE cloned at $HOME/Jottacloud/vibe/TM-workspace/HIE/" >&2
   exit 1
 fi
 
@@ -55,12 +55,12 @@ if $APPLY; then
   echo "== Applying sync: $SRC/ → $DST/ =="
   rsync "${RSYNC_ARGS[@]}" "$SRC/" "$DST/"
   echo
-  echo "== hie-rei git status =="
-  cd "$HOME/Jottacloud/vibe/hie-rei"
+  echo "== HIE git status =="
+  cd "$HOME/Jottacloud/vibe/TM-workspace/HIE"
   git status --short .claude/skills/design-pr-review/ 2>&1 | sed 's/^/  /' || true
   echo
   echo "Next:"
-  echo "  cd ~/Jottacloud/vibe/hie-rei"
+  echo "  cd ~/Jottacloud/vibe/TM-workspace/HIE"
   echo "  git checkout -b karen/<type>/<slug>          # or use existing feature branch"
   echo "  git add .claude/skills/design-pr-review/     # explicit paths only"
   echo "  git commit -m '...'"
