@@ -44,7 +44,13 @@ gh api 'repos/trendlife-general/trendlife/compare/<base>...<head>'
 
 1. 將完整報告寫成 `.md`。設計師指定路徑時用該路徑；否則用 `mktemp -d "${TMPDIR:-/tmp}/pm-review.XXXXXX"` 建立本機暫存目錄，在其中寫 `report.md`。不要覆寫既有報告，也不要將預設報告寫進 HIE 或 PM repo。
 2. 讀回檔案，**在對話印出相同的完整內容**，並附檔案絕對路徑。不要再另寫 Teams 短版或套用 200 字元限制。
-3. 寫入成功後用 macOS `open "<報告檔絕對路徑>"` 開啟檔案。若開啟失敗，明確回報原因與檔案路徑，不要聲稱已開啟；不需啟動本機 server。
+3. 寫入成功後，先用執行者裝置的預設 `.md` 檔案關聯開啟。macOS 執行 `open "<報告檔絕對路徑>"`，不加 `-a`、不指定 Obsidian 或任何個人安裝的程式。若沒有可用的 Markdown 關聯程式或開啟失敗，改用該裝置的預設瀏覽器開啟檔案的 `file://` URL，且不要硬指定瀏覽器名稱：
+
+   ```bash
+   python3 -c 'import sys, webbrowser; from pathlib import Path; sys.exit(0 if webbrowser.open(Path(sys.argv[1]).resolve().as_uri()) else 1)' "<報告檔絕對路徑>"
+   ```
+
+   兩種方式都失敗時，回報原因與檔案路徑，不要聲稱已開啟；不需啟動本機 server。
 4. 請設計師確認落差判定；agent 不自行宣稱設計已對齊或需求已定案。
 
 ## 完成檢查
@@ -54,4 +60,4 @@ gh api 'repos/trendlife-general/trendlife/compare/<base>...<head>'
 - 報告是否指出有證據的實質落差？若沒有，就明寫「目前未查到已驗證落差」，不可硬湊。
 - 已提交版本的 SHA、blob、路徑與連結是否對得上；未提交版本的本機路徑與 SHA-256 是否對得上？
 - 本機預覽若與固定 SHA 不同，是否明確標出版本差異？
-- 對話內容是否與寫入的 Markdown 一致，且已實際開啟檔案或清楚回報開啟失敗？
+- 對話內容是否與寫入的 Markdown 一致，且已用使用者裝置的預設 Markdown 程式或預設瀏覽器開啟檔案，或清楚回報開啟失敗？
